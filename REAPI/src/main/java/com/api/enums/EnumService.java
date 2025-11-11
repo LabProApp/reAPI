@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class EnumService {
 
+	//test files
+	int i=0;
 	public List<EnumDTO> getEnumValues(Class<? extends Enum<?>> enumClass) {
 		return Arrays.stream(enumClass.getEnumConstants()).map(e -> {
 			if (e instanceof baseEnum derivedEnum) {
