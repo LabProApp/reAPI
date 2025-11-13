@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,18 +20,14 @@ import com.api.userproperty.UserPropertyRelationRepository;
 @Service
 public class UserService {
 
-	private final UserRepository userRepository;
-	private final PropertyRepository propertyRepository;
-	private final DocumentRepository documentRepository;
-	private final UserPropertyRelationRepository propertyRelationRepository;
-
-	public UserService(UserRepository userRepository, UserPropertyRelationRepository propertyRelationRepository,
-			PropertyRepository propertyRepository, DocumentRepository documentRepository) {
-		this.userRepository = userRepository;
-		this.propertyRepository = propertyRepository;
-		this.propertyRelationRepository = propertyRelationRepository;
-		this.documentRepository = documentRepository;
-	}
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private PropertyRepository propertyRepository;
+	@Autowired
+	private DocumentRepository documentRepository;
+	@Autowired
+	private UserPropertyRelationRepository propertyRelationRepository;
 
 	// ---------------- REGISTER ----------------
 	public ResponseEntity<String> signup(User user) {

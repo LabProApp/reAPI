@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.api.prop.Documents;
 import com.api.userproperty.UserPropertyRelation;
+import com.api.userrelation.UserRelation;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -43,6 +44,14 @@ public class User {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserPropertyRelation> userProperties = new ArrayList<>();
 
+	
+	
+	// 🧩 New: User–User Relations
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "user-relations")
+    private List<UserRelation> userRelations = new ArrayList<>();
+    
+    
 	public Long getId() {
 		return id;
 	}

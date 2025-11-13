@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,11 +26,8 @@ import jakarta.validation.Valid;
 @Tag(name = "Property APIs", description = "Operations related to Property management")
 public class PropertyController {
 
-	private final PropertyService service;
-
-	public PropertyController(PropertyService service) {
-		this.service = service;
-	}
+	@Autowired
+	private PropertyService service;
 
 	@PostMapping("/add")
 	public ResponseEntity<Property> addProperty(@Valid @RequestBody Property property) {
@@ -83,14 +81,13 @@ public class PropertyController {
 	}
 
 	@PostMapping("/upload-document/{propertyId}")
-	public ResponseEntity<Property> uploadDocuments(
-	        @PathVariable Long propertyId,
-	        @RequestParam("files") List<MultipartFile> files,
-	        @RequestParam("captions") List<String> captions) throws IOException {
+	public ResponseEntity<Property> uploadDocuments(@PathVariable Long propertyId,
+			@RequestParam("files") List<MultipartFile> files, @RequestParam("captions") List<String> captions)
+			throws IOException {
 
-	    return ResponseEntity.ok(service.uploadDocuments(propertyId, files, captions));
+		return ResponseEntity.ok(service.uploadDocuments(propertyId, files, captions));
 	}
-	
+
 	/*
 	 * @GetMapping("/upload-document/{propertyId}") public
 	 * ResponseEntity<List<Property>> uploadDocuments(@PathVariable Long propertyId,
@@ -102,6 +99,5 @@ public class PropertyController {
 	 * 
 	 * }
 	 */
-	
 
 }

@@ -3,6 +3,7 @@ package com.api.user;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,21 +25,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "User APIs", description = "Operations related to User management")
 public class UserController {
 
-	private final UserService userService;
-
-	public UserController(UserService userService) {
-		super();
-		this.userService = userService;
-	}
+	@Autowired
+	private UserService userService;
 
 	@PostMapping("/signup")
-
 	public ResponseEntity<String> signup(@RequestBody User user) {
 		return userService.signup(user);
 	}
 
 	@PostMapping("/login")
-
 	public ResponseEntity<String> login(@RequestBody User user) {
 		return userService.login(user);
 	}
