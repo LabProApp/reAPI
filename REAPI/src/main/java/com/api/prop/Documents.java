@@ -2,6 +2,7 @@ package com.api.prop;
 
 import java.time.LocalDateTime;
 
+import com.api.BaseEntity;
 import com.api.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -23,7 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Documents {
+public class Documents extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

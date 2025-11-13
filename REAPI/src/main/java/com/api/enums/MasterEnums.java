@@ -76,7 +76,7 @@ public class MasterEnums {
 	@Getter
 	@RequiredArgsConstructor
 	public enum UserRoleEnum implements baseEnum {
-		ADMIN("Administrator role", "User Role"), USER("Agent", "User Role"), CLIENT("Client", "User Role");
+		ADMIN("Administrator role", "User Role"), USER("Agent", "User Role"), CLIENT("Client", "User Role"),AGENT("Agent", "User Role");
 
 		private final String description;
 		private final String category;

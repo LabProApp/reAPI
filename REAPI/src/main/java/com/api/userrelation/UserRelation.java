@@ -1,5 +1,6 @@
 package com.api.userrelation;
 
+import com.api.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -18,7 +19,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "user_relations")
-public class UserRelation {
+public class UserRelation extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +45,7 @@ public class UserRelation {
 	@Column(length = 500)
 	private String comments;
 
-	// Status of the relationship 
+	// Status of the relationship
 	@Column(nullable = false)
 	private MasterEnums.UserRelationStatusEnum status = MasterEnums.UserRelationStatusEnum.ACTIVE;
 

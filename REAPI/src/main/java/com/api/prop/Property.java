@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.api.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.api.userproperty.UserPropertyRelation;
@@ -36,7 +37,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Property {
+public class Property extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,10 +72,8 @@ public class Property {
 	@NotBlank(message = "Location is required (e.g., Sector 45, MG Road)")
 	private String location;
 
-	@Positive(message = "Area must be greater than 0")
 	private Double carpetArea; // in square feet
 
-	@Positive(message = "Area must be greater than 0")
 	private Double superArea; // in square feet
 
 	@Column(length = 255)

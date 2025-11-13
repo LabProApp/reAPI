@@ -2,6 +2,7 @@ package com.api.userproperty;
 
 import java.time.LocalDateTime;
 
+import com.api.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.prop.Property;
 import com.api.user.User;
@@ -35,7 +36,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Table(name = "user_property_relation", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id",
 		"property_id" }))
-public class UserPropertyRelation {
+public class UserPropertyRelation extends  BaseEntity{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

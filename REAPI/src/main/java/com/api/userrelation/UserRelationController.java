@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.api.enums.MasterEnums;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,10 +24,9 @@ public class UserRelationController {
 
 	// 🔹 Create or update relation
 	@PostMapping("/create")
-	public ResponseEntity<UserRelation> createRelation(@RequestParam Long userId, @RequestParam Long relatedUserId,
-			@RequestParam MasterEnums.RelationTypeEnum relationType) {
+	public ResponseEntity<UserRelation> createRelation(@RequestBody UserRelation userRelation) {
 
-		UserRelation relation = userRelationService.createRelation(userId, relatedUserId, relationType);
+		UserRelation relation = userRelationService.createRelation(userRelation);
 		return ResponseEntity.ok(relation);
 	}
 

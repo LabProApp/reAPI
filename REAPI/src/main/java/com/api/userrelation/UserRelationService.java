@@ -26,23 +26,26 @@ public class UserRelationService {
 	/**
 	 * Create or update a relation between two users
 	 */
-	public UserRelation createRelation(Long userId, Long relatedUserId, MasterEnums.RelationTypeEnum relationType) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("User not found: " + userId));
-		User relatedUser = userRepository.findById(relatedUserId)
-				.orElseThrow(() -> new RuntimeException("Related user not found: " + relatedUserId));
+	public UserRelation createRelation(UserRelation userRelation) {
+
+		User user = userRepository.findById(userRelation.getUser().getId())
+				.orElseThrow(() -> new RuntimeException("User not found: " + userRelation.getUser().getId()));
+		User relatedUser = userRepository.findById(userRelation.getRelatedUser().getId()).orElseThrow(
+				() -> new RuntimeException("Related user not found: " + userRelation.getRelatedUser().getId()));
 
 		Optional<UserRelation> existing = userRelationRepository.findByUserAndRelatedUser(user, relatedUser);
 		if (existing.isPresent()) {
 			UserRelation relation = existing.get();
-			relation.setRelationType(relationType);
+			relation.setRelationType(userRelation.getRelationType());
+			relation.setComments(userRelation.getComments());
 			return userRelationRepository.save(relation);
 		}
 
 		UserRelation relation = new UserRelation();
 		relation.setUser(user);
 		relation.setRelatedUser(relatedUser);
-		relation.setRelationType(relationType);
+		relation.setRelationType(userRelation.getRelationType());
+		relation.setComments(userRelation.getComments());
 
 		return userRelationRepository.save(relation);
 	}
