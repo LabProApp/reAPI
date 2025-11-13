@@ -7,6 +7,49 @@ public class MasterEnums {
 
 	@Getter
 	@RequiredArgsConstructor
+	public enum UserStatusEnum implements baseEnum {
+		ACTIVE("Active Client", "User Status"), CANCELLED("Cancelled Membership", "User Status"),
+		TERMINATED("Terminated Membership", "User Status"),
+
+		PENDING("Pending Approval Membership", "User Status");
+
+		private final String description;
+		private final String category;
+
+		@Override
+		public String getDescription() {
+			return description;
+		}
+
+		@Override
+		public String getCategory() {
+			return category;
+		}
+	}
+
+	@Getter
+	@RequiredArgsConstructor
+	public enum PropertyStatusEnum implements baseEnum {
+		ACTIVE("Active Property", "User Status"), CANCELLED("Cancelled Property", "User Status"),
+		TERMINATED("Terminated Property", "User Status"),
+
+		PENDING("Pending Approval Property", "User Status");
+
+		private final String description;
+		private final String category;
+
+		@Override
+		public String getDescription() {
+			return description;
+		}
+
+		@Override
+		public String getCategory() {
+			return category;
+		}
+	}
+	@Getter
+	@RequiredArgsConstructor
 	public enum PropertyTypeEnum implements baseEnum {
 		PLOT("Plot", "Residential"), APARTMENT("Apartment", "Residential"), HOUSE("House", "Residential"),
 		BUILDER_FLOOR("Builder Floor", "Residential"), CONDO("Condo", "Residential"),
@@ -33,7 +76,7 @@ public class MasterEnums {
 	@Getter
 	@RequiredArgsConstructor
 	public enum UserRoleEnum implements baseEnum {
-		ADMIN("Administrator role", "Security"), USER("Agent", "Security"), CLIENT("Client", "Security");
+		ADMIN("Administrator role", "User Role"), USER("Agent", "User Role"), CLIENT("Client", "User Role");
 
 		private final String description;
 		private final String category;
@@ -108,6 +151,7 @@ public class MasterEnums {
 			return category;
 		}
 	}
+
 	@Getter
 	@RequiredArgsConstructor
 	public enum UserInquiryStatusEnum implements baseEnum {

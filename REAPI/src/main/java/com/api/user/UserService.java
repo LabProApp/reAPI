@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.api.ResourceNotFoundException;
+import com.api.enums.MasterEnums;
 import com.api.prop.DocumentRepository;
 import com.api.prop.Documents;
 import com.api.prop.Property;
@@ -44,7 +45,7 @@ public class UserService {
 		}
 
 		if (user.getUserRole() == null) {
-			user.setUserRole("USER");
+			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
 		}
 		userRepository.save(user);
 		return ResponseEntity.ok("User registered successfully!");

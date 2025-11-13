@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.api.userproperty.UserPropertyRelation;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -12,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,7 +50,8 @@ public class Property {
 
 	@NotBlank(message = "City is required")
 	private String city;
-
+	@Enumerated(EnumType.STRING)
+	private MasterEnums.PropertyStatusEnum propertyStatus;
 	@NotBlank(message = "State is required")
 	private String state;
 
@@ -69,8 +73,12 @@ public class Property {
 
 	@NotNull(message = "Area is required")
 	@Positive(message = "Area must be greater than 0")
-	private Double area; // in square feet
-
+	private Double carpetArea; // in square feet
+	
+	@NotNull(message = "Area is required")
+	@Positive(message = "Area must be greater than 0")
+	private Double superArea; // in square feet
+	
 	@Column(length = 255)
 	private String amenities; // e.g., "1,2,3"
 
@@ -104,6 +112,8 @@ public class Property {
 	@NotBlank(message = "Rent/Sale status is required (e.g., Rent or Sale)")
 	private String rentOrSale; // Rent or Sale
 
+	private boolean verified;
+	
 	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	@JsonManagedReference(value = "property-documents")
@@ -210,13 +220,7 @@ public class Property {
 		this.location = location;
 	}
 
-	public Double getArea() {
-		return area;
-	}
-
-	public void setArea(Double area) {
-		this.area = area;
-	}
+	
 
 	public String getAmenities() {
 		return amenities;
@@ -320,5 +324,37 @@ public class Property {
 
 	public void setDocuments(List<Documents> documents) {
 		this.documents = documents;
+	}
+
+	public Double getCarpetArea() {
+		return carpetArea;
+	}
+
+	public void setCarpetArea(Double carpetArea) {
+		this.carpetArea = carpetArea;
+	}
+
+	public Double getSuperArea() {
+		return superArea;
+	}
+
+	public void setSuperArea(Double superArea) {
+		this.superArea = superArea;
+	}
+
+	public MasterEnums.PropertyStatusEnum getPropertyStatus() {
+		return propertyStatus;
+	}
+
+	public void setPropertyStatus(MasterEnums.PropertyStatusEnum propertyStatus) {
+		this.propertyStatus = propertyStatus;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
+	public void setVerified(boolean verified) {
+		this.verified = verified;
 	}
 }

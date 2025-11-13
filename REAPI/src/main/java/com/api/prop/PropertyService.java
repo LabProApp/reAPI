@@ -51,10 +51,12 @@ public class PropertyService {
 			existing.setBedrooms(updated.getBedrooms());
 			existing.setBathrooms(updated.getBathrooms());
 			existing.setLocation(updated.getLocation());
-			existing.setArea(updated.getArea());
+			existing.setCarpetArea(updated.getCarpetArea());
+			existing.setSuperArea(updated.getSuperArea());
 			existing.setAmenities(updated.getAmenities());
 			existing.setPostedBy(updated.getPostedBy());
 			existing.setConstructionStatus(updated.getConstructionStatus());
+			existing.setPropertyStatus(updated.getPropertyStatus());
 			existing.setCurrency(updated.getCurrency());
 			existing.setReadyDate(updated.getReadyDate());
 			existing.setCategory(updated.getCategory());

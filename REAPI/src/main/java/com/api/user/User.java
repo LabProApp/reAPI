@@ -3,6 +3,7 @@ package com.api.user;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.api.enums.MasterEnums;
 import com.api.prop.Documents;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userrelation.UserRelation;
@@ -11,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,8 +35,11 @@ public class User {
 	private String address;
 	private String mobile;
 
+	@Enumerated(EnumType.STRING)
+	private MasterEnums.UserStatusEnum userStatus;
 	// new attributes
-	private String userRole; // e.g., "CLIENT", "ADMIN", "AGENT","OWNER"
+	@Enumerated(EnumType.STRING)
+	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
 	private String userPackage; // e.g., "Free", "Premium", "Gold"
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,14 +50,11 @@ public class User {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserPropertyRelation> userProperties = new ArrayList<>();
 
-	
-	
 	// 🧩 New: User–User Relations
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "user-relations")
-    private List<UserRelation> userRelations = new ArrayList<>();
-    
-    
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference(value = "user-relations")
+	private List<UserRelation> userRelations = new ArrayList<>();
+
 	public Long getId() {
 		return id;
 	}
@@ -100,11 +103,11 @@ public class User {
 		this.mobile = mobile;
 	}
 
-	public String getUserRole() {
+	public MasterEnums.UserRoleEnum getUserRole() {
 		return userRole;
 	}
 
-	public void setUserRole(String userRole) {
+	public void setUserRole(MasterEnums.UserRoleEnum userRole) {
 		this.userRole = userRole;
 	}
 
@@ -130,6 +133,22 @@ public class User {
 
 	public void setUserProperties(List<UserPropertyRelation> userProperties) {
 		this.userProperties = userProperties;
+	}
+
+	public MasterEnums.UserStatusEnum getUserStatus() {
+		return userStatus;
+	}
+
+	public void setUserStatus(MasterEnums.UserStatusEnum userStatus) {
+		this.userStatus = userStatus;
+	}
+
+	public List<UserRelation> getUserRelations() {
+		return userRelations;
+	}
+
+	public void setUserRelations(List<UserRelation> userRelations) {
+		this.userRelations = userRelations;
 	}
 
 }
