@@ -50,10 +50,13 @@ public class User {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserPropertyRelation> userProperties = new ArrayList<>();
 
-	// 🧩 New: User–User Relations
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "user-relations")
+	@JsonManagedReference(value = "user-main-relations")
 	private List<UserRelation> userRelations = new ArrayList<>();
+
+	@OneToMany(mappedBy = "relatedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference(value = "user-related-relations")
+	private List<UserRelation> relatedUserRelations = new ArrayList<>();
 
 	public Long getId() {
 		return id;

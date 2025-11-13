@@ -2,6 +2,7 @@ package com.api.userrelation;
 
 import com.api.enums.MasterEnums;
 import com.api.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,11 +27,13 @@ public class UserRelation {
 	// The main user (e.g., Dealer, Agent)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
+	@JsonBackReference(value = "user-main-relations")
 	private User user;
 
 	// The related user (e.g., Client, Owner)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "related_user_id", nullable = false)
+	@JsonBackReference(value = "user-related-relations")
 	private User relatedUser;
 
 	// The type of relationship (Client, Owner, etc.)

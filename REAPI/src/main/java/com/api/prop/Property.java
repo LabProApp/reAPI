@@ -71,14 +71,12 @@ public class Property {
 	@NotBlank(message = "Location is required (e.g., Sector 45, MG Road)")
 	private String location;
 
-	@NotNull(message = "Area is required")
 	@Positive(message = "Area must be greater than 0")
 	private Double carpetArea; // in square feet
-	
-	@NotNull(message = "Area is required")
+
 	@Positive(message = "Area must be greater than 0")
 	private Double superArea; // in square feet
-	
+
 	@Column(length = 255)
 	private String amenities; // e.g., "1,2,3"
 
@@ -113,7 +111,7 @@ public class Property {
 	private String rentOrSale; // Rent or Sale
 
 	private boolean verified;
-	
+
 	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	@JsonManagedReference(value = "property-documents")
@@ -219,8 +217,6 @@ public class Property {
 	public void setLocation(String location) {
 		this.location = location;
 	}
-
-	
 
 	public String getAmenities() {
 		return amenities;
