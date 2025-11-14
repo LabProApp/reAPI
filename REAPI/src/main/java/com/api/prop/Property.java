@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.api.BaseEntity;
+import com.api.documents.Documents;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.api.userproperty.UserPropertyRelation;
@@ -53,6 +54,11 @@ public class Property extends BaseEntity {
 	private String city;
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.PropertyStatusEnum propertyStatus;
+	
+	@Enumerated(EnumType.STRING)
+	private MasterEnums.PropertyPackageEnum propertyPackage;
+	
+	
 	@NotBlank(message = "State is required")
 	private String state;
 
@@ -335,6 +341,14 @@ public class Property extends BaseEntity {
 
 	public void setSuperArea(Double superArea) {
 		this.superArea = superArea;
+	}
+
+	public MasterEnums.PropertyPackageEnum getPropertyPackage() {
+		return propertyPackage;
+	}
+
+	public void setPropertyPackage(MasterEnums.PropertyPackageEnum propertyPackage) {
+		this.propertyPackage = propertyPackage;
 	}
 
 	public MasterEnums.PropertyStatusEnum getPropertyStatus() {

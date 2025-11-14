@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.api.ResourceNotFoundException;
+import com.api.documents.Documents;
 
 @Service
 public class PropertyService {
@@ -57,6 +58,7 @@ public class PropertyService {
 			existing.setPostedBy(updated.getPostedBy());
 			existing.setConstructionStatus(updated.getConstructionStatus());
 			existing.setPropertyStatus(updated.getPropertyStatus());
+			existing.setPropertyPackage(updated.getPropertyPackage());
 			existing.setCurrency(updated.getCurrency());
 			existing.setReadyDate(updated.getReadyDate());
 			existing.setCategory(updated.getCategory());

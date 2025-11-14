@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.api.BaseEntity;
+import com.api.documents.Documents;
 import com.api.enums.MasterEnums;
-import com.api.prop.Documents;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userrelation.UserRelation;
 import com.fasterxml.jackson.annotation.JsonManagedReference;

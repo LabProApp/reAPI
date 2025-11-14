@@ -9,9 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.api.documents.DocumentRepository;
+import com.api.documents.Documents;
 import com.api.enums.MasterEnums;
-import com.api.prop.DocumentRepository;
-import com.api.prop.Documents;
 import com.api.prop.Property;
 import com.api.prop.PropertyRepository;
 import com.api.userproperty.UserPropertyRelation;

@@ -1,8 +1,9 @@
-package com.api.prop;
+package com.api.documents;
 
 import java.time.LocalDateTime;
 
 import com.api.BaseEntity;
+import com.api.prop.Property;
 import com.api.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
