@@ -1,16 +1,13 @@
 package com.api.prop;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.api.ResourceNotFoundException;
-import com.api.documents.Documents;
 
 @Service
 public class PropertyService {

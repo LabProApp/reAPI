@@ -1,7 +1,7 @@
 package com.api.serviceprovider;
 
-import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
+
 import jakarta.persistence.criteria.Join;
 
 public class ProviderSpecification {

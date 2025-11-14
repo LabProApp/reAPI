@@ -9,9 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.api.prop.PropertyRepository;
-import com.api.user.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,10 +18,7 @@ public class DocumentsService {
 
 	@Autowired
 	private DocumentRepository documentsRepository;
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private PropertyRepository propertyRepository;
+	
 	@Autowired
 	private S3Service s3Service;
 

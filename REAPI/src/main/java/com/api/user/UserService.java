@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.api.documents.DocumentRepository;
-import com.api.documents.DocumentsService;
 import com.api.enums.MasterEnums;
 import com.api.prop.Property;
 import com.api.prop.PropertyRepository;
@@ -23,13 +21,11 @@ public class UserService {
 	private UserRepository userRepository;
 	@Autowired
 	private PropertyRepository propertyRepository;
-	@Autowired
-	private DocumentRepository documentRepository;
+	
 	@Autowired
 	private UserPropertyRelationRepository propertyRelationRepository;
 
-	@Autowired
-	private DocumentsService documentsService;
+	
 
 	// ---------------- REGISTER ----------------
 	public ResponseEntity<String> signup(User user) {

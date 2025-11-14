@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.api.user.UserRepository;
 
