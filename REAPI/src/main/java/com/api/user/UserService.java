@@ -7,10 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.api.documents.DocumentRepository;
-import com.api.documents.Documents;
+import com.api.documents.DocumentsService;
 import com.api.enums.MasterEnums;
 import com.api.prop.Property;
 import com.api.prop.PropertyRepository;
@@ -28,6 +27,9 @@ public class UserService {
 	private DocumentRepository documentRepository;
 	@Autowired
 	private UserPropertyRelationRepository propertyRelationRepository;
+
+	@Autowired
+	private DocumentsService documentsService;
 
 	// ---------------- REGISTER ----------------
 	public ResponseEntity<String> signup(User user) {
@@ -234,27 +236,8 @@ public class UserService {
 				.toList();
 	}
 
-	public ResponseEntity<User> uploadDocuments(Long userId, List<MultipartFile> files, List<String> captions) {
+	
 
-		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
-		for (int i = 0; i < files.size(); i++) {
-			MultipartFile file = files.get(i);
-			String caption = captions.size() > i ? captions.get(i) : null;
-
-			// Upload to S3 or local storage
-			String url = "test"; // s3Service.uploadFile(file);
-
-			Documents doc = Documents.builder().docUrl(url).docType(file.getContentType()).caption(caption).user(user)
-					.docCategory("USER").build();
-
-			user.getDocuments().add(doc);
-		}
-		return ResponseEntity.ok(userRepository.save(user));
-	}
-
-	public List<Documents> getUserDocuments(Long userId) {
-		return documentRepository.findByUserId(userId);
-	}
+	
 
 }

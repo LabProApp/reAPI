@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.api.BaseEntity;
-import com.api.documents.Documents;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.api.userproperty.UserPropertyRelation;
@@ -117,10 +116,7 @@ public class Property extends BaseEntity {
 
 	private boolean verified;
 
-	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-	@Builder.Default
-	@JsonManagedReference(value = "property-documents")
-	private List<Documents> documents = new ArrayList<>();
+	
 
 	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
@@ -319,13 +315,7 @@ public class Property extends BaseEntity {
 		this.userRelations = userRelations;
 	}
 
-	public List<Documents> getDocuments() {
-		return documents;
-	}
-
-	public void setDocuments(List<Documents> documents) {
-		this.documents = documents;
-	}
+	
 
 	public Double getCarpetArea() {
 		return carpetArea;

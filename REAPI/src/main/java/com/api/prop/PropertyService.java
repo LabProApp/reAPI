@@ -87,25 +87,4 @@ public class PropertyService {
 				amenity, rentOrSale, postDate);
 	}
 
-	public Property uploadDocuments(Long propertyId, List<MultipartFile> files, List<String> captions)
-			throws IOException {
-		Property property = repository.findById(propertyId)
-				.orElseThrow(() -> new RuntimeException("Property not found"));
-
-		for (int i = 0; i < files.size(); i++) {
-			MultipartFile file = files.get(i);
-			String caption = captions.size() > i ? captions.get(i) : null;
-
-			// Upload to S3 or local storage
-			String url = "test"; // s3Service.uploadFile(file);
-
-			Documents doc = Documents.builder().docUrl(url).docType(file.getContentType()).caption(caption)
-					.property(property).docCategory("PROPERTY").build();
-
-			property.getDocuments().add(doc);
-		}
-
-		return repository.save(property);
-	}
-
 }

@@ -1,6 +1,7 @@
 package com.api.documents;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.api.prop.Property;
 import com.api.prop.PropertyRepository;
-import com.api.user.User;
 import com.api.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,37 +22,43 @@ public class DocumentsService {
 	@Autowired
 	private DocumentRepository documentsRepository;
 	@Autowired
-	private PropertyRepository propertyRepository;
-	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private PropertyRepository propertyRepository;
 	@Autowired
 	private S3Service s3Service;
 
-	public Documents uploadDocument(MultipartFile file, String docType, String caption, Long propertyId, Long userId)
-			throws IOException {
+	public List<Documents> uploadDocuments(String objectType, Long objectId, List<MultipartFile> files,
+			List<String> captions) throws IOException {
 
-		String folderName = "documents";
+		List<Documents> savedDocs = new ArrayList<>();
 
+		for (int i = 0; i < files.size(); i++) {
+
+			MultipartFile file = files.get(i);
+			String caption = (captions != null && captions.size() > i) ? captions.get(i) : null;
+			String contentType = file.getContentType();
+			String docType = DocTypeDetector.detect(contentType);
+			Documents doc = uploadDocument(file, docType, caption, objectType, objectId);
+			savedDocs.add(doc);
+		}
+
+		return savedDocs;
+	}
+
+	public Documents uploadDocument(MultipartFile file, String docType, String caption, String objectType,
+			Long objectId) throws IOException {
+
+		objectType = objectType.toUpperCase();
+
+		String folderName = objectType;
 		String s3Url = s3Service.uploadFile(file, folderName);
-
 		Documents doc = new Documents();
 		doc.setDocUrl(s3Url);
 		doc.setDocType(docType);
 		doc.setCaption(caption);
-
-		if (propertyId != null) {
-			Property property = propertyRepository.findById(propertyId)
-					.orElseThrow(() -> new RuntimeException("Property not found"));
-			doc.setDocCategory("PROPERTY");
-			doc.setProperty(property);
-		}
-
-		if (userId != null) {
-			User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-			doc.setDocCategory("USER");
-			doc.setUser(user);
-		}
-
+		doc.setObjectType(objectType);
+		doc.setObjectId(objectId);
 		return documentsRepository.save(doc);
 	}
 
@@ -64,19 +69,12 @@ public class DocumentsService {
 		documentsRepository.delete(doc);
 	}
 
-	public List<Documents> getByProperty(Long id) {
-		return documentsRepository.findByPropertyId(id);
-	}
-
-	public List<Documents> getByUser(Long id) {
-		return documentsRepository.findByUserId(id);
-	}
-
-	public List<Documents> getAll() {
-		return documentsRepository.findAll();
-	}
-
 	public Documents get(Long id) {
 		return documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+	}
+
+	public List<Documents> getDocumentsByObject(String objectType, Long objectId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

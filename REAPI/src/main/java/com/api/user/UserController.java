@@ -79,12 +79,6 @@ public class UserController {
 		return userService.getInterests(userId);
 	}
 
-	@PostMapping("/{userId}/uploadDocuments")
-	public ResponseEntity<User> uploadDocuments(@PathVariable Long userId,
-			@RequestParam("files") List<MultipartFile> files, @RequestParam("captions") List<String> captions)
-			throws IOException {
-
-		return userService.uploadDocuments(userId, files, captions);
-	}
+	
 
 }

@@ -1,6 +1,5 @@
 package com.api.prop;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.api.ResourceNotFoundException;
 
@@ -79,25 +77,5 @@ public class PropertyController {
 				maxBathrooms, minArea, maxArea, amenity, rentOrSale, postDate));
 
 	}
-
-	@PostMapping("/upload-document/{propertyId}")
-	public ResponseEntity<Property> uploadDocuments(@PathVariable Long propertyId,
-			@RequestParam("files") List<MultipartFile> files, @RequestParam("captions") List<String> captions)
-			throws IOException {
-
-		return ResponseEntity.ok(service.uploadDocuments(propertyId, files, captions));
-	}
-
-	/*
-	 * @GetMapping("/upload-document/{propertyId}") public
-	 * ResponseEntity<List<Property>> uploadDocuments(@PathVariable Long propertyId,
-	 * 
-	 * @RequestParam(value = "files") List<MultipartFile> files) throws IOException
-	 * {
-	 * 
-	 * return ResponseEntity.ok(service.uploadDocuments(propertyId, files));
-	 * 
-	 * }
-	 */
 
 }

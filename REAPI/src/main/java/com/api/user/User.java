@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.api.BaseEntity;
-import com.api.documents.Documents;
 import com.api.enums.MasterEnums;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userrelation.UserRelation;
@@ -25,7 +24,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "users")
-public class User extends  BaseEntity {
+public class User extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -42,10 +41,6 @@ public class User extends  BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
 	private String userPackage; // e.g., "Free", "Premium", "Gold"
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "user-documents")
-	private List<Documents> documents = new ArrayList<>();
 
 	@JsonManagedReference(value = "user-userrelation")
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -121,14 +116,6 @@ public class User extends  BaseEntity {
 
 	public void setUserPackage(String userPackage) {
 		this.userPackage = userPackage;
-	}
-
-	public List<Documents> getDocuments() {
-		return documents;
-	}
-
-	public void setDocuments(List<Documents> documents) {
-		this.documents = documents;
 	}
 
 	public List<UserPropertyRelation> getUserProperties() {
