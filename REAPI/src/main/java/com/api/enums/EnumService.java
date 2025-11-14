@@ -16,7 +16,7 @@ public class EnumService {
 	int i=0;
 	public List<EnumDTO> getEnumValues(Class<? extends Enum<?>> enumClass) {
 		return Arrays.stream(enumClass.getEnumConstants()).map(e -> {
-			if (e instanceof baseEnum derivedEnum) {
+			if (e instanceof BaseEnum derivedEnum) {
 				return new EnumDTO(e.name(), derivedEnum.getDescription(), derivedEnum.getCategory());
 			}
 			return new EnumDTO(e.name(), null, null);
@@ -29,13 +29,13 @@ public class EnumService {
 
 		// Loop through all nested enums in MasterEnums
 		for (Class<?> innerEnum : MasterEnums.class.getDeclaredClasses()) {
-			if (innerEnum.isEnum() && baseEnum.class.isAssignableFrom(innerEnum)) {
+			if (innerEnum.isEnum() && BaseEnum.class.isAssignableFrom(innerEnum)) {
 
 				Object[] constants = innerEnum.getEnumConstants(); // ✅ non-null for enums
 				List<EnumDTO> enumValues = new ArrayList<>();
 
 				for (Object constant : constants) {
-					baseEnum e = (baseEnum) constant;
+					BaseEnum e = (BaseEnum) constant;
 					EnumDTO dto = new EnumDTO(e.toString(), e.getDescription(), e.getCategory());
 					enumValues.add(dto);
 				}

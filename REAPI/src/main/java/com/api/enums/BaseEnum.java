@@ -1,6 +1,6 @@
 package com.api.enums;
 
-public interface baseEnum {
+public interface BaseEnum {
     String getDescription();
     String getCategory();
     
