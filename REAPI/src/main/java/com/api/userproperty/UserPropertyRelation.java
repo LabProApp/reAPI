@@ -25,10 +25,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Represents the relationship between a User and a Property. Stores
- * interest/favourite status, timestamps, user comments, and relation status.
- */
 @Entity
 @Data
 @NoArgsConstructor
@@ -36,7 +32,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Table(name = "user_property_relation", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id",
 		"property_id" }))
-public class UserPropertyRelation extends  BaseEntity{
+public class UserPropertyRelation extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,18 +53,21 @@ public class UserPropertyRelation extends  BaseEntity{
 	@Builder.Default
 	private boolean isFavourite = false;
 
+	// renamed from isInterested → isInquiry
 	@Builder.Default
-	private boolean isInterested = false;
+	private boolean isInquiry = false;
 
 	// --- Dates ---
 	private LocalDateTime favouriteDate;
-	private LocalDateTime interestDate;
+
+	// renamed from interestDate → inquiryDate
+	private LocalDateTime inquiryDate;
 
 	// --- Comments / Notes ---
 	@Column(length = 1000)
 	private String comments;
 
-	// --- Status (using a predefined Enum for consistency) ---
+	// --- Status ---
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	@Builder.Default
@@ -81,9 +80,18 @@ public class UserPropertyRelation extends  BaseEntity{
 		this.favouriteDate = isFavourite ? LocalDateTime.now() : null;
 	}
 
-	public void setInterested(boolean isInterested) {
-		this.isInterested = isInterested;
-		this.interestDate = isInterested ? LocalDateTime.now() : null;
+	// renamed logic
+	public void setInquiry(boolean isInquiry) {
+		this.isInquiry = isInquiry;
+		this.inquiryDate = isInquiry ? LocalDateTime.now() : null;
+	}
+
+	public boolean isFavourite() {
+		return isFavourite;
+	}
+
+	public boolean isInquiry() {
+		return isInquiry;
 	}
 
 	public Long getId() {
@@ -118,12 +126,12 @@ public class UserPropertyRelation extends  BaseEntity{
 		this.favouriteDate = favouriteDate;
 	}
 
-	public LocalDateTime getInterestDate() {
-		return interestDate;
+	public LocalDateTime getInquiryDate() {
+		return inquiryDate;
 	}
 
-	public void setInterestDate(LocalDateTime interestDate) {
-		this.interestDate = interestDate;
+	public void setInquiryDate(LocalDateTime inquiryDate) {
+		this.inquiryDate = inquiryDate;
 	}
 
 	public String getComments() {
@@ -140,13 +148,5 @@ public class UserPropertyRelation extends  BaseEntity{
 
 	public void setStatus(MasterEnums.UserInquiryStatusEnum status) {
 		this.status = status;
-	}
-
-	public boolean isFavourite() {
-		return isFavourite;
-	}
-
-	public boolean isInterested() {
-		return isInterested;
 	}
 }

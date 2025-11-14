@@ -177,12 +177,12 @@ public class UserService {
 		 * propertyId));
 		 */
 
-		if (relation.isInterested()) {
-			relation.setInterested(false);
-			relation.setInterestDate(null);
+		if (relation.isInquiry()) {
+			relation.setInquiry(false);
+			relation.setInquiryDate(null);
 		} else {
-			relation.setInterested(true);
-			relation.setInterestDate(LocalDateTime.now());
+			relation.setInquiry(true);
+			relation.setInquiryDate(LocalDateTime.now());
 		}
 
 		return propertyRelationRepository.save(relation);
@@ -227,8 +227,8 @@ public class UserService {
 				.toList();
 	}
 
-	public List<UserPropertyRelation> getInterests(Long userId) {
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInterested)
+	public List<UserPropertyRelation> getInquires(Long userId) {
+		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
 				.toList();
 	}
 

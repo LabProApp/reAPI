@@ -72,11 +72,9 @@ public class UserController {
 		return userService.getFavourites(userId);
 	}
 
-	@GetMapping("/{userId}/interests")
+	@GetMapping("/{userId}/inqueries")
 	public List<UserPropertyRelation> getInterests(@PathVariable Long userId) {
-		return userService.getInterests(userId);
+		return userService.getInquires(userId);
 	}
-
-	
 
 }
