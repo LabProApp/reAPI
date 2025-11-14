@@ -7,11 +7,10 @@ public class MasterEnums {
 
 	@Getter
 	@RequiredArgsConstructor
-	public enum PropertyPackageEnum implements baseEnum {
-		REGULAR("Regular Property", "Property Package"), PREMIUM("Premium Property", "Property Package"),
-		ELITE("Elite Property", "Property Package"),
+	public enum PackageEnum implements baseEnum {
+		REGULAR("Regular", "Package"), PREMIUM("Premium", "Package"), ELITE("Elite", "Package"),
 
-		DELUX("Delux Property", "Property Package");
+		DELUX("Delux", "Package");
 
 		private final String description;
 		private final String category;
@@ -198,7 +197,7 @@ public class MasterEnums {
 
 	@Getter
 	@RequiredArgsConstructor
-	public enum DocumentLegalServiceProviderStatus  implements baseEnum {
+	public enum DocumentLegalServiceProviderStatus implements baseEnum {
 		ACTIVE("Active Client", "Vendor Status"), CANCELLED("Cancelled Membership", "Vendor Status"),
 		TERMINATED("Terminated Membership", "Vendor Status"),
 

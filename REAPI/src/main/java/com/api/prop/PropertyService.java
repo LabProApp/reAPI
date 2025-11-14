@@ -58,7 +58,7 @@ public class PropertyService {
 			existing.setPostedBy(updated.getPostedBy());
 			existing.setConstructionStatus(updated.getConstructionStatus());
 			existing.setPropertyStatus(updated.getPropertyStatus());
-			existing.setPropertyPackage(updated.getPropertyPackage());
+			existing.setPlanPackage(updated.getPlanPackage());
 			existing.setCurrency(updated.getCurrency());
 			existing.setReadyDate(updated.getReadyDate());
 			existing.setCategory(updated.getCategory());

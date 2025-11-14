@@ -56,7 +56,7 @@ public class Property extends BaseEntity {
 	private MasterEnums.PropertyStatusEnum propertyStatus;
 	
 	@Enumerated(EnumType.STRING)
-	private MasterEnums.PropertyPackageEnum propertyPackage;
+	private MasterEnums.PackageEnum planPackage;
 	
 	
 	@NotBlank(message = "State is required")
@@ -343,14 +343,7 @@ public class Property extends BaseEntity {
 		this.superArea = superArea;
 	}
 
-	public MasterEnums.PropertyPackageEnum getPropertyPackage() {
-		return propertyPackage;
-	}
-
-	public void setPropertyPackage(MasterEnums.PropertyPackageEnum propertyPackage) {
-		this.propertyPackage = propertyPackage;
-	}
-
+	
 	public MasterEnums.PropertyStatusEnum getPropertyStatus() {
 		return propertyStatus;
 	}
@@ -365,5 +358,13 @@ public class Property extends BaseEntity {
 
 	public void setVerified(boolean verified) {
 		this.verified = verified;
+	}
+
+	public MasterEnums.PackageEnum getPlanPackage() {
+		return planPackage;
+	}
+
+	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
+		this.planPackage = planPackage;
 	}
 }

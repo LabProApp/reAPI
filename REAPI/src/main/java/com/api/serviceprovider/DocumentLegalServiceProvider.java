@@ -10,25 +10,31 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "legal_providers", indexes = { @Index(name = "idx_provider_name", columnList = "name"),
-		@Index(name = "idx_provider_city", columnList = "city") })
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DocumentLegalServiceProvider extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(nullable = false)
-	private String name;
-
+	private String legalname;
+	private String contactname;
 	private String city;
 	private String state;
 	private String country;
@@ -37,6 +43,8 @@ public class DocumentLegalServiceProvider extends BaseEntity {
 	private String phone;
 	private String email;
 
+	@Enumerated(EnumType.STRING)
+	private MasterEnums.PackageEnum planPackage;
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "provider_services", joinColumns = @JoinColumn(name = "provider_id"))
 	@Column(name = "service")
@@ -56,12 +64,20 @@ public class DocumentLegalServiceProvider extends BaseEntity {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getLegalname() {
+		return legalname;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setLegalname(String legalname) {
+		this.legalname = legalname;
+	}
+
+	public String getContactname() {
+		return contactname;
+	}
+
+	public void setContactname(String contactname) {
+		this.contactname = contactname;
 	}
 
 	public String getCity() {
@@ -126,6 +142,14 @@ public class DocumentLegalServiceProvider extends BaseEntity {
 
 	public void setStatus(MasterEnums.DocumentLegalServiceProviderStatus status) {
 		this.status = status;
+	}
+
+	public MasterEnums.PackageEnum getPlanPackage() {
+		return planPackage;
+	}
+
+	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
+		this.planPackage = planPackage;
 	}
 
 	// Getters and setters omitted for brevity

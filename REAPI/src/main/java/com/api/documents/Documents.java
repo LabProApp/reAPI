@@ -6,7 +6,6 @@ import com.api.BaseEntity;
 import com.api.prop.Property;
 import com.api.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

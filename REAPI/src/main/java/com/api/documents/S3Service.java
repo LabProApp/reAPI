@@ -34,20 +34,23 @@ public class S3Service {
 		this.s3Client = s3Client;
 	}
 
-	// Upload file
-	public String uploadFile(MultipartFile file) throws IOException {
-		String key = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+	public String uploadFile(MultipartFile file, String folderName) throws IOException {
+		int randomNum = (int) (Math.random() * 900000) + 100000; // to avoid duplicate filenames
+		String fileName = randomNum + "_" + file.getOriginalFilename();
+
+		String key = folderName + "/" + fileName; // <-- add folder name here
 
 		PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(key)
-				.acl(ObjectCannedACL.PUBLIC_READ) // optional
-				.build();
+				.acl(ObjectCannedACL.PUBLIC_READ).build();
 
 		s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-		return key;
+
+		return key; // returns full path: folderName/12345_filename.jpg
 	}
 
 	// Download file
-	public byte[] downloadFile(String key) throws NoSuchKeyException, InvalidObjectStateException, S3Exception, AwsServiceException, SdkClientException, IOException {
+	public byte[] downloadFile(String key) throws NoSuchKeyException, InvalidObjectStateException, S3Exception,
+			AwsServiceException, SdkClientException, IOException {
 		GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
 
 		return s3Client.getObject(getObjectRequest).readAllBytes();

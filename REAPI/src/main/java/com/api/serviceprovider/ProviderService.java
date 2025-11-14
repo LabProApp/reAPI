@@ -31,24 +31,16 @@ public class ProviderService {
 	}
 
 	public DocumentLegalServiceProvider create(DocumentLegalServiceProvider req) {
-		DocumentLegalServiceProvider p = new DocumentLegalServiceProvider();
-		p.setName(req.getName());
-		p.setCity(req.getCity());
-		p.setState(req.getName());
-		p.setCountry(req.getCountry());
-		p.setAddress(req.getAddress());
-		p.setPhone(req.getPhone());
-		p.setEmail(req.getEmail());
-		p.setServices(req.getServices());
 
-		return repo.save(p);
+		return repo.save(req);
 	}
 
 	public DocumentLegalServiceProvider update(Long id, DocumentLegalServiceProvider req) {
 		DocumentLegalServiceProvider p = repo.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Provider not found"));
-		if (req.getName() != null)
-			p.setName(req.getName());
+
+		p.setLegalname(req.getLegalname());
+		p.setContactname(req.getContactname());
 		p.setCity(req.getCity());
 		p.setState(req.getState());
 		p.setCountry(req.getCountry());
