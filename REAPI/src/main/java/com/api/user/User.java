@@ -1,5 +1,6 @@
 package com.api.user;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,14 @@ public class User extends BaseEntity {
 	private String password;
 	private String address;
 	private String mobile;
+
+	// ---------- OTP Fields ----------
+	private String otp;
+
+	private LocalDateTime otpGeneratedAt;
+
+	// Optional: mark if verified after OTP
+	private Boolean isVerified = false;
 
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.UserStatusEnum userStatus;
@@ -140,6 +149,38 @@ public class User extends BaseEntity {
 
 	public void setUserRelations(List<UserRelation> userRelations) {
 		this.userRelations = userRelations;
+	}
+
+	public String getOtp() {
+		return otp;
+	}
+
+	public void setOtp(String otp) {
+		this.otp = otp;
+	}
+
+	public LocalDateTime getOtpGeneratedAt() {
+		return otpGeneratedAt;
+	}
+
+	public void setOtpGeneratedAt(LocalDateTime otpGeneratedAt) {
+		this.otpGeneratedAt = otpGeneratedAt;
+	}
+
+	public Boolean getIsVerified() {
+		return isVerified;
+	}
+
+	public void setIsVerified(Boolean isVerified) {
+		this.isVerified = isVerified;
+	}
+
+	public List<UserRelation> getRelatedUserRelations() {
+		return relatedUserRelations;
+	}
+
+	public void setRelatedUserRelations(List<UserRelation> relatedUserRelations) {
+		this.relatedUserRelations = relatedUserRelations;
 	}
 
 }

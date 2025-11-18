@@ -49,7 +49,7 @@ public class DocumentLegalServiceProvider extends BaseEntity {
 	@CollectionTable(name = "provider_services", joinColumns = @JoinColumn(name = "provider_id"))
 	@Column(name = "service")
 	private List<String> services; // e.g. ["TitleSearch","StampDuty","LegalOpinion"]
-
+	@Enumerated(EnumType.STRING)
 	private MasterEnums.DocumentLegalServiceProviderStatus status = DocumentLegalServiceProviderStatus.ACTIVE;
 
 	public enum Status {

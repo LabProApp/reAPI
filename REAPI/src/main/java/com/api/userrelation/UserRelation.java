@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,6 +41,7 @@ public class UserRelation extends BaseEntity {
 
 	// The type of relationship (Client, Owner, etc.)
 	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private MasterEnums.RelationTypeEnum relationType;
 
 	// Optional comments or notes about the relationship
@@ -47,6 +50,7 @@ public class UserRelation extends BaseEntity {
 
 	// Status of the relationship
 	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private MasterEnums.UserRelationStatusEnum status = MasterEnums.UserRelationStatusEnum.ACTIVE;
 
 	// --- Getters and Setters ---

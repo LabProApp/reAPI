@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.api.enums.MasterEnums;
+import com.api.notifications.OtpService;
 import com.api.prop.Property;
 import com.api.prop.PropertyRepository;
 import com.api.userproperty.UserPropertyRelation;
@@ -25,27 +26,48 @@ public class UserService {
 	@Autowired
 	private UserPropertyRelationRepository propertyRelationRepository;
 
+	@Autowired
+	private OtpService otpService;
 	
 
 	// ---------------- REGISTER ----------------
+	// ---------------- REGISTER ----------------
 	public ResponseEntity<String> signup(User user) {
-		if (user.getEmail() == null && user.getMobile() == null) {
-			return ResponseEntity.badRequest().body("Email or mobile required");
-		}
 
-		if (user.getEmail() != null && userRepository.existsByEmail(user.getEmail())) {
-			return ResponseEntity.badRequest().body("Email already in use");
-		}
+	    if (user.getEmail() == null && user.getMobile() == null) {
+	        return ResponseEntity.badRequest().body("Email or mobile required");
+	    }
 
-		if (user.getMobile() != null && userRepository.existsByMobile(user.getMobile())) {
-			return ResponseEntity.badRequest().body("Mobile already in use");
-		}
+	    if (user.getEmail() != null && userRepository.existsByEmail(user.getEmail())) {
+	        return ResponseEntity.badRequest().body("Email already in use");
+	    }
 
-		if (user.getUserRole() == null) {
-			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
-		}
-		userRepository.save(user);
-		return ResponseEntity.ok("User registered successfully!");
+	    if (user.getMobile() != null && userRepository.existsByMobile(user.getMobile())) {
+	        return ResponseEntity.badRequest().body("Mobile already in use");
+	    }
+
+	    // Save user
+	    if (user.getUserRole() == null) {
+	        user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
+	    }
+	    userRepository.save(user);
+
+	    // Generate OTP
+	    String otp = otpService.generateOtp();
+
+	    // Store OTP in user table or separate otp table
+	    user.setOtp(otp);
+	    user.setOtpGeneratedAt(LocalDateTime.now());
+	    userRepository.save(user);
+
+	    // Send OTP
+	    if (user.getMobile() != null) {
+	        otpService.sendOtpOnWhatsapp(user.getMobile(), otp);
+	    } else {
+	        otpService.sendOtpOnEmail(user.getEmail(), otp);
+	    }
+
+	    return ResponseEntity.ok("User registered! OTP sent.");
 	}
 
 	// ---------------- LOGIN ----------------
