@@ -30,13 +30,7 @@ public class WhatsAppService {
                 messageBody
         ).create();
         
-		/*
-		 * String msg = String.format(
-		 * "Bank Loan Alert:\n%s\nRate: %.2f%%\nTenure: %d years\nContact: %s",
-		 * loan.getBankName(), loan.getInterestRate(), loan.getTenureYears(),
-		 * loan.getContactNumber() ); whatsAppService.sendMessage(userPhone, msg);
-		 */
-
+		
         return message.getSid();
     }
 }

@@ -75,6 +75,7 @@ public final class MasterEnums {
         USER("Agent", "User Role"),
         CLIENT("Client", "User Role"),
         AGENT("Agent", "User Role");
+    	
 
         private final String description;
         private final String category;

@@ -49,7 +49,9 @@ public class User extends BaseEntity {
 	// new attributes
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
-	private String userPackage; // e.g., "Free", "Premium", "Gold"
+	
+	@Enumerated(EnumType.STRING)
+	private  MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
 
 	@JsonManagedReference(value = "user-userrelation")
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -119,11 +121,11 @@ public class User extends BaseEntity {
 		this.userRole = userRole;
 	}
 
-	public String getUserPackage() {
+	public MasterEnums.PackageEnum getUserPackage() {
 		return userPackage;
 	}
 
-	public void setUserPackage(String userPackage) {
+	public void setUserPackage(MasterEnums.PackageEnum userPackage) {
 		this.userPackage = userPackage;
 	}
 
