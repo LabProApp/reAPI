@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.twilio.Twilio;
@@ -31,6 +32,7 @@ public class OtpService {
 	}
 
 	// Send OTP on WhatsApp
+    @Async
 	public void sendOtpOnWhatsapp(String mobile, String otp) {
 		Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
@@ -43,6 +45,7 @@ public class OtpService {
 	}
 
 	// Send OTP via Email
+    @Async
 	public void sendOtpOnEmail(String email, String otp) {
 		SimpleMailMessage msg = new SimpleMailMessage();
 		msg.setTo(email);
