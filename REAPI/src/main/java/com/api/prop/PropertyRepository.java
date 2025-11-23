@@ -54,4 +54,6 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 			Integer minBedrooms, Integer maxBedrooms, Integer minBathrooms, Integer maxBathrooms, Double minArea,
 			Double maxArea, String amenity, String rentOrSale, LocalDateTime postDate);
 
+	List<Property> findByPostedByUserId(Long userId);
+
 }

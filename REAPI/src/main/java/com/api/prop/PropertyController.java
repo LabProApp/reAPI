@@ -78,4 +78,10 @@ public class PropertyController {
 
 	}
 
+	@GetMapping("/user/{postedByUserId}")
+	public ResponseEntity<List<Property>> getPropertiesByUser(@PathVariable Long postedByUserId) {
+		List<Property> properties = service.getPropertiesPostedByUser(postedByUserId);
+		return ResponseEntity.ok(properties);
+	}
+
 }

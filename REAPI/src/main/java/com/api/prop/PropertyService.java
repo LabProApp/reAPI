@@ -83,5 +83,13 @@ public class PropertyService {
 				location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms, maxBathrooms, minArea, maxArea,
 				amenity, rentOrSale, postDate);
 	}
+	
+	public List<Property> getPropertiesPostedByUser(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User id cannot be null");
+        }
+
+        return repository.findByPostedByUserId(userId);
+    }
 
 }

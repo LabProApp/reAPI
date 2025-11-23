@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.prop.Property;
 import com.api.userproperty.UserPropertyRelation;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,13 +69,13 @@ public class UserController {
 	}
 
 	@GetMapping("/{userId}/favourites")
-	public List<UserPropertyRelation> getFavourites(@PathVariable Long userId) {
-		return userService.getFavourites(userId);
+	public List<Property> getFavouriteProperties(@PathVariable Long userId) {
+		return userService.getFavouriteProperties(userId);
 	}
 
 	@GetMapping("/{userId}/inqueries")
-	public List<UserPropertyRelation> getInterests(@PathVariable Long userId) {
-		return userService.getInquires(userId);
+	public List<Property> getInquiredProperties(@PathVariable Long userId) {
+		return userService.getInquiredProperties(userId);
 	}
 
 }

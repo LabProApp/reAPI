@@ -64,7 +64,7 @@ public class UserService {
 			// otpService.sendOtpOnWhatsapp(user.getMobile(), otp);
 		}
 		if (user.getEmail() != null) {
-			otpService.sendOtpOnEmail(user.getEmail(), otp);
+		//	otpService.sendOtpOnEmail(user.getEmail(), otp);
 		}
 
 		return ResponseEntity.ok("User registered! OTP sent.");
@@ -191,14 +191,6 @@ public class UserService {
 					return newRelation;
 				});
 
-		/*
-		 * UserPropertyRelation relation =
-		 * propertyRelationRepository.findByUserIdAndPropertyId(userId, propertyId)
-		 * .orElseThrow(() -> new ResourceNotFoundException(
-		 * "Relation not found for userId: " + userId + " and propertyId: " +
-		 * propertyId));
-		 */
-
 		if (relation.isInquiry()) {
 			relation.setInquiry(false);
 			relation.setInquiryDate(null);
@@ -211,47 +203,20 @@ public class UserService {
 
 	}
 
-	/*
-	 * private UserPropertyRelation updateRelation(Long userId, Long propertyId,
-	 * Boolean favFlag, Boolean interestFlag) { User user =
-	 * userRepository.findById(userId).orElseThrow(); Property property =
-	 * propertyRepository.findById(propertyId).orElseThrow();
-	 * 
-	 * UserPropertyRelation relation =
-	 * propertyRelationRepository.findByUserIdAndPropertyId(userId, propertyId)
-	 * .orElseGet(() -> { UserPropertyRelation newRelation = new
-	 * UserPropertyRelation(); newRelation.setUser(user);
-	 * newRelation.setProperty(property); return newRelation; });
-	 * 
-	 * 
-	 * UserPropertyRelation relation =
-	 * propertyRelationRepository.findByUserIdAndPropertyId(userId, propertyId)
-	 * .orElseThrow(() -> new ResourceNotFoundException(
-	 * "Relation not found for userId: " + userId + " and propertyId: " +
-	 * propertyId));
-	 * 
-	 * 
-	 * if (favFlag) { relation.setFavourite(false); relation.setFavouriteDate(null);
-	 * } else { relation.setFavourite(true);
-	 * relation.setFavouriteDate(LocalDateTime.now()); }
-	 * 
-	 * if (interestFlag != null) { relation.setInterested(interestFlag);
-	 * relation.setInterestDate(interestFlag ? LocalDateTime.now() : null); }
-	 * 
-	 * 
-	 * return propertyRelationRepository.save(relation);
-	 * 
-	 * }
-	 */
+	public List<Property> getFavouriteProperties(Long userId) {
 
-	public List<UserPropertyRelation> getFavourites(Long userId) {
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite)
+		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
+				.map(UserPropertyRelation::getProperty) // extract property
 				.toList();
+
 	}
 
-	public List<UserPropertyRelation> getInquires(Long userId) {
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
+	public List<Property> getInquiredProperties(Long userId) {
+
+		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite)
+				.map(UserPropertyRelation::getProperty) // extract property
 				.toList();
+
 	}
 
 }
