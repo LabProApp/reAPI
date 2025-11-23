@@ -67,6 +67,8 @@ public class UserController {
 	public UserPropertyRelation markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
 		return userService.markInterested(userId, propertyId);
 	}
+	
+	
 
 	@GetMapping("/{userId}/favourites")
 	public List<Property> getFavouriteProperties(@PathVariable Long userId) {

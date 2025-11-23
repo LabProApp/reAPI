@@ -17,6 +17,8 @@ import com.api.userproperty.UserPropertyRelationRepository;
 
 @Service
 public class UserService {
+	
+	
 
 	@Autowired
 	private UserRepository userRepository;
