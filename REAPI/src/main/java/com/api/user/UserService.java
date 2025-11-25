@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.api.enums.MasterEnums;
+import com.api.enums.MasterEnums.UserStatusEnum;
 import com.api.notifications.OtpService;
 import com.api.prop.Property;
 import com.api.prop.PropertyRepository;
@@ -17,8 +18,6 @@ import com.api.userproperty.UserPropertyRelationRepository;
 
 @Service
 public class UserService {
-	
-	
 
 	@Autowired
 	private UserRepository userRepository;
@@ -32,7 +31,7 @@ public class UserService {
 	private OtpService otpService;
 
 	// ---------------- REGISTER ----------------
-	// ---------------- REGISTER ----------------
+
 	public ResponseEntity<String> signup(User user) {
 
 		if (user.getEmail() == null && user.getMobile() == null) {
@@ -51,6 +50,7 @@ public class UserService {
 		if (user.getUserRole() == null) {
 			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
 		}
+		user.setUserStatus(UserStatusEnum.PENDING);
 		userRepository.save(user);
 
 		// Generate OTP
@@ -63,15 +63,99 @@ public class UserService {
 
 		// Send OTP
 		if (user.getMobile() != null) {
-			// otpService.sendOtpOnWhatsapp(user.getMobile(), otp);
+			otpService.sendOtpOnSms(user.getMobile(), otp);
 		}
 		if (user.getEmail() != null) {
-		//	otpService.sendOtpOnEmail(user.getEmail(), otp);
+			otpService.sendOtpOnEmail(user.getEmail(), otp);
 		}
 
 		return ResponseEntity.ok("User registered! OTP sent.");
 	}
 
+	public ResponseEntity<String> verifyOtp(String identifier, String otp) {
+
+		// identifier = email or mobile
+		Optional<User> userOptional = null;
+
+		if (identifier.contains("@")) {
+			userOptional = userRepository.findByEmail(identifier);
+		} else {
+			userOptional = userRepository.findByMobile(identifier);
+		}
+
+		// User not found
+		if (userOptional.isEmpty()) {
+			return ResponseEntity.badRequest().body("User not found");
+		}
+
+		User user = userOptional.get();
+		if (user == null) {
+			return ResponseEntity.badRequest().body("User not found");
+		}
+
+		// OTP match
+		if (!otp.equals(user.getOtp())) {
+			return ResponseEntity.badRequest().body("Invalid OTP");
+		}
+
+		// Check expiry (10 minutes)
+		if (user.getOtpGeneratedAt() == null
+				|| user.getOtpGeneratedAt().plusMinutes(10).isBefore(LocalDateTime.now())) {
+			return ResponseEntity.badRequest().body("OTP expired");
+		}
+
+		// Mark user as verified
+		user.setUserStatus(UserStatusEnum.ACTIVE);
+		user.setIsVerified(true);
+		userRepository.save(user);
+
+		return ResponseEntity.ok("OTP verified! User activated.");
+	}
+	public ResponseEntity<String> resendOtp(String identifier) {
+
+        Optional<User> userOptional;
+
+        // Identify: email or mobile
+        if (identifier.contains("@")) {
+            userOptional = userRepository.findByEmail(identifier);
+        } else {
+            userOptional = userRepository.findByMobile(identifier);
+        }
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        User user = userOptional.get();
+
+        // Already verified
+        if (Boolean.TRUE.equals(user.getIsVerified())) {
+            return ResponseEntity.badRequest().body("User already verified");
+        }
+
+        // Rate limit: allow resend only after 60 seconds
+        if (user.getOtpGeneratedAt() != null &&
+                user.getOtpGeneratedAt().plusSeconds(60).isAfter(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("Please wait 1 min before requesting a new OTP");
+        }
+
+        // Generate new OTP
+        String newOtp = otpService.generateOtp();
+        user.setOtp(newOtp);
+        user.setOtpGeneratedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        // Send OTP via SMS or Email
+        if (user.getMobile() != null) {
+            otpService.sendOtpOnSms(user.getMobile(), newOtp);
+        }
+
+        if (user.getEmail() != null) {
+            otpService.sendOtpOnEmail(user.getEmail(), newOtp);
+        }
+
+        return ResponseEntity.ok("New OTP has been sent");
+    }
 	// ---------------- LOGIN ----------------
 	public ResponseEntity<String> login(User req) {
 		try {

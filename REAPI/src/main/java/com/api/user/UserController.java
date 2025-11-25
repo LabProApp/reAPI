@@ -32,6 +32,16 @@ public class UserController {
 		return userService.signup(user);
 	}
 
+	@PostMapping("/verifyOtp")
+	public ResponseEntity<String> verifyOtp(@RequestParam String identifier, @RequestParam String otp) {
+		return userService.verifyOtp(identifier, otp);
+	}
+
+	@PostMapping("/resend-otp")
+	public ResponseEntity<String> resendOtp(@RequestParam String identifier) {
+		return userService.resendOtp(identifier);
+	}
+
 	@PostMapping("/login")
 	public ResponseEntity<String> login(@RequestBody User user) {
 		return userService.login(user);
@@ -67,8 +77,6 @@ public class UserController {
 	public UserPropertyRelation markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
 		return userService.markInterested(userId, propertyId);
 	}
-	
-	
 
 	@GetMapping("/{userId}/favourites")
 	public List<Property> getFavouriteProperties(@PathVariable Long userId) {

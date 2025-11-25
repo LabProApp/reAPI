@@ -1,146 +1,176 @@
 package com.api.enums;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 public final class MasterEnums {
 
-    private MasterEnums() {}
+	private MasterEnums() {
+	}
 
-    // ------------------- PACKAGE TYPE -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum PackageEnum implements BaseEnum {
-        REGULAR("Regular", "Package"),
-        PREMIUM("Premium", "Package"),
-        ELITE("Elite", "Package"),
-        DELUX("Delux", "Package");
+	// ------------------- PACKAGE TYPE -------------------
+	@Getter
 
-        private final String description;
-        private final String category;
-    }
+	public enum PackageEnum {
+		REGULAR("Regular Package", "Package"), PREMIUM("Premium Package", "Package"), ELITE("Elite Package", "Package"),
+		DELUX("Deluxe Package", "Package");
 
-    // ------------------- USER STATUS -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum UserStatusEnum implements BaseEnum {
-        ACTIVE("Active Client", "User Status"),
-        CANCELLED("Cancelled Membership", "User Status"),
-        TERMINATED("Terminated Membership", "User Status"),
-        PENDING("Pending Approval Membership", "User Status");
+		private final String description;
+		private final String category;
 
-        private final String description;
-        private final String category;
-    }
+		PackageEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
 
-    // ------------------- PROPERTY STATUS -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum PropertyStatusEnum implements BaseEnum {
-        ACTIVE("Active Property", "Property Status"),
-        CANCELLED("Cancelled Property", "Property Status"),
-        TERMINATED("Terminated Property", "Property Status"),
-        PENDING("Pending Approval Property", "Property Status");
+	// ------------------- USER STATUS -------------------
+	@Getter
 
-        private final String description;
-        private final String category;
-    }
+	public enum UserStatusEnum {
+		ACTIVE("Active Client", "User Status"), CANCELLED("Cancelled Membership", "User Status"),
+		TERMINATED("Terminated Membership", "User Status"), PENDING("Pending Approval Membership", "User Status");
 
-    // ------------------- PROPERTY TYPE -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum PropertyTypeEnum implements BaseEnum {
-        PLOT("Plot", "Residential"),
-        APARTMENT("Apartment", "Residential"),
-        HOUSE("House", "Residential"),
-        BUILDER_FLOOR("Builder Floor", "Residential"),
-        CONDO("Condo", "Residential"),
+		private final String description;
+		private final String category;
 
-        OFFICE("Office", "Commercial"),
-        SHOP("Shop", "Commercial"),
-        SHOWROOM("Showroom", "Commercial"),
-        PLOT_SHOP("Shop Plot", "Commercial"),
+		UserStatusEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
 
-        AGRICULTURAL("Agricultural Land", "Agricultural");
+	// ------------------- PROPERTY STATUS -------------------
+	@Getter
 
-        private final String description;
-        private final String category;
-    }
+	public enum PropertyStatusEnum {
+		ACTIVE("Active Property", "Property Status"), CANCELLED("Cancelled Property", "Property Status"),
+		TERMINATED("Terminated Property", "Property Status"), PENDING("Pending Approval Property", "Property Status");
 
-    // ------------------- USER ROLES -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum UserRoleEnum implements BaseEnum {
-        ADMIN("Administrator role", "User Role"),
-        USER("Agent", "User Role"),
-        CLIENT("Client", "User Role"),
-        AGENT("Agent", "User Role");
-    	
+		private final String description;
+		private final String category;
 
-        private final String description;
-        private final String category;
-    }
+		PropertyStatusEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
 
-    // ------------------- LAUNCH TYPE -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum LaunchTypeEnum implements BaseEnum {
-        READY_TO_MOVE("Ready to Move", "Property Status"),
-        PRE_LAUNCH("Pre Launch", "Property Status"),
-        RESALE("Resale", "Property Status"),
-        UNDER_CONSTRUCTION("Under Construction", "Property Status");
+	// ------------------- PROPERTY TYPE -------------------
+	@Getter
 
-        private final String description;
-        private final String category;
-    }
+	public enum PropertyTypeEnum {
+		PLOT("Plot", "Residential"), APARTMENT("Apartment", "Residential"), HOUSE("House", "Residential"),
+		BUILDER_FLOOR("Builder Floor", "Residential"), CONDO("Condo", "Residential"),
 
-    // ------------------- RELATION TYPE -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum RelationTypeEnum implements BaseEnum {
-        AGENT("Agent Relationship", "User Relation"),
-        CLIENT("Client Relationship", "User Relation"),
-        PROSPECT_CLIENT("Prospective Client", "User Relation"),
-        EMPLOYEE("Employee Relationship", "User Relation");
+		OFFICE("Office", "Commercial"), SHOP("Shop", "Commercial"), SHOWROOM("Showroom", "Commercial"),
+		PLOT_SHOP("Shop Plot", "Commercial"),
 
-        private final String description;
-        private final String category;
-    }
+		AGRICULTURAL("Agricultural Land", "Agricultural");
 
-    // ------------------- USER RELATION STATUS -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum UserRelationStatusEnum implements BaseEnum {
-        ACTIVE("Active Client", "Client Status"),
-        CLOSED("Deal Closed", "Client Status"),
-        REJECTED("Rejected Client", "Client Status");
+		private final String description;
+		private final String category;
 
-        private final String description;
-        private final String category;
-    }
+		PropertyTypeEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
 
-    // ------------------- USER INQUIRY STATUS -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum UserInquiryStatusEnum implements BaseEnum {
-        ACTIVE("Active Client", "Client Status"),
-        CLOSED("Deal Closed", "Client Status"),
-        REJECTED("Rejected Client", "Client Status");
+	// ------------------- USER ROLES -------------------
+	@Getter
 
-        private final String description;
-        private final String category;
-    }
+	public enum UserRoleEnum {
+		ADMIN("Administrator", "User Role"), AGENT("Agent", "User Role"), CLIENT("Client", "User Role");
 
-    // ------------------- DOCUMENT LEGAL SERVICE PROVIDER STATUS -------------------
-    @Getter
-    @RequiredArgsConstructor
-    public enum DocumentLegalServiceProviderStatus implements BaseEnum {
-        ACTIVE("Active Client", "Vendor Status"),
-        CANCELLED("Cancelled Membership", "Vendor Status"),
-        TERMINATED("Terminated Membership", "Vendor Status"),
-        PENDING("Pending Approval Membership", "Vendor Status");
+		private final String description;
+		private final String category;
 
-        private final String description;
-        private final String category;
-    }
+		UserRoleEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
+
+	// ------------------- LAUNCH TYPE -------------------
+	@Getter
+
+	public enum LaunchTypeEnum {
+		READY_TO_MOVE("Ready to Move", "Launch Type"), PRE_LAUNCH("Pre Launch", "Launch Type"),
+		RESALE("Resale", "Launch Type"), UNDER_CONSTRUCTION("Under Construction", "Launch Type");
+
+		private final String description;
+		private final String category;
+
+		LaunchTypeEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+
+	}
+
+	// ------------------- RELATION TYPE -------------------
+	@Getter
+
+	public enum RelationTypeEnum {
+		AGENT("Agent Relationship", "User Relation"), CLIENT("Client Relationship", "User Relation"),
+		PROSPECT_CLIENT("Prospective Client", "User Relation"), EMPLOYEE("Employee Relationship", "User Relation");
+
+		private final String description;
+		private final String category;
+
+		RelationTypeEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
+
+	// ------------------- USER RELATION STATUS -------------------
+	@Getter
+
+	public enum UserRelationStatusEnum {
+		ACTIVE("Active Client", "Client Status"), CLOSED("Deal Closed", "Client Status"),
+		REJECTED("Rejected Client", "Client Status");
+
+		private final String description;
+		private final String category;
+
+		UserRelationStatusEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
+
+	// ------------------- USER INQUIRY STATUS -------------------
+	@Getter
+
+	public enum UserInquiryStatusEnum {
+		ACTIVE("Active Inquiry", "Inquiry Status"), CLOSED("Closed Inquiry", "Inquiry Status"),
+		REJECTED("Rejected Inquiry", "Inquiry Status");
+
+		private final String description;
+		private final String category;
+
+		UserInquiryStatusEnum(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	}
+
+	// ------------------- DOCUMENT LEGAL SERVICE PROVIDER STATUS
+	// -------------------
+	@Getter
+
+	public enum DocumentLegalServiceProviderStatus {
+		ACTIVE("Active Vendor", "Vendor Status"), CANCELLED("Cancelled Vendor", "Vendor Status"),
+		TERMINATED("Terminated Vendor", "Vendor Status"), PENDING("Pending Approval Vendor", "Vendor Status");
+
+		private final String description;
+		private final String category;
+
+		DocumentLegalServiceProviderStatus(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+
+	}
 }

@@ -20,8 +20,8 @@ public class OtpService {
 	@Value("${twilio.authToken}")
 	private String AUTH_TOKEN;
 
-	@Value("${twilio.whatsapp.number}")
-	private String WHATSAPP_FROM; // e.g., whatsapp:+14155238886
+	@Value("${twilio.source.number}")
+	private String SMS_FROM; // e.g., whatsapp:+14155238886
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -31,18 +31,27 @@ public class OtpService {
 		return String.valueOf((int) (Math.random() * 900000) + 100000);
 	}
 
-	// Send OTP on WhatsApp
-    @Async
-	public void sendOtpOnWhatsapp(String mobile, String otp) {
-		Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+	// Send OTP on SMS
+	@Async
+	public void sendOtpOnSms(String mobile, String otp) {
+	    try {
+	        // Initialize Twilio with your credentials
+	        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
-		try {
-			Message.creator(new PhoneNumber("whatsapp:+91" + mobile), new PhoneNumber(WHATSAPP_FROM),
-					"Your OTP is: " + otp + " (Valid for 10 minutes)").create();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	        // Send SMS instead of WhatsApp
+	        Message message = Message.creator(
+	                new PhoneNumber("+91" + mobile),             // Recipient number with country code
+	                new PhoneNumber(SMS_FROM),  // Your Twilio SMS-enabled number
+	                "Your OTP is: " + otp + " (Valid for 10 minutes)"
+	        ).create();
+
+	        System.out.println("SMS sent successfully: " + message.getSid());
+	    } catch (Exception e) {
+	        System.err.println("Error sending SMS OTP: " + e.getMessage());
+	        e.printStackTrace();
+	    }
 	}
+
 
 	// Send OTP via Email
     @Async
