@@ -16,14 +16,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/providers")
-public class ProviderController {
+
+@Tag(name = "Document Legal Vendor Services", description = "Operations for Document Legal Vendor Services")
+public class DocumentLegalServiceProviderController {
 
 	@Autowired
-	private ProviderService service;
+	private DocumentLegalServiceProviderService service;
 
 	// public listing with pagination, filtering & sorting
 	@GetMapping

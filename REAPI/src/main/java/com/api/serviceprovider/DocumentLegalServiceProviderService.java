@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-public class ProviderService {
+public class DocumentLegalServiceProviderService {
 
 	@Autowired
 	private DocumentLegalServiceProviderRepository repo;
