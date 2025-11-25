@@ -6,6 +6,7 @@ import com.api.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.enums.MasterEnums.DocumentLegalServiceProviderStatus;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Tag(name = "Document Vendor APIs", description = "Operations related to Document Vendor management")
 public class DocumentLegalServiceProvider extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

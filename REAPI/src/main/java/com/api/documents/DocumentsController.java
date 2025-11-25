@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/documents")
 @RequiredArgsConstructor
+@Tag(name = "Document Operation APIs", description = "Operations related to Maintain Documents on cloud")
 public class DocumentsController {
 
 	@Autowired

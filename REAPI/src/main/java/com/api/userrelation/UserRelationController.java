@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/user-relations")
+@Tag(name = "User Relation APIs", description = "Operations related to Maintain Relations between Agents & Clients")
 @RequiredArgsConstructor
 public class UserRelationController {
 

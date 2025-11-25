@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/banks")
+@Tag(name = "Bank Vendor APIs", description = "Operations related to Maintain Bank & Loan Vendors")
 public class BankVendorController {
 
 	@Autowired
