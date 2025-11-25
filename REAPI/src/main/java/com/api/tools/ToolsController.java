@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import jakarta.validation.Valid;
 
 @RestController
@@ -20,12 +19,12 @@ public class ToolsController {
     private ToolService toolService;
 
     /**
-     * Calculate home loan details. JSON body required.
+     * Calculate home vendor details. JSON body required.
      * Example: { "principal": 5000000, "annualInterestRate": 7.5, "tenureYears": 20, "includeSchedule": true }
      */
-    @PostMapping("/homeloan")
+    @PostMapping("/homevendor")
     public ResponseEntity<LoanResponse> calculate(@Valid @RequestBody LoanRequest request) {
-        LoanResponse response = toolService.calculate(request);
+       LoanResponse response = toolService.calculate(request);
         return ResponseEntity.ok(response);
     }
 }

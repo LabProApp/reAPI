@@ -32,7 +32,7 @@ public class UserService {
 
 	// ---------------- REGISTER ----------------
 
-	public ResponseEntity<String> signup(User user) {
+	public ResponseEntity<?> signup(User user) {
 
 		if (user.getEmail() == null && user.getMobile() == null) {
 			return ResponseEntity.badRequest().body("Email or mobile required");
@@ -69,7 +69,7 @@ public class UserService {
 			otpService.sendOtpOnEmail(user.getEmail(), otp);
 		}
 
-		return ResponseEntity.ok("User registered! OTP sent.");
+		return ResponseEntity.ok(user);
 	}
 
 	public ResponseEntity<String> verifyOtp(String identifier, String otp) {

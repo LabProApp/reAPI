@@ -9,8 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "bank_loans")
-public class BankLoan extends BaseEntity {
+@Table(name = "bank_vendors")
+public class BankVendor extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,7 @@ public class BankLoan extends BaseEntity {
 	private int minCibilScore; // Minimum credit score required
 	private String details; // Extra info or features
 
-	public BankLoan(String bankName, double interestRate, int tenureYears, String contactNumber, String websiteUrl,
+	public BankVendor(String bankName, double interestRate, int tenureYears, String contactNumber, String websiteUrl,
 			String locationAddress, int minCibilScore, String details) {
 		this.bankName = bankName;
 		this.interestRate = interestRate;
