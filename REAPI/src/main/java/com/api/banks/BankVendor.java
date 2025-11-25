@@ -26,6 +26,9 @@ public class BankVendor extends BaseEntity {
 	private int minCibilScore; // Minimum credit score required
 	private String details; // Extra info or features
 
+	 public BankVendor() {
+	    }
+	 
 	public BankVendor(String bankName, double interestRate, int tenureYears, String contactNumber, String websiteUrl,
 			String locationAddress, int minCibilScore, String details) {
 		this.bankName = bankName;

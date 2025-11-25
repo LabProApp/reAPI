@@ -291,7 +291,7 @@ public class UserService {
 
 	public List<Property> getFavouriteProperties(Long userId) {
 
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
+		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite)
 				.map(UserPropertyRelation::getProperty) // extract property
 				.toList();
 
@@ -299,7 +299,7 @@ public class UserService {
 
 	public List<Property> getInquiredProperties(Long userId) {
 
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite)
+		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
 				.map(UserPropertyRelation::getProperty) // extract property
 				.toList();
 

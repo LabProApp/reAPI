@@ -24,7 +24,7 @@ public class ToolsController {
      * Calculate home vendor details. JSON body required.
      * Example: { "principal": 5000000, "annualInterestRate": 7.5, "tenureYears": 20, "includeSchedule": true }
      */
-    @PostMapping("/homevendor")
+    @PostMapping("/homeloancalculator")
     public ResponseEntity<LoanResponse> calculate(@Valid @RequestBody LoanRequest request) {
        LoanResponse response = toolService.calculate(request);
         return ResponseEntity.ok(response);
