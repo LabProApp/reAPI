@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,22 +27,30 @@ public class BankLoanService {
         return bankLoanRepository.save(loan);
     }
 
-    // 🔍 Filter by interest rate and min CIBIL score
-    public List<BankLoanRepresentative> filterLoans(Double maxRate, Integer minCibil) {
-        return bankLoanRepository.findAll().stream()
-                .filter(loan -> (maxRate == null || loan.getInterestRate() <= maxRate))
-                .filter(loan -> (minCibil == null || loan.getMinCibilScore() >= minCibil))
-                .collect(Collectors.toList());
-    }
+  
 
     // 🔎 Advanced filtering (optional)
-    public List<BankLoanRepresentative> advancedFilter(Double maxRate, Integer minCibil, Integer maxTenure, Double minIncome) {
-        return bankLoanRepository.findAll().stream()
-                .filter(loan -> maxRate == null || loan.getInterestRate() <= maxRate)
-                .filter(loan -> minCibil == null || loan.getMinCibilScore() >= minCibil)
-                .filter(loan -> maxTenure == null || loan.getTenureYears() <= maxTenure)
-                .filter(loan -> minIncome == null || loan.getMinimumIncome() >= minIncome)
-                .collect(Collectors.toList());
+    public List<BankLoanRepresentative> advancedFilter(
+            Double maxRate,
+            Integer minCibil,
+            Integer maxTenure,
+            Double minIncome,
+            String city,
+            String state,
+            String bank,
+            String postalCode) {
+
+        Specification<BankLoanRepresentative> spec = Specification
+                .where(BankLoanSpecifications.hasMaxRate(maxRate))
+                .and(BankLoanSpecifications.hasMinCibil(minCibil))
+                .and(BankLoanSpecifications.hasMaxTenure(maxTenure))
+                .and(BankLoanSpecifications.hasMinIncome(minIncome))
+                .and(BankLoanSpecifications.hasCity(city))
+                .and(BankLoanSpecifications.hasState(state))
+                .and(BankLoanSpecifications.hasBank(bank))
+                .and(BankLoanSpecifications.hasPostalCode(postalCode));
+
+        return bankLoanRepository.findAll(spec);
     }
 
     // ✏️ Update loan representative

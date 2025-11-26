@@ -1,4 +1,5 @@
 package com.api.banks;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.util.Date;
@@ -35,9 +36,30 @@ public class BankLoanRepresentative {
     @Column(name = "branch_name")
     private String branchName;
 
+    // 🌍 Address Details
     @Size(max = 255)
     @Column(name = "location_address")
     private String locationAddress;
+
+    @Size(max = 100)
+    @Column(name = "street")
+    private String street;
+
+    @Size(max = 100)
+    @Column(name = "city")
+    private String city;
+
+    @Size(max = 100)
+    @Column(name = "state")
+    private String state;
+
+    @Size(max = 20)
+    @Column(name = "postal_code")
+    private String postalCode;
+
+    @Size(max = 100)
+    @Column(name = "country")
+    private String country;
 
     @Size(max = 255)
     @Column(name = "website_url")
@@ -109,18 +131,6 @@ public class BankLoanRepresentative {
     @Column(name = "details")
     private String details;
 
-    // Timestamp metadata
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", updatable = false)
-    private Date createdAt;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
-    private Date updatedAt;
-
-    // Getters and Setters
-    // You can generate them using IDE or Lombok annotations
-
     public Long getId() {
 		return id;
 	}
@@ -175,6 +185,46 @@ public class BankLoanRepresentative {
 
 	public void setLocationAddress(String locationAddress) {
 		this.locationAddress = locationAddress;
+	}
+
+	public String getStreet() {
+		return street;
+	}
+
+	public void setStreet(String street) {
+		this.street = street;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
 	}
 
 	public String getWebsiteUrl() {
@@ -353,7 +403,19 @@ public class BankLoanRepresentative {
 		this.updatedAt = updatedAt;
 	}
 
-	@PrePersist
+	// Timestamp metadata
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
+    private Date updatedAt;
+
+    // Getters and Setters for all fields including new address fields
+    // ...
+
+    @PrePersist
     protected void onCreate() {
         createdAt = new Date();
         updatedAt = new Date();
