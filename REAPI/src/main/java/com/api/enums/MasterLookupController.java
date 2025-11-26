@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @RestController
 @RequestMapping("/api/mastervalues")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MasterLookupController {
 
 	private final MasterLookupService service;
@@ -20,15 +23,16 @@ public class MasterLookupController {
 
 	/**
 	 * Get master lookup values by type and status Example:
-	 * /api/master?type=STATE&status=ACTIVE
+	 * /api/mastervalues/getMasterValues?type=STATE&status=ACTIVE
+
 	 */
-	@GetMapping
-	public List<MasterLookup> getMasterValues(@RequestParam String type,
-			@RequestParam(defaultValue = "ACTIVE") String status) {
+	@GetMapping("/getMasterValues")
+	public List<MasterLookup> getMasterValues(
+	        @RequestParam String type,
+	        @RequestParam(defaultValue = "ACTIVE") String status) {
 
-		return service.getMasterValues(type, status);
+	    return service.getMasterValues(type, status);
 	}
-
 	/**
 	 * Get child values by parent master ID Example:
 	 * /api/master/1/children?status=ACTIVE (Fetch all cities for stateId = 1)
