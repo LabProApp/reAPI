@@ -54,6 +54,30 @@ public class ToolService {
         return resp;
     }
 
+    public AffordabilityResponse calculateAffordability(AffordabilityRequest req) {
+
+        double monthlyIncome = req.getMonthlyIncome();
+        double existingEmi = req.getExistingEmi();
+        double annualRate = req.getInterestRate();
+        int tenureMonths = req.getTenureYears() * 12;
+        double foir = req.getFoirPercent() / 100;
+
+        // Step 1: Calculate affordable EMI
+        double affordableEmi = (monthlyIncome * foir) - existingEmi;
+        if (affordableEmi < 0) affordableEmi = 0;
+
+        // Step 2: Convert rate to monthly
+        double monthlyRate = annualRate / 12 / 100;
+
+        // Step 3: Calculate eligible loan amount using EMI formula
+        double eligibleLoan =
+                affordableEmi * ((Math.pow(1 + monthlyRate, tenureMonths) - 1)
+                        / (monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)));
+
+        return new AffordabilityResponse(affordableEmi, eligibleLoan);
+    }
+    
+    
     private List<AmortizationEntry> generateSchedule(BigDecimal principal, BigDecimal monthlyRate, BigDecimal monthlyPayment, int totalMonths) {
         List<AmortizationEntry> schedule = new ArrayList<>();
         BigDecimal balance = principal.setScale(OUTPUT_SCALE + 2, RoundingMode.HALF_UP);

@@ -19,6 +19,8 @@ public class ToolsController {
 
     @Autowired
     private ToolService toolService;
+    
+
 
     /**
      * Calculate home vendor details. JSON body required.
@@ -28,5 +30,12 @@ public class ToolsController {
     public ResponseEntity<LoanResponse> calculate(@Valid @RequestBody LoanRequest request) {
        LoanResponse response = toolService.calculate(request);
         return ResponseEntity.ok(response);
+    }
+    
+  
+
+    @PostMapping("/calculate")
+    public AffordabilityResponse calculate(@RequestBody AffordabilityRequest request) {
+        return toolService.calculateAffordability(request);
     }
 }
