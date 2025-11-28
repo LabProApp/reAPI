@@ -3,7 +3,9 @@ package com.api.prop;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,84 +14,112 @@ import com.api.commons.ResourceNotFoundException;
 @Service
 public class PropertyService {
 
-	@Autowired
-	private PropertyRepository repository;
+    private final PropertyRepository repository;
+    private final ModelMapper mapper;
 
-	/** Add a new property */
-	public Property addProperty(Property property) {
-		return repository.save(property);
-	}
+    @Autowired
+    public PropertyService(PropertyRepository repository, ModelMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
 
-	/** Get all properties */
-	public List<Property> getAllProperties() {
-		return repository.findAll();
-	}
+    /** Add a new property */
+    public PropertyDto addProperty(PropertyDto propertyDto) {
+        Property property = mapper.map(propertyDto, Property.class);
+        
+        Property saved = repository.save(property);
+        return mapper.map(saved, PropertyDto.class);
+    }
 
-	/** Get property by ID */
-	public Optional<Property> getPropertyById(Long id) {
-		return repository.findById(id);
-	}
+    /** Get all properties */
+    public List<PropertyDto> getAllProperties() {
+        return repository.findAll()
+                .stream()
+                .map(p -> mapper.map(p, PropertyDto.class))
+                .collect(Collectors.toList());
+    }
 
-	/** Search properties dynamically */
-	public List<Property> search(String city, String type, String category, Double minArea, Double maxArea,
-			Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate) {
-		return repository.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate);
-	}
+    /** Get property by ID */
+    public Optional<PropertyDto> getPropertyById(Long id) {
+        return repository.findById(id)
+                .map(p -> mapper.map(p, PropertyDto.class));
+    }
 
-	/** Update an existing property */
-	public Property updateProperty(Long id, Property updated) {
-		return repository.findById(id).map(existing -> {
-			existing.setTitle(updated.getTitle());
-			existing.setDescription(updated.getDescription());
-			existing.setProjectName(updated.getProjectName());
-			existing.setAddress(updated.getAddress());
-			existing.setCity(updated.getCity());
-			existing.setType(updated.getType());
-			existing.setPrice(updated.getPrice());
-			existing.setBedrooms(updated.getBedrooms());
-			existing.setBathrooms(updated.getBathrooms());
-			existing.setLocation(updated.getLocation());
-			existing.setCarpetArea(updated.getCarpetArea());
-			existing.setSuperArea(updated.getSuperArea());
-			existing.setAmenities(updated.getAmenities());
-			existing.setPostedBy(updated.getPostedBy());
-			existing.setConstructionStatus(updated.getConstructionStatus());
-			existing.setPropertyStatus(updated.getPropertyStatus());
-			existing.setPlanPackage(updated.getPlanPackage());
-			existing.setCurrency(updated.getCurrency());
-			existing.setReadyDate(updated.getReadyDate());
-			existing.setCategory(updated.getCategory());
-			existing.setRentOrSale(updated.getRentOrSale());
-			existing.setPostDate(updated.getPostDate());
-			existing.setPostedByUser(updated.getPostedByUser());
+    /** Search properties dynamically */
+    public List<PropertyDto> search(String city, String type, String category, Double minArea, Double maxArea,
+                                    Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate) {
+        return repository.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate)
+                .stream()
+                .map(p -> mapper.map(p, PropertyDto.class))
+                .collect(Collectors.toList());
+    }
 
-			return repository.save(existing);
-		}).orElseThrow(() -> new ResourceNotFoundException("Property not found with id " + id));
-	}
+    /** Update an existing property */
+    public PropertyDto updateProperty(Long id, PropertyDto updatedDto) {
+        Property updatedProperty = mapper.map(updatedDto, Property.class);
 
-	/** Delete a property */
-	public void deleteProperty(Long id) {
-		if (!repository.existsById(id)) {
-			throw new ResourceNotFoundException("Property not found with id " + id);
-		}
-		repository.deleteById(id);
-	}
+        Property saved = repository.findById(id).map(existing -> {
+            existing.setTitle(updatedProperty.getTitle());
+            existing.setDescription(updatedProperty.getDescription());
+            existing.setProjectName(updatedProperty.getProjectName());
+            existing.setAddress(updatedProperty.getAddress());
+            existing.setCity(updatedProperty.getCity());
+            existing.setType(updatedProperty.getType());
+            existing.setPrice(updatedProperty.getPrice());
+            existing.setBedrooms(updatedProperty.getBedrooms());
+            existing.setBathrooms(updatedProperty.getBathrooms());
+            existing.setLocation(updatedProperty.getLocation());
+            existing.setCarpetArea(updatedProperty.getCarpetArea());
+            existing.setSuperArea(updatedProperty.getSuperArea());
+            existing.setAmenities(updatedProperty.getAmenities());
+            existing.setPostedBy(updatedProperty.getPostedBy());
+            existing.setConstructionStatus(updatedProperty.getConstructionStatus());
+            existing.setPropertyStatus(updatedProperty.getPropertyStatus());
+            existing.setPlanPackage(updatedProperty.getPlanPackage());
+            existing.setCurrency(updatedProperty.getCurrency());
+            existing.setReadyDate(updatedProperty.getReadyDate());
+            existing.setCategory(updatedProperty.getCategory());
+            existing.setRentOrSale(updatedProperty.getRentOrSale());
+            existing.setPostDate(updatedProperty.getPostDate());
+            existing.setPostedByUser(updatedProperty.getPostedByUser());
 
-	public List<Property> advancedSearch(String title, String address, String city, String type, String category,
-			String postedBy, String constructionStatus, String currency, String location, Double minPrice,
-			Double maxPrice, Integer minBedrooms, Integer maxBedrooms, Integer minBathrooms, Integer maxBathrooms,
-			Double minArea, Double maxArea, String amenity, String rentOrSale, LocalDateTime postDate) {
-		return repository.searchAll(title, address, city, type, category, postedBy, constructionStatus, currency,
-				location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms, maxBathrooms, minArea, maxArea,
-				amenity, rentOrSale, postDate);
-	}
-	
-	public List<Property> getPropertiesPostedByUser(Long userId) {
+            return repository.save(existing);
+        }).orElseThrow(() -> new ResourceNotFoundException("Property not found with id " + id));
+
+        return mapper.map(saved, PropertyDto.class);
+    }
+
+    /** Delete a property */
+    public void deleteProperty(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Property not found with id " + id);
+        }
+        repository.deleteById(id);
+    }
+
+    /** Advanced search */
+    public List<PropertyDto> advancedSearch(String title, String address, String city, String type, String category,
+                                            String postedBy, String constructionStatus, String currency, String location,
+                                            Double minPrice, Double maxPrice, Integer minBedrooms, Integer maxBedrooms,
+                                            Integer minBathrooms, Integer maxBathrooms, Double minArea, Double maxArea,
+                                            String amenity, String rentOrSale, LocalDateTime postDate) {
+        return repository.searchAll(title, address, city, type, category, postedBy, constructionStatus, currency,
+                location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms, maxBathrooms, minArea, maxArea,
+                amenity, rentOrSale, postDate)
+                .stream()
+                .map(p -> mapper.map(p, PropertyDto.class))
+                .collect(Collectors.toList());
+    }
+
+    /** Get properties posted by a specific user */
+    public List<PropertyDto> getPropertiesPostedByUser(Long userId) {
         if (userId == null) {
             throw new IllegalArgumentException("User id cannot be null");
         }
 
-        return repository.findByPostedByUserId(userId);
+        return repository.findByPostedByUserId(userId)
+                .stream()
+                .map(p -> mapper.map(p, PropertyDto.class))
+                .collect(Collectors.toList());
     }
-
 }

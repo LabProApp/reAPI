@@ -24,64 +24,78 @@ import jakarta.validation.Valid;
 @Tag(name = "Property APIs", description = "Operations related to Property management")
 public class PropertyController {
 
-	@Autowired
-	private PropertyService service;
+    @Autowired
+    private PropertyService service;
 
-	@PostMapping("/add")
-	public ResponseEntity<Property> addProperty(@Valid @RequestBody Property property) {
-		return ResponseEntity.ok(service.addProperty(property));
-	}
+    @PostMapping("/add")
+    public ResponseEntity<PropertyDto> addProperty(@Valid @RequestBody PropertyDto propertyDto) {
+        PropertyDto savedProperty = service.addProperty(propertyDto);
+        return ResponseEntity.ok(savedProperty);
+    }
 
-	@PutMapping("/update/{id}")
-	public ResponseEntity<Property> update(@PathVariable Long id, @Valid @RequestBody Property property) {
-		return ResponseEntity.ok(service.updateProperty(id, property));
-	}
+    @PutMapping("/update/{id}")
+    public ResponseEntity<PropertyDto> update(@PathVariable Long id, @Valid @RequestBody PropertyDto propertyDto) {
+        PropertyDto updatedProperty = service.updateProperty(id, propertyDto);
+        return ResponseEntity.ok(updatedProperty);
+    }
 
-	@GetMapping("/getall")
-	public ResponseEntity<List<Property>> getAll() {
-		return ResponseEntity.ok(service.getAllProperties());
-	}
+    @GetMapping("/getall")
+    public ResponseEntity<List<PropertyDto>> getAll() {
+        List<PropertyDto> properties = service.getAllProperties();
+        return ResponseEntity.ok(properties);
+    }
 
-	@GetMapping("/get/{id}")
-	public ResponseEntity<Property> getById(@PathVariable Long id) {
-		Property property = service.getPropertyById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
-		return ResponseEntity.ok(property);
-	}
+    @GetMapping("/get/{id}")
+    public ResponseEntity<PropertyDto> getById(@PathVariable Long id) {
+        PropertyDto property = service.getPropertyById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
+        return ResponseEntity.ok(property);
+    }
 
-	@GetMapping("/search")
-	public ResponseEntity<List<Property>> search(@RequestParam(required = false) String city,
-			@RequestParam(required = false) String type, @RequestParam(required = false) String category,
-			@RequestParam(required = false) Double minArea, @RequestParam(required = false) Double maxArea,
-			@RequestParam(required = false) Double minPrice, @RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) String rentOrSale, @RequestParam(required = false) LocalDateTime postDate) {
-		return ResponseEntity
-				.ok(service.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate));
+    @GetMapping("/search")
+    public ResponseEntity<List<PropertyDto>> search(@RequestParam(required = false) String city,
+                                                    @RequestParam(required = false) String type,
+                                                    @RequestParam(required = false) String category,
+                                                    @RequestParam(required = false) Double minArea,
+                                                    @RequestParam(required = false) Double maxArea,
+                                                    @RequestParam(required = false) Double minPrice,
+                                                    @RequestParam(required = false) Double maxPrice,
+                                                    @RequestParam(required = false) String rentOrSale,
+                                                    @RequestParam(required = false) LocalDateTime postDate) {
+        List<PropertyDto> results = service.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate);
+        return ResponseEntity.ok(results);
+    }
 
-	}
+    @GetMapping("/advancedsearch")
+    public ResponseEntity<List<PropertyDto>> advancedSearch(@RequestParam(required = false) String title,
+                                                            @RequestParam(required = false) String address,
+                                                            @RequestParam(required = false) String city,
+                                                            @RequestParam(required = false) String type,
+                                                            @RequestParam(required = false) String category,
+                                                            @RequestParam(required = false) String postedBy,
+                                                            @RequestParam(required = false) String constructionStatus,
+                                                            @RequestParam(required = false) String currency,
+                                                            @RequestParam(required = false) String location,
+                                                            @RequestParam(required = false) Double minPrice,
+                                                            @RequestParam(required = false) Double maxPrice,
+                                                            @RequestParam(required = false) Integer minBedrooms,
+                                                            @RequestParam(required = false) Integer maxBedrooms,
+                                                            @RequestParam(required = false) Integer minBathrooms,
+                                                            @RequestParam(required = false) Integer maxBathrooms,
+                                                            @RequestParam(required = false) Double minArea,
+                                                            @RequestParam(required = false) Double maxArea,
+                                                            @RequestParam(required = false) String amenity,
+                                                            @RequestParam(required = false) String rentOrSale,
+                                                            @RequestParam(required = false) LocalDateTime postDate) {
+        List<PropertyDto> results = service.advancedSearch(title, address, city, type, category, postedBy,
+                constructionStatus, currency, location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms,
+                maxBathrooms, minArea, maxArea, amenity, rentOrSale, postDate);
+        return ResponseEntity.ok(results);
+    }
 
-	@GetMapping("/advancedsearch")
-	public ResponseEntity<List<Property>> advancedSearch(@RequestParam(required = false) String title,
-			@RequestParam(required = false) String address, @RequestParam(required = false) String city,
-			@RequestParam(required = false) String type, @RequestParam(required = false) String category,
-			@RequestParam(required = false) String postedBy, @RequestParam(required = false) String constructionStatus,
-			@RequestParam(required = false) String currency, @RequestParam(required = false) String location,
-			@RequestParam(required = false) Double minPrice, @RequestParam(required = false) Double maxPrice,
-			@RequestParam(required = false) Integer minBedrooms, @RequestParam(required = false) Integer maxBedrooms,
-			@RequestParam(required = false) Integer minBathrooms, @RequestParam(required = false) Integer maxBathrooms,
-			@RequestParam(required = false) Double minArea, @RequestParam(required = false) Double maxArea,
-			@RequestParam(required = false) String amenity, @RequestParam(required = false) String rentOrSale,
-			@RequestParam(required = false) LocalDateTime postDate) {
-		return ResponseEntity.ok(service.advancedSearch(title, address, city, type, category, postedBy,
-				constructionStatus, currency, location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms,
-				maxBathrooms, minArea, maxArea, amenity, rentOrSale, postDate));
-
-	}
-
-	@GetMapping("/user/{postedByUserId}")
-	public ResponseEntity<List<Property>> getPropertiesByUser(@PathVariable Long postedByUserId) {
-		List<Property> properties = service.getPropertiesPostedByUser(postedByUserId);
-		return ResponseEntity.ok(properties);
-	}
-
+    @GetMapping("/user/{postedByUserId}")
+    public ResponseEntity<List<PropertyDto>> getPropertiesByUser(@PathVariable Long postedByUserId) {
+        List<PropertyDto> properties = service.getPropertiesPostedByUser(postedByUserId);
+        return ResponseEntity.ok(properties);
+    }
 }
