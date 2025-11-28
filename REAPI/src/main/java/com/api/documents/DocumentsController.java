@@ -18,12 +18,16 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/documents")
-@RequiredArgsConstructor
+
 @Tag(name = "Document Operation APIs", description = "Operations related to Maintain Documents on cloud")
 public class DocumentsController {
 
 	private final DocumentsService documentsService;
 
+
+	public DocumentsController(DocumentsService documentsService) {
+		this.documentsService = documentsService;
+	}
 
 	// Upload documents
 	@PostMapping("/uploadDocuments/{objectType}/{objectId}")

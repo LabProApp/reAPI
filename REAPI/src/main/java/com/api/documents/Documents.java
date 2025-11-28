@@ -25,6 +25,10 @@ public class Documents extends BaseEntity {
 	@Column(nullable = false, length = 1000)
 	private String docUrl;
 
+	// filename
+	@Column(nullable = false, length = 256)
+	private String filename;
+
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	@Column(nullable = false, length = 20)
 	private String docType;
@@ -85,6 +89,14 @@ public class Documents extends BaseEntity {
 
 	public void setCaption(String caption) {
 		this.caption = caption;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 
 }

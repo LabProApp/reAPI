@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class DocumentsService {
 
@@ -21,13 +18,17 @@ public class DocumentsService {
 	private final S3Service s3Service;
 	private final ModelMapper mapper;
 
-	// Upload multiple documents
+	public DocumentsService(DocumentRepository documentsRepository, S3Service s3Service, ModelMapper mapper) {
+		this.documentsRepository = documentsRepository;
+		this.s3Service = s3Service;
+		this.mapper = mapper;
+	}
 
 	// Upload multiple documents
 	public List<DocumentDto> uploadDocuments(String objectType, Long objectId, List<MultipartFile> files,
 			List<String> captions) throws IOException {
 
-		List<Documents> savedDocs = new ArrayList<>();
+		List<DocumentDto> dtoList = new ArrayList<>();
 
 		for (int i = 0; i < files.size(); i++) {
 			MultipartFile file = files.get(i);
@@ -35,28 +36,26 @@ public class DocumentsService {
 			String contentType = file.getContentType();
 			String docType = DocTypeDetector.detect(contentType);
 
-			Documents doc = uploadDocument(file, docType, caption, objectType, objectId);
-			savedDocs.add(doc);
+			DocumentDto docdto = uploadDocument(file, docType, caption, objectType, objectId);
+			dtoList.add(docdto);
 		}
 
-		// Map entities to DTOs
-		List<DocumentDto> dtoList = savedDocs.stream().map(doc -> mapper.map(doc, DocumentDto.class))
-				.collect(Collectors.toList());
-
-		// Return as ResponseEntity with 200 OK
 		return dtoList;
 	}
 
 	// Upload single document
-	public Documents uploadDocument(MultipartFile file, String docType, String caption, String objectType,
+	public DocumentDto uploadDocument(MultipartFile file, String docType, String caption, String objectType,
 			Long objectId) throws IOException {
 
-		objectType = objectType.toUpperCase();
-		String folderName = objectType;
-		String s3Url = s3Service.uploadFile(file, folderName);
+		String originalFilename = file.getOriginalFilename();
+		String sanitizedFilename = (originalFilename != null) ? originalFilename.replaceAll("[^a-zA-Z0-9._-]", "")
+				: "file";
+
+		String s3Url = s3Service.uploadFile(file, objectType.toUpperCase());
 
 		Documents doc = new Documents();
 		doc.setDocUrl(s3Url);
+		doc.setFilename(sanitizedFilename);
 		doc.setDocType(docType);
 		doc.setCaption(caption);
 		doc.setObjectType(objectType);
@@ -64,7 +63,7 @@ public class DocumentsService {
 
 		Documents savedDoc = documentsRepository.save(doc);
 
-		return savedDoc;
+		return mapper.map(savedDoc, DocumentDto.class);
 	}
 
 	// Delete a document

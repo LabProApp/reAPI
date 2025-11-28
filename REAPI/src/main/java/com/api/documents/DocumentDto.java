@@ -6,7 +6,7 @@ public class DocumentDto extends BaseEntity {
 
 	private Long id;
 	private String docUrl;
-
+	private String  filename;
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	private String docType;
 
@@ -65,5 +65,11 @@ public class DocumentDto extends BaseEntity {
 	public void setCaption(String caption) {
 		this.caption = caption;
 	}
+	public String getFilename() {
+		return filename;
+	}
 
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
 }
