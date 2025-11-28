@@ -1,71 +1,95 @@
 package com.api.serviceprovider;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/providers")
-
 @Tag(name = "Document Legal Vendor Services", description = "Operations for Document Legal Vendor Services")
 public class DocumentLegalServiceProviderController {
 
-	@Autowired
-	private DocumentLegalServiceProviderService service;
+    @Autowired
+    private DocumentLegalServiceProviderService service;
 
-	// public listing with pagination, filtering & sorting
-	@GetMapping
-	public ResponseEntity<Page<DocumentLegalServiceProvider>> list(@RequestParam(required = false) String q,
-			@RequestParam(required = false) String city, @RequestParam(required = false) String serviceType,
-			@RequestParam(required = false) Double minRating,
-			@RequestParam(required = false) DocumentLegalServiceProvider.Status status,
-			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
-			@RequestParam(defaultValue = "name,asc") String[] sort) {
-		// parse sort param like ?sort=name,desc
-		Sort.Direction dir = Sort.Direction.fromString(sort[1]);
-		Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sort[0]));
-		Page<DocumentLegalServiceProvider> result = service.search(q, city, serviceType, minRating, status, pageable);
-		return ResponseEntity.ok(result);
-	}
+    @Autowired
+    private ModelMapper modelMapper;
 
-	@GetMapping("/{id}")
-	public ResponseEntity<DocumentLegalServiceProvider> get(@PathVariable Long id) {
-		return service.getById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-	}
+    // Public listing with pagination, filtering & sorting
+    @GetMapping
+    public ResponseEntity<Page<DocumentLegalServiceProviderDto>> list(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String serviceType,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) DocumentLegalServiceProvider.Status status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "name,asc") String[] sort) {
 
-	// Admin endpoints - protect with roles (see notes)
-	@PostMapping
-	public ResponseEntity<DocumentLegalServiceProvider> create(
-			@Valid @RequestBody DocumentLegalServiceProvider request) {
-		DocumentLegalServiceProvider created = service.create(request);
-		return ResponseEntity.ok(created);
-	}
+        Sort.Direction dir = Sort.Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sort[0]));
 
-	@PutMapping("/{id}")
-	public ResponseEntity<DocumentLegalServiceProvider> update(@PathVariable Long id,
-			@Valid @RequestBody DocumentLegalServiceProvider req) {
-		DocumentLegalServiceProvider updated = service.update(id, req);
-		return ResponseEntity.ok(updated);
-	}
+        Page<DocumentLegalServiceProvider> result = service.search(q, city, serviceType, minRating, status, pageable);
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		service.delete(id);
-		return ResponseEntity.noContent().build();
-	}
+        // Convert entity page to DTO page
+        List<DocumentLegalServiceProviderDto> dtoList = result.getContent()
+                .stream()
+                .map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class))
+                .collect(Collectors.toList());
+
+        Page<DocumentLegalServiceProviderDto> dtoPage = new PageImpl<>(dtoList, pageable, result.getTotalElements());
+
+        return ResponseEntity.ok(dtoPage);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DocumentLegalServiceProviderDto> get(@PathVariable Long id) {
+        return service.getById(id)
+                .map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Admin endpoints
+    @PostMapping
+    public ResponseEntity<DocumentLegalServiceProviderDto> create(
+            @Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
+
+        DocumentLegalServiceProvider entity = modelMapper.map(requestDto, DocumentLegalServiceProvider.class);
+        DocumentLegalServiceProvider created = service.create(entity);
+        DocumentLegalServiceProviderDto dto = modelMapper.map(created, DocumentLegalServiceProviderDto.class);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DocumentLegalServiceProviderDto> update(
+            @PathVariable Long id,
+            @Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
+
+        DocumentLegalServiceProvider entity = modelMapper.map(requestDto, DocumentLegalServiceProvider.class);
+        DocumentLegalServiceProvider updated = service.update(id, entity);
+        DocumentLegalServiceProviderDto dto = modelMapper.map(updated, DocumentLegalServiceProviderDto.class);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
