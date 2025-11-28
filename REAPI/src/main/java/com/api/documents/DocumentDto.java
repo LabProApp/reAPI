@@ -2,39 +2,18 @@ package com.api.documents;
 
 import com.api.commons.BaseEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+public class DocumentDto extends BaseEntity {
 
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Documents extends BaseEntity {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
-	// AWS S3 URL
-	@Column(nullable = false, length = 1000)
 	private String docUrl;
 
 	// IMAGE, VIDEO, PDF, DOC, etc.
-	@Column(nullable = false, length = 20)
 	private String docType;
 
 	// Generic category: USER, PROPERTY, etc.
-	@Column(nullable = false, length = 50)
 	private String objectType;
 
 	// Generic ID pointing to any table
-	@Column(nullable = false)
 	private Long objectId;
 
 	private String caption;

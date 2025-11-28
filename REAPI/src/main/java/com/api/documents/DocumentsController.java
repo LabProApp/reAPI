@@ -3,7 +3,6 @@ package com.api.documents;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,26 +22,32 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Document Operation APIs", description = "Operations related to Maintain Documents on cloud")
 public class DocumentsController {
 
-	@Autowired
-	private DocumentsService documentsService;
+	private final DocumentsService documentsService;
 
+
+	// Upload documents
 	@PostMapping("/uploadDocuments/{objectType}/{objectId}")
-	public ResponseEntity<List<Documents>> uploadDocuments(@PathVariable String objectType, @PathVariable Long objectId,
-			@RequestParam("files") List<MultipartFile> files,
+
+	public ResponseEntity<List<DocumentDto>> uploadDocuments(@PathVariable String objectType,
+			@PathVariable Long objectId, @RequestParam("files") List<MultipartFile> files,
 			@RequestParam(value = "captions", required = false) List<String> captions) throws IOException {
 
-		List<Documents> uploadedDocs = documentsService.uploadDocuments(objectType, objectId, files, captions);
+		List<DocumentDto> uploadedDocs = documentsService.uploadDocuments(objectType, objectId, files, captions);
 
 		return ResponseEntity.ok(uploadedDocs);
 	}
 
+	// Get documents by object
 	@GetMapping("/{objectType}/{objectId}")
-	public ResponseEntity<List<Documents>> getDocuments(@PathVariable String objectType, @PathVariable Long objectId) {
+	public ResponseEntity<List<DocumentDto>> getDocuments(@PathVariable String objectType,
+			@PathVariable Long objectId) {
 
-		List<Documents> docs = documentsService.getDocumentsByObject(objectType, objectId);
-		return ResponseEntity.ok(docs);
+		List<DocumentDto> dtos = documentsService.getDocumentsByObject(objectType, objectId);
+
+		return ResponseEntity.ok(dtos);
 	}
 
+	// Delete a document
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> delete(@PathVariable Long id) {
 		documentsService.deleteDocument(id);
