@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/bank")
-@Tag(name = "Bank Loan APIs", description = "Operations related to Bank Home Loan Representatives")
+@Tag(name = "Bank Loan APIs", description = "Operations related to Banking Partners")
 public class BankController {
 
 	@Autowired
