@@ -4,44 +4,57 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
-public class BankLoanService {
+public class BankService {
 
-    private final BankLoanRepository bankLoanRepository;
+    private final BankRepository bankRepository;
+    private final ModelMapper mapper;
 
-    public BankLoanService(BankLoanRepository bankLoanRepository) {
-        this.bankLoanRepository = bankLoanRepository;
+    public BankService(BankRepository bankRepository,ModelMapper mapper) {
+        this.bankRepository = bankRepository;
+        this.mapper = mapper;
     }
 
     // 🧾 Get all loans
-    public List<BankLoanRepresentativeDto> getAllLoans() {
-        return bankLoanRepository.findAll()
+    public List<BankDto> getAllBanks() {
+        return bankRepository.findAll()
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
     // ➕ Add a new loan representative
-    public BankLoanRepresentativeDto addLoan(BankLoanRepresentativeDto loanDto) {
-        BankLoanRepresentative entity = convertToEntity(loanDto);
-        BankLoanRepresentative saved = bankLoanRepository.save(entity);
+    public BankDto addBank(BankDto BankDto) {
+        Bank entity = convertToEntity(BankDto);
+        Bank saved = bankRepository.save(entity);
         return convertToDto(saved);
+    }
+    /**
+     * List comparison of all loans showing interest rate, processing fee, min CIBIL
+     */
+    public List<LoanComparisonDto> listComparison() {
+
+        return bankRepository.findAll().stream()
+                .sorted((a, b) -> Double.compare(a.getInterestRate(), b.getInterestRate()))
+                .map(entity -> mapper.map(entity, LoanComparisonDto.class))
+                .collect(Collectors.toList());
     }
 
     // ✏️ Update loan representative
-    public ResponseEntity<?> updateLoan(BankLoanRepresentativeDto loanDto) {
+    public ResponseEntity<?> updateBank(BankDto loanDto) {
         if (loanDto.getId() == null) {
             return ResponseEntity.badRequest().body("Loan ID is required for update");
         }
 
-        Optional<BankLoanRepresentative> optionalLoan = bankLoanRepository.findById(loanDto.getId());
+        Optional<Bank> optionalLoan = bankRepository.findById(loanDto.getId());
 
         if (optionalLoan.isPresent()) {
-            BankLoanRepresentative existingLoan = optionalLoan.get();
+            Bank existingLoan = optionalLoan.get();
 
             // Update fields if present in DTO
             if (loanDto.getBankName() != null) existingLoan.setBankName(loanDto.getBankName());
@@ -74,7 +87,7 @@ public class BankLoanService {
             existingLoan.setBalanceTransferAvailable(loanDto.isBalanceTransferAvailable());
             existingLoan.setInsuranceBundled(loanDto.isInsuranceBundled());
 
-            BankLoanRepresentative updated = bankLoanRepository.save(existingLoan);
+            Bank updated = bankRepository.save(existingLoan);
             return ResponseEntity.ok(convertToDto(updated));
 
         } else {
@@ -83,7 +96,7 @@ public class BankLoanService {
     }
 
     // 🔎 Advanced filtering
-    public List<BankLoanRepresentativeDto> advancedFilter(
+    public List<BankDto> advancedFilter(
             Double maxRate,
             Integer minCibil,
             Integer maxTenure,
@@ -93,17 +106,17 @@ public class BankLoanService {
             String bank,
             String postalCode) {
 
-        Specification<BankLoanRepresentative> spec = Specification
-                .where(BankLoanSpecifications.hasMaxRate(maxRate))
-                .and(BankLoanSpecifications.hasMinCibil(minCibil))
-                .and(BankLoanSpecifications.hasMaxTenure(maxTenure))
-                .and(BankLoanSpecifications.hasMinIncome(minIncome))
-                .and(BankLoanSpecifications.hasCity(city))
-                .and(BankLoanSpecifications.hasState(state))
-                .and(BankLoanSpecifications.hasBank(bank))
-                .and(BankLoanSpecifications.hasPostalCode(postalCode));
+        Specification<Bank> spec = Specification
+                .where(BankSpecifications.hasMaxRate(maxRate))
+                .and(BankSpecifications.hasMinCibil(minCibil))
+                .and(BankSpecifications.hasMaxTenure(maxTenure))
+                .and(BankSpecifications.hasMinIncome(minIncome))
+                .and(BankSpecifications.hasCity(city))
+                .and(BankSpecifications.hasState(state))
+                .and(BankSpecifications.hasBank(bank))
+                .and(BankSpecifications.hasPostalCode(postalCode));
 
-        return bankLoanRepository.findAll(spec)
+        return bankRepository.findAll(spec)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -112,8 +125,8 @@ public class BankLoanService {
     // -----------------------------
     // Conversion helpers
     // -----------------------------
-    private BankLoanRepresentativeDto convertToDto(BankLoanRepresentative entity) {
-        BankLoanRepresentativeDto dto = new BankLoanRepresentativeDto();
+    private BankDto convertToDto(Bank entity) {
+        BankDto dto = new BankDto();
         dto.setId(entity.getId());
         dto.setBankName(entity.getBankName());
         dto.setContactName(entity.getContactName());
@@ -151,8 +164,8 @@ public class BankLoanService {
         return dto;
     }
 
-    private BankLoanRepresentative convertToEntity(BankLoanRepresentativeDto dto) {
-        BankLoanRepresentative entity = new BankLoanRepresentative();
+    private Bank convertToEntity(BankDto dto) {
+        Bank entity = new Bank();
         entity.setId(dto.getId());
         entity.setBankName(dto.getBankName());
         entity.setContactName(dto.getContactName());

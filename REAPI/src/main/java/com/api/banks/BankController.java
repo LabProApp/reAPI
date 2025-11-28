@@ -15,51 +15,51 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/bankloans")
+@RequestMapping("/api/bank")
 @Tag(name = "Bank Loan APIs", description = "Operations related to Bank Home Loan Representatives")
-public class BankLoanController {
+public class BankController {
 
 	@Autowired
-	private BankLoanService bankLoanService;
+	private BankService bankService;
 
 	// 🧾 List all loan representatives
 	@GetMapping("/list")
-	public ResponseEntity<List<BankLoanRepresentativeDto>> getAllLoans() {
-		List<BankLoanRepresentativeDto> loans = bankLoanService.getAllLoans();
+	public ResponseEntity<List<BankDto>> getAllLoans() {
+		List<BankDto> loans = bankService.getAllBanks();
 		return ResponseEntity.ok(loans);
 	}
 
 	// ➕ Add a new loan representative
 	@PostMapping("/add")
-	public ResponseEntity<BankLoanRepresentativeDto> addLoan(@RequestBody BankLoanRepresentativeDto loanDto) {
-		BankLoanRepresentativeDto savedLoan = bankLoanService.addLoan(loanDto);
+	public ResponseEntity<BankDto> addBank(@RequestBody BankDto loanDto) {
+		BankDto savedLoan = bankService.addBank(loanDto);
 		return ResponseEntity.ok(savedLoan);
 	}
 
 	// ✏️ Update an existing loan representative
 	@PutMapping("/update")
-	public ResponseEntity<?> updateLoan(@RequestBody BankLoanRepresentativeDto loanDto) {
-		ResponseEntity<?> response = bankLoanService.updateLoan(loanDto);
+	public ResponseEntity<?> updateBank(@RequestBody BankDto loanDto) {
+		ResponseEntity<?> response = bankService.updateBank(loanDto);
 		return response;
 	}
 
 	// ⚖️ Compare loan representatives by interest rate (ascending)
 	@GetMapping("/compare")
-	public ResponseEntity<List<BankLoanRepresentativeDto>> compareLoans() {
-		List<BankLoanRepresentativeDto> sortedLoans = bankLoanService.getAllLoans().stream()
+	public ResponseEntity<List<BankDto>> compareLoans() {
+		List<BankDto> sortedLoans = bankService.getAllBanks().stream()
 				.sorted((a, b) -> Double.compare(a.getInterestRate(), b.getInterestRate())).toList();
 		return ResponseEntity.ok(sortedLoans);
 	}
 
 	// 🔎 Advanced filtering by multiple criteria
 	@GetMapping("/advanced-filter")
-	public ResponseEntity<List<BankLoanRepresentativeDto>> advancedFilter(
+	public ResponseEntity<List<BankDto>> advancedFilter(
 			@RequestParam(required = false) Double maxRate, @RequestParam(required = false) Integer minCibil,
 			@RequestParam(required = false) Integer maxTenure, @RequestParam(required = false) Double minIncome,
 			@RequestParam(required = false) String city, @RequestParam(required = false) String state,
 			@RequestParam(required = false) String bank, @RequestParam(required = false) String postalcode) {
 
-		List<BankLoanRepresentativeDto> filteredLoans = bankLoanService.advancedFilter(maxRate, minCibil, maxTenure,
+		List<BankDto> filteredLoans = bankService.advancedFilter(maxRate, minCibil, maxTenure,
 				minIncome, city, state, bank, postalcode);
 		return ResponseEntity.ok(filteredLoans);
 	}

@@ -2,7 +2,7 @@ package com.api.banks;
 
 import java.util.Date;
 
-public class BankLoanRepresentativeDto {
+public class LoanComparisonDto {
 
 	private Long id;
 

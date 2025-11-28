@@ -5,8 +5,8 @@ import jakarta.validation.constraints.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "bank_loan_representatives")
-public class BankLoanRepresentative {
+@Table(name = "bank_partners")
+public class Bank {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
