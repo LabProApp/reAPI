@@ -2,7 +2,7 @@ package com.api.serviceprovider;
 
 import java.util.List;
 
-import com.api.BaseEntity;
+import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.enums.MasterEnums.DocumentLegalServiceProviderStatus;
 

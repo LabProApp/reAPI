@@ -1,6 +1,6 @@
 package com.api.documents;
 
-import com.api.BaseEntity;
+import com.api.commons.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

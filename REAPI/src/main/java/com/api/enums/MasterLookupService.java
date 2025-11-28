@@ -1,26 +1,37 @@
 package com.api.enums;
 
-import java.util.List;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MasterLookupService {
 
-	private final MasterLookupRepository repository;
+    private final MasterLookupRepository repository;
+    private final ModelMapper mapper;
 
-	public MasterLookupService(MasterLookupRepository repository) {
-		this.repository = repository;
-	}
+    // Constructor Injection (Recommended by Spring)
+    public MasterLookupService(MasterLookupRepository repository, ModelMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
 
-	// Generic master lookup
-	public List<MasterLookup> getMasterValues(String type, String status) {
-		return repository.findByTypeIgnoreCaseAndStatusIgnoreCase(type, status);
-	}
+    // Generic master lookup
+    public List<MasterLookupDto> getMasterValues(String type, String status) {
+        return repository.findByTypeIgnoreCaseAndStatusIgnoreCase(type, status)
+                .stream()
+                .map(entity -> mapper.map(entity, MasterLookupDto.class))
+                .collect(Collectors.toList());
+    }
 
-	// Get child lookups (e.g., cities by state)
-	public List<MasterLookup> getChildByMaster(Long parentId, String status) {
-		return repository.findByParentIdAndStatusIgnoreCase(parentId, status);
-	}
-
+    // Get child lookups (e.g., cities by state)
+    public List<MasterLookupDto> getChildByMaster(Long parentId, String status) {
+        return repository.findByParentIdAndStatusIgnoreCase(parentId, status)
+                .stream()
+                .map(entity -> mapper.map(entity, MasterLookupDto.class))
+                .collect(Collectors.toList());
+    }
 }
+

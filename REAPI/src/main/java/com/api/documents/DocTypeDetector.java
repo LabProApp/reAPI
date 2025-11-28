@@ -22,6 +22,9 @@ public class DocTypeDetector {
 		if (contentType.contains("word")) {
 			return "DOC";
 		}
+		if (contentType.contains("text")) {
+			return "TEXT";
+		}
 		if (contentType.contains("excel") || contentType.contains("spreadsheet")) {
 			return "EXCEL";
 		}

@@ -8,60 +8,29 @@ import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userrelation.UserRelation;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+public class UserDto extends BaseEntity {
 
-
-@Entity
-@Table(name = "users")
-public class User extends BaseEntity {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
-	@Column(unique = true)
 	private String email;
 	private String password;
 	private String address;
 	private String mobile;
-
-	// ---------- OTP Fields ----------
 	private String otp;
-
 	private LocalDateTime otpGeneratedAt;
-
-	// Optional: mark if verified after OTP
 	private Boolean isVerified = false;
-
-	@Enumerated(EnumType.STRING)
 	private MasterEnums.UserStatusEnum userStatus;
 	// new attributes
-	@Enumerated(EnumType.STRING)
-	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
-	
-	@Enumerated(EnumType.STRING)
-	private  MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
 
-	@JsonManagedReference(value = "user-userrelation")
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
+
+	private MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
+
 	private List<UserPropertyRelation> userProperties = new ArrayList<>();
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "user-main-relations")
 	private List<UserRelation> userRelations = new ArrayList<>();
 
-	@OneToMany(mappedBy = "relatedUser", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "user-related-relations")
 	private List<UserRelation> relatedUserRelations = new ArrayList<>();
 
 	public Long getId() {

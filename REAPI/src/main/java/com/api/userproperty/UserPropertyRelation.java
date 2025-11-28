@@ -2,7 +2,7 @@ package com.api.userproperty;
 
 import java.time.LocalDateTime;
 
-import com.api.BaseEntity;
+import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.prop.Property;
 import com.api.user.User;

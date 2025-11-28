@@ -1,6 +1,6 @@
 package com.api.userrelation;
 
-import com.api.BaseEntity;
+import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;

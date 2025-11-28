@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.api.BaseEntity;
+import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 import com.api.userproperty.UserPropertyRelation;

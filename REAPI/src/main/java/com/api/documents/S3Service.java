@@ -40,12 +40,12 @@ public class S3Service {
 
 		String key = folderName + "/" + fileName; // <-- add folder name here
 
-		PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(key)
-				.acl(ObjectCannedACL.PUBLIC_READ).build();
+		PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(key).build();
 
 		s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-		return key; // returns full path: folderName/12345_filename.jpg
+		return "https://" + bucketName + ".s3.amazonaws.com/" + key;
+		// return key; // returns full path: folderName/12345_filename.jpg
 	}
 
 	// Download file

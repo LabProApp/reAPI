@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @RestController
 @RequestMapping("/api/mastervalues")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MasterLookupController {
 
 	private final MasterLookupService service;
@@ -27,7 +26,7 @@ public class MasterLookupController {
 
 	 */
 	@GetMapping("/getMasterValues")
-	public List<MasterLookup> getMasterValues(
+	public List<MasterLookupDto> getMasterValues(
 	        @RequestParam String type,
 	        @RequestParam(defaultValue = "ACTIVE") String status) {
 
@@ -38,7 +37,7 @@ public class MasterLookupController {
 	 * /api/master/1/children?status=ACTIVE (Fetch all cities for stateId = 1)
 	 */
 	@GetMapping("/{parentId}/children")
-	public List<MasterLookup> getChildValues(@PathVariable Long parentId,
+	public List<MasterLookupDto> getChildValues(@PathVariable Long parentId,
 			@RequestParam(defaultValue = "ACTIVE") String status) {
 
 		return service.getChildByMaster(parentId, status);
