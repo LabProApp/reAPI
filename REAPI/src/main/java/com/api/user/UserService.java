@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import com.api.enums.MasterEnums;
 import com.api.notifications.OtpService;
 import com.api.prop.Property;
+import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
 import com.api.userproperty.UserPropertyRelation;
+import com.api.userproperty.UserPropertyRelationDto;
 import com.api.userproperty.UserPropertyRelationRepository;
 
 @Service
@@ -179,9 +181,11 @@ public class UserService {
 	}
 
 	// ---------------- PROPERTY RELATIONS ----------------
-	public UserPropertyRelation markFavourite(Long userId, Long propertyId) {
-		User user = userRepository.findById(userId).orElseThrow();
-		Property property = propertyRepository.findById(propertyId).orElseThrow();
+	public UserPropertyRelationDto markFavourite(Long userId, Long propertyId) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+		Property property = propertyRepository.findById(propertyId)
+				.orElseThrow(() -> new RuntimeException("Property not found with id: " + propertyId));
 
 		UserPropertyRelation relation = propertyRelationRepository.findByUserIdAndPropertyId(userId, propertyId)
 				.orElseGet(() -> {
@@ -191,6 +195,7 @@ public class UserService {
 					return newRelation;
 				});
 
+		// Toggle favourite status
 		if (relation.isFavourite()) {
 			relation.setFavourite(false);
 			relation.setFavouriteDate(null);
@@ -199,12 +204,17 @@ public class UserService {
 			relation.setFavouriteDate(LocalDateTime.now());
 		}
 
-		return propertyRelationRepository.save(relation);
+		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
+
+		// Convert entity to DTO
+		return mapper.map(savedRelation, UserPropertyRelationDto.class);
 	}
 
-	public UserPropertyRelation markInterested(Long userId, Long propertyId) {
-		User user = userRepository.findById(userId).orElseThrow();
-		Property property = propertyRepository.findById(propertyId).orElseThrow();
+	public UserPropertyRelationDto markInterested(Long userId, Long propertyId) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+		Property property = propertyRepository.findById(propertyId)
+				.orElseThrow(() -> new RuntimeException("Property not found with id: " + propertyId));
 
 		UserPropertyRelation relation = propertyRelationRepository.findByUserIdAndPropertyId(userId, propertyId)
 				.orElseGet(() -> {
@@ -214,6 +224,7 @@ public class UserService {
 					return newRelation;
 				});
 
+		// Toggle inquiry status
 		if (relation.isInquiry()) {
 			relation.setInquiry(false);
 			relation.setInquiryDate(null);
@@ -222,20 +233,30 @@ public class UserService {
 			relation.setInquiryDate(LocalDateTime.now());
 		}
 
-		return propertyRelationRepository.save(relation);
+		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
+
+		// Convert entity to DTO
+		return mapper.map(savedRelation, UserPropertyRelationDto.class);
 	}
 
-	public List<Property> getFavouriteProperties(Long userId) {
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite)
-				.map(UserPropertyRelation::getProperty).collect(Collectors.toList());
+	public List<PropertyDto> getFavouriteProperties(Long userId) {
+		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite) // filter
+																													// favorites
+				.map(UserPropertyRelation::getProperty) // get Property entity
+				.map(property -> mapper.map(property, PropertyDto.class)) // map to DTO
+				.collect(Collectors.toList());
 	}
 
-	public List<Property> getInquiredProperties(Long userId) {
+	public List<PropertyDto> getInquiredProperties(Long userId) {
 		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
-				.map(UserPropertyRelation::getProperty).collect(Collectors.toList());
+				.map(UserPropertyRelation::getProperty).map(property -> mapper.map(property, PropertyDto.class)) // map
+																													// entity
+																													// to
+																													// DTO
+				.collect(Collectors.toList());
 	}
 
-	// ---------------- LOGOUT ---------------- 
+	// ---------------- LOGOUT ----------------
 	public ResponseEntity<String> logout() {
 		return ResponseEntity.ok("Logged out successfully!");
 	}

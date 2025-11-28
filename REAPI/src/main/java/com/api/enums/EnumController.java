@@ -24,7 +24,8 @@ public class EnumController {
         this.enumService = enumService;
     }
 
-    @GetMapping("/{enumName}")
+    @SuppressWarnings("unchecked")
+	@GetMapping("/{enumName}")
     public List<EnumDTO> getEnum(@PathVariable String enumName) throws ClassNotFoundException {
         // Assumes enums are in "com.api.enums" package
         Class<?> clazz = Class.forName("com.api.enums." + enumName);

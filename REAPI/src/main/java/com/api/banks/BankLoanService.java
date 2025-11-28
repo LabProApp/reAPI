@@ -18,19 +18,72 @@ public class BankLoanService {
     }
 
     // 🧾 Get all loans
-    public List<BankLoanRepresentative> getAllLoans() {
-        return bankLoanRepository.findAll();
+    public List<BankLoanRepresentativeDto> getAllLoans() {
+        return bankLoanRepository.findAll()
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     // ➕ Add a new loan representative
-    public BankLoanRepresentative addLoan(BankLoanRepresentative loan) {
-        return bankLoanRepository.save(loan);
+    public BankLoanRepresentativeDto addLoan(BankLoanRepresentativeDto loanDto) {
+        BankLoanRepresentative entity = convertToEntity(loanDto);
+        BankLoanRepresentative saved = bankLoanRepository.save(entity);
+        return convertToDto(saved);
     }
 
-  
+    // ✏️ Update loan representative
+    public ResponseEntity<?> updateLoan(BankLoanRepresentativeDto loanDto) {
+        if (loanDto.getId() == null) {
+            return ResponseEntity.badRequest().body("Loan ID is required for update");
+        }
 
-    // 🔎 Advanced filtering (optional)
-    public List<BankLoanRepresentative> advancedFilter(
+        Optional<BankLoanRepresentative> optionalLoan = bankLoanRepository.findById(loanDto.getId());
+
+        if (optionalLoan.isPresent()) {
+            BankLoanRepresentative existingLoan = optionalLoan.get();
+
+            // Update fields if present in DTO
+            if (loanDto.getBankName() != null) existingLoan.setBankName(loanDto.getBankName());
+            if (loanDto.getContactName() != null) existingLoan.setContactName(loanDto.getContactName());
+            if (loanDto.getContactNumber() != null) existingLoan.setContactNumber(loanDto.getContactNumber());
+            if (loanDto.getEmail() != null) existingLoan.setEmail(loanDto.getEmail());
+            if (loanDto.getWebsiteUrl() != null) existingLoan.setWebsiteUrl(loanDto.getWebsiteUrl());
+            if (loanDto.getBranchName() != null) existingLoan.setBranchName(loanDto.getBranchName());
+            if (loanDto.getLocationAddress() != null) existingLoan.setLocationAddress(loanDto.getLocationAddress());
+            if (loanDto.getEmploymentType() != null) existingLoan.setEmploymentType(loanDto.getEmploymentType());
+            if (loanDto.getNationalityRequirement() != null) existingLoan.setNationalityRequirement(loanDto.getNationalityRequirement());
+            if (loanDto.getSpecialOffers() != null) existingLoan.setSpecialOffers(loanDto.getSpecialOffers());
+            if (loanDto.getRequiredDocuments() != null) existingLoan.setRequiredDocuments(loanDto.getRequiredDocuments());
+            if (loanDto.getDetails() != null) existingLoan.setDetails(loanDto.getDetails());
+
+            // Update numeric fields
+            if (loanDto.getInterestRate() > 0) existingLoan.setInterestRate(loanDto.getInterestRate());
+            if (loanDto.getTenureYears() > 0) existingLoan.setTenureYears(loanDto.getTenureYears());
+            if (loanDto.getMinCibilScore() > 0) existingLoan.setMinCibilScore(loanDto.getMinCibilScore());
+            if (loanDto.getMaxLoanAmount() > 0) existingLoan.setMaxLoanAmount(loanDto.getMaxLoanAmount());
+            if (loanDto.getMinLoanAmount() > 0) existingLoan.setMinLoanAmount(loanDto.getMinLoanAmount());
+            if (loanDto.getMinimumIncome() > 0) existingLoan.setMinimumIncome(loanDto.getMinimumIncome());
+            if (loanDto.getMinimumAge() > 0) existingLoan.setMinimumAge(loanDto.getMinimumAge());
+            if (loanDto.getMaximumAge() > 0) existingLoan.setMaximumAge(loanDto.getMaximumAge());
+            if (loanDto.getProcessingFee() > 0) existingLoan.setProcessingFee(loanDto.getProcessingFee());
+
+            // Update boolean fields
+            existingLoan.setPrepaymentAllowed(loanDto.isPrepaymentAllowed());
+            existingLoan.setPartPaymentAllowed(loanDto.isPartPaymentAllowed());
+            existingLoan.setBalanceTransferAvailable(loanDto.isBalanceTransferAvailable());
+            existingLoan.setInsuranceBundled(loanDto.isInsuranceBundled());
+
+            BankLoanRepresentative updated = bankLoanRepository.save(existingLoan);
+            return ResponseEntity.ok(convertToDto(updated));
+
+        } else {
+            return ResponseEntity.badRequest().body("Loan representative not found!");
+        }
+    }
+
+    // 🔎 Advanced filtering
+    public List<BankLoanRepresentativeDto> advancedFilter(
             Double maxRate,
             Integer minCibil,
             Integer maxTenure,
@@ -50,58 +103,90 @@ public class BankLoanService {
                 .and(BankLoanSpecifications.hasBank(bank))
                 .and(BankLoanSpecifications.hasPostalCode(postalCode));
 
-        return bankLoanRepository.findAll(spec);
+        return bankLoanRepository.findAll(spec)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
-    // ✏️ Update loan representative
-    public ResponseEntity<?> updateLoan(BankLoanRepresentative loan) {
+    // -----------------------------
+    // Conversion helpers
+    // -----------------------------
+    private BankLoanRepresentativeDto convertToDto(BankLoanRepresentative entity) {
+        BankLoanRepresentativeDto dto = new BankLoanRepresentativeDto();
+        dto.setId(entity.getId());
+        dto.setBankName(entity.getBankName());
+        dto.setContactName(entity.getContactName());
+        dto.setContactNumber(entity.getContactNumber());
+        dto.setEmail(entity.getEmail());
+        dto.setBranchName(entity.getBranchName());
+        dto.setLocationAddress(entity.getLocationAddress());
+        dto.setStreet(entity.getStreet());
+        dto.setCity(entity.getCity());
+        dto.setState(entity.getState());
+        dto.setPostalCode(entity.getPostalCode());
+        dto.setCountry(entity.getCountry());
+        dto.setWebsiteUrl(entity.getWebsiteUrl());
+        dto.setInterestRate(entity.getInterestRate());
+        dto.setInterestType(entity.getInterestType());
+        dto.setProcessingFee(entity.getProcessingFee());
+        dto.setTenureYears(entity.getTenureYears());
+        dto.setMaxLoanAmount(entity.getMaxLoanAmount());
+        dto.setMinLoanAmount(entity.getMinLoanAmount());
+        dto.setMinCibilScore(entity.getMinCibilScore());
+        dto.setMinimumIncome(entity.getMinimumIncome());
+        dto.setEmploymentType(entity.getEmploymentType());
+        dto.setMinimumAge(entity.getMinimumAge());
+        dto.setMaximumAge(entity.getMaximumAge());
+        dto.setNationalityRequirement(entity.getNationalityRequirement());
+        dto.setPrepaymentAllowed(entity.isPrepaymentAllowed());
+        dto.setPartPaymentAllowed(entity.isPartPaymentAllowed());
+        dto.setBalanceTransferAvailable(entity.isBalanceTransferAvailable());
+        dto.setInsuranceBundled(entity.isInsuranceBundled());
+        dto.setSpecialOffers(entity.getSpecialOffers());
+        dto.setRequiredDocuments(entity.getRequiredDocuments());
+        dto.setDetails(entity.getDetails());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        return dto;
+    }
 
-        if (loan.getId() == null) {
-            return ResponseEntity.badRequest().body("Loan ID is required for update");
-        }
-
-        Optional<BankLoanRepresentative> optionalLoan = bankLoanRepository.findById(loan.getId());
-
-        if (optionalLoan.isPresent()) {
-            BankLoanRepresentative existingLoan = optionalLoan.get();
-
-            // Update String fields
-            if (loan.getBankName() != null) existingLoan.setBankName(loan.getBankName());
-            if (loan.getContactName() != null) existingLoan.setContactName(loan.getContactName());
-            if (loan.getContactNumber() != null) existingLoan.setContactNumber(loan.getContactNumber());
-            if (loan.getEmail() != null) existingLoan.setEmail(loan.getEmail());
-            if (loan.getWebsiteUrl() != null) existingLoan.setWebsiteUrl(loan.getWebsiteUrl());
-            if (loan.getBranchName() != null) existingLoan.setBranchName(loan.getBranchName());
-            if (loan.getLocationAddress() != null) existingLoan.setLocationAddress(loan.getLocationAddress());
-            if (loan.getEmploymentType() != null) existingLoan.setEmploymentType(loan.getEmploymentType());
-            if (loan.getNationalityRequirement() != null) existingLoan.setNationalityRequirement(loan.getNationalityRequirement());
-            if (loan.getSpecialOffers() != null) existingLoan.setSpecialOffers(loan.getSpecialOffers());
-            if (loan.getRequiredDocuments() != null) existingLoan.setRequiredDocuments(loan.getRequiredDocuments());
-            if (loan.getDetails() != null) existingLoan.setDetails(loan.getDetails());
-
-            // Update numeric fields
-            if (loan.getInterestRate() > 0) existingLoan.setInterestRate(loan.getInterestRate());
-            if (loan.getTenureYears() > 0) existingLoan.setTenureYears(loan.getTenureYears());
-            if (loan.getMinCibilScore() > 0) existingLoan.setMinCibilScore(loan.getMinCibilScore());
-            if (loan.getMaxLoanAmount() > 0) existingLoan.setMaxLoanAmount(loan.getMaxLoanAmount());
-            if (loan.getMinLoanAmount() > 0) existingLoan.setMinLoanAmount(loan.getMinLoanAmount());
-            if (loan.getMinimumIncome() > 0) existingLoan.setMinimumIncome(loan.getMinimumIncome());
-            if (loan.getMinimumAge() > 0) existingLoan.setMinimumAge(loan.getMinimumAge());
-            if (loan.getMaximumAge() > 0) existingLoan.setMaximumAge(loan.getMaximumAge());
-            if (loan.getProcessingFee() > 0) existingLoan.setProcessingFee(loan.getProcessingFee());
-
-            // Update boolean fields
-            existingLoan.setPrepaymentAllowed(loan.isPrepaymentAllowed());
-            existingLoan.setPartPaymentAllowed(loan.isPartPaymentAllowed());
-            existingLoan.setBalanceTransferAvailable(loan.isBalanceTransferAvailable());
-            existingLoan.setInsuranceBundled(loan.isInsuranceBundled());
-
-            bankLoanRepository.save(existingLoan);
-
-            return ResponseEntity.ok(existingLoan);
-
-        } else {
-            return ResponseEntity.badRequest().body("Loan representative not found!");
-        }
+    private BankLoanRepresentative convertToEntity(BankLoanRepresentativeDto dto) {
+        BankLoanRepresentative entity = new BankLoanRepresentative();
+        entity.setId(dto.getId());
+        entity.setBankName(dto.getBankName());
+        entity.setContactName(dto.getContactName());
+        entity.setContactNumber(dto.getContactNumber());
+        entity.setEmail(dto.getEmail());
+        entity.setBranchName(dto.getBranchName());
+        entity.setLocationAddress(dto.getLocationAddress());
+        entity.setStreet(dto.getStreet());
+        entity.setCity(dto.getCity());
+        entity.setState(dto.getState());
+        entity.setPostalCode(dto.getPostalCode());
+        entity.setCountry(dto.getCountry());
+        entity.setWebsiteUrl(dto.getWebsiteUrl());
+        entity.setInterestRate(dto.getInterestRate());
+        entity.setInterestType(dto.getInterestType());
+        entity.setProcessingFee(dto.getProcessingFee());
+        entity.setTenureYears(dto.getTenureYears());
+        entity.setMaxLoanAmount(dto.getMaxLoanAmount());
+        entity.setMinLoanAmount(dto.getMinLoanAmount());
+        entity.setMinCibilScore(dto.getMinCibilScore());
+        entity.setMinimumIncome(dto.getMinimumIncome());
+        entity.setEmploymentType(dto.getEmploymentType());
+        entity.setMinimumAge(dto.getMinimumAge());
+        entity.setMaximumAge(dto.getMaximumAge());
+        entity.setNationalityRequirement(dto.getNationalityRequirement());
+        entity.setPrepaymentAllowed(dto.isPrepaymentAllowed());
+        entity.setPartPaymentAllowed(dto.isPartPaymentAllowed());
+        entity.setBalanceTransferAvailable(dto.isBalanceTransferAvailable());
+        entity.setInsuranceBundled(dto.isInsuranceBundled());
+        entity.setSpecialOffers(dto.getSpecialOffers());
+        entity.setRequiredDocuments(dto.getRequiredDocuments());
+        entity.setDetails(dto.getDetails());
+        entity.setCreatedAt(dto.getCreatedAt());
+        entity.setUpdatedAt(dto.getUpdatedAt());
+        return entity;
     }
 }

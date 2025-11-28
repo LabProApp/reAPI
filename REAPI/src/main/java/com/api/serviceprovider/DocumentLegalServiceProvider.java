@@ -19,14 +19,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+
 @Tag(name = "Document Vendor APIs", description = "Operations related to Document Vendor management")
 public class DocumentLegalServiceProvider extends BaseEntity {
 	@Id
