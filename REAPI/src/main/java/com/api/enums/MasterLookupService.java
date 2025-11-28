@@ -3,6 +3,7 @@ package com.api.enums;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -26,12 +27,12 @@ public class MasterLookupService {
                 .collect(Collectors.toList());
     }
 
-    // Get child lookups (e.g., cities by state)
-    public List<MasterLookupDto> getChildByMaster(Long parentId, String status) {
+    // Return list of names for child values
+    public List<String> getChildByMaster(Long parentId, String status) {
         return repository.findByParentIdAndStatusIgnoreCase(parentId, status)
                 .stream()
-                .map(entity -> mapper.map(entity, MasterLookupDto.class))
-                .collect(Collectors.toList());
+                .map(entity -> entity.getValue()) // Only extract the "name" field
+                .toList();
     }
 }
 

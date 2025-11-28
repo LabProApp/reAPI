@@ -37,7 +37,7 @@ public class MasterLookupController {
 	 * /api/master/1/children?status=ACTIVE (Fetch all cities for stateId = 1)
 	 */
 	@GetMapping("/{parentId}/children")
-	public List<MasterLookupDto> getChildValues(@PathVariable Long parentId,
+	public List<String> getChildValues(@PathVariable Long parentId,
 			@RequestParam(defaultValue = "ACTIVE") String status) {
 
 		return service.getChildByMaster(parentId, status);
