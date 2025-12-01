@@ -4,8 +4,43 @@ import lombok.Getter;
 
 public final class MasterEnums {
 
-	private MasterEnums() {
+	@Getter
+	public enum InquiryType {
+		LEGAL("Regular Package", "Package"), BANK_LOAN("Premium Package", "Package"),
+		BUY_HOME("Deluxe Package", "Package"),
+		BUY_COMMERCIAL("Deluxe Package", "Package"),
+		RENT_HOME("Deluxe Package", "Package"),
+		RENT_COMMERCIAL("Deluxe Package", "Package");
+		
+
+		private final String description;
+		private final String category;
+
+		InquiryType(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	
+
 	}
+
+	@Getter
+	public enum InquiryStatus {
+		NEW("Regular Package", "Package"), CLOSED("Premium Package", "Package"),
+		INPROGRESS("Deluxe Package", "Package");
+		
+
+		private final String description;
+		private final String category;
+
+		InquiryStatus(String description, String category) {
+			this.description = description;
+			this.category = category;
+		}
+	
+
+	}
+	private MasterEnums() {}
 
 	// ------------------- PACKAGE TYPE -------------------
 	@Getter
