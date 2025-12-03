@@ -1,0 +1,67 @@
+package com.api.banks;
+
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Entity
+public class InterestRates {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private int minCibil;
+    private int maxCibil;
+    private double interestRate;
+
+    @ManyToOne
+    @JoinColumn(name = "bank_id")
+    private Bank bank;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public int getMinCibil() {
+		return minCibil;
+	}
+
+	public void setMinCibil(int minCibil) {
+		this.minCibil = minCibil;
+	}
+
+	public int getMaxCibil() {
+		return maxCibil;
+	}
+
+	public void setMaxCibil(int maxCibil) {
+		this.maxCibil = maxCibil;
+	}
+
+	public double getInterestRate() {
+		return interestRate;
+	}
+
+	public void setInterestRate(double interestRate) {
+		this.interestRate = interestRate;
+	}
+
+	public Bank getBank() {
+		return bank;
+	}
+
+	public void setBank(Bank bank) {
+		this.bank = bank;
+	}
+
+    // Getters & Setters
+}
