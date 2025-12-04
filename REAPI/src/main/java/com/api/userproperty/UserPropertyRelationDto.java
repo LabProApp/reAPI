@@ -2,11 +2,12 @@ package com.api.userproperty;
 
 import java.time.LocalDateTime;
 
+import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 import com.api.prop.PropertyDto;
 import com.api.user.UserDto;
 
-public class UserPropertyRelationDto {
+public class UserPropertyRelationDto extends BaseDto {
 
     private Long id;
 

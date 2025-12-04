@@ -1,8 +1,8 @@
 package com.api.documents;
 
-import com.api.commons.BaseEntity;
+import com.api.commons.BaseDto;
 
-public class DocumentDto extends BaseEntity {
+public class DocumentDto extends BaseDto {
 
 	private Long id;
 	private String docUrl;

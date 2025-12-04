@@ -2,7 +2,9 @@ package com.api.banks;
 
 import java.util.Date;
 
-public class BankDto {
+import com.api.commons.BaseDto;
+
+public class BankDto extends BaseDto {
 
 	private Long id;
 

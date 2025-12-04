@@ -23,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -36,6 +37,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "property")
 public class Property extends BaseEntity {
 
 	@Id
@@ -52,11 +54,10 @@ public class Property extends BaseEntity {
 	private String city;
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.PropertyStatusEnum propertyStatus;
-	
+
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.PackageEnum planPackage;
-	
-	
+
 	@NotBlank(message = "State is required")
 	private String state;
 
@@ -114,8 +115,6 @@ public class Property extends BaseEntity {
 	private String rentOrSale; // Rent or Sale
 
 	private boolean verified;
-
-	
 
 	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
@@ -314,8 +313,6 @@ public class Property extends BaseEntity {
 		this.userRelations = userRelations;
 	}
 
-	
-
 	public Double getCarpetArea() {
 		return carpetArea;
 	}
@@ -332,7 +329,6 @@ public class Property extends BaseEntity {
 		this.superArea = superArea;
 	}
 
-	
 	public MasterEnums.PropertyStatusEnum getPropertyStatus() {
 		return propertyStatus;
 	}
@@ -356,4 +352,5 @@ public class Property extends BaseEntity {
 	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
 		this.planPackage = planPackage;
 	}
+
 }

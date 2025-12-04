@@ -2,7 +2,9 @@ package com.api.projects;
 
 import java.time.LocalDate;
 
-public class ProjectDto {
+import com.api.commons.BaseDto;
+
+public class ProjectDto extends BaseDto{
 
     private Long id;
     private String projectName;

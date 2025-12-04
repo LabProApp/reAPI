@@ -3,12 +3,13 @@ package com.api.serviceprovider;
 import java.time.Instant;
 import java.util.List;
 
+import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-public class DocumentLegalServiceProviderDto {
+public class DocumentLegalServiceProviderDto extends BaseDto {
 
 	public Long id;
 	public String name;

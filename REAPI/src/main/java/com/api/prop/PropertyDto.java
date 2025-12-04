@@ -5,13 +5,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.api.commons.BaseEntity;
+import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 import com.api.userproperty.UserPropertyRelationDto;
 
-public class PropertyDto extends BaseEntity {
+public class PropertyDto extends BaseDto {
 
 	private Long id;
+
 	private String title;
 	private String address;
 	private String city;

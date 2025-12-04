@@ -11,14 +11,25 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
 import lombok.Getter;
 import lombok.Setter;
-
 @Getter
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
+
+
+	    @Column(name = "code", updatable = false)
+	private String code;
+	
+	@PrePersist
+	public void prePersist() {
+	    if (this.code == null) {
+	        this.code =  ShortIdGenerator.generateRandomId(); // call your generator logic
+	    }
+	}
 
     @CreatedDate
     @Column(name = "created_ts", updatable = false)

@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.api.commons.BaseEntity;
+import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userrelation.UserRelation;
 
-public class UserDto extends BaseEntity {
+public class UserDto extends BaseDto {
 
 	private Long id;
 	private String name;

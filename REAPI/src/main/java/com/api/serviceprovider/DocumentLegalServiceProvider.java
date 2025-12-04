@@ -18,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -25,7 +26,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Table(name = "document_legal_service_provider")
 @Tag(name = "Document Vendor APIs", description = "Operations related to Document Vendor management")
 public class DocumentLegalServiceProvider extends BaseEntity {
 	@Id

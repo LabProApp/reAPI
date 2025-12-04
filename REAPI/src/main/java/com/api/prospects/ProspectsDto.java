@@ -1,9 +1,10 @@
 package com.api.prospects;
 
+import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 import com.api.user.User;
 
-public class ProspectsDto {
+public class ProspectsDto extends BaseDto{
 
 	private Long id;
 	private String name;
