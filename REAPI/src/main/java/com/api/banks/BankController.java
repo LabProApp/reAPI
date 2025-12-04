@@ -62,7 +62,7 @@ public class BankController {
 	}
 
 	// ✏️ Update interest rate
-	@PutMapping("/interest-rates/{bankId}")
+	@PutMapping("/{bankId}/interest-rates/")
 	public ResponseEntity<?> updateInterestRates(@PathVariable Long bankId, @RequestBody InterestRatesDto dto) {
 		dto.setBankId(bankId);
 		return bankService.updateInterestRates(dto);
@@ -70,7 +70,7 @@ public class BankController {
 
 	// 📃 List interest rates for a bank
 	@GetMapping("/{bankId}/interest-rates")
-	public ResponseEntity<List<InterestRates>> listInterestRates(@PathVariable Long bankId) {
+	public ResponseEntity<List<InterestRatesDto>> listInterestRates(@PathVariable Long bankId) {
 		return ResponseEntity.ok(bankService.getRatesByBank(bankId));
 	}
 

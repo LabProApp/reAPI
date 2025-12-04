@@ -69,13 +69,15 @@ public class BankService {
 	}
 
 	// 📃 LIST BY BANK ID
-	public List<InterestRates> getRatesByBank(Long bankId) {
-		return interestRatesRepository.findByBankId(bankId);
-	}
-
 	/**
 	 * List comparison of all loans showing interest rate, processing fee, min CIBIL
 	 */
+	public List<InterestRatesDto> getRatesByBank(Long bankId) {
+		return interestRatesRepository.findByBankId(bankId).stream()
+				.map(ratesDto -> mapper.map(ratesDto, InterestRatesDto.class)).collect(Collectors.toList());
+	}
+
+	
 	public List<LoanComparisonDto> listComparison() {
 
 		return bankRepository.findAll().stream()
@@ -100,31 +102,18 @@ public class BankService {
 	}
 
 	// 🔎 Advanced filtering
-	public List<BankDto> advancedFilter(
-	        Double maxRate,
-	        Integer minCibil,
-	        Integer maxTenure,
-	        Double minIncome,
-	        String city,
-	        String state,
-	        String bank,
-	        String postalCode) {
+	public List<BankDto> advancedFilter(Double maxRate, Integer minCibil, Integer maxTenure, Double minIncome,
+			String city, String state, String bank, String postalCode) {
 
-	    Specification<Bank> spec = Specification
-	            .where(BankSpecifications.hasMaxRate(maxRate))
-	            .and(BankSpecifications.hasMinCibil(minCibil))
-	            .and(BankSpecifications.hasMaxTenure(maxTenure))
-	            .and(BankSpecifications.hasMinIncome(minIncome))
-	            .and(BankSpecifications.hasCity(city))
-	            .and(BankSpecifications.hasState(state))
-	            .and(BankSpecifications.hasBank(bank))
-	            .and(BankSpecifications.hasPostalCode(postalCode));
+		Specification<Bank> spec = Specification.where(BankSpecifications.hasMaxRate(maxRate))
+				.and(BankSpecifications.hasMinCibil(minCibil)).and(BankSpecifications.hasMaxTenure(maxTenure))
+				.and(BankSpecifications.hasMinIncome(minIncome)).and(BankSpecifications.hasCity(city))
+				.and(BankSpecifications.hasState(state)).and(BankSpecifications.hasBank(bank))
+				.and(BankSpecifications.hasPostalCode(postalCode));
 
-	    return bankRepository.findAll(spec)
-	            .stream()
-	            .map(entity -> mapper.map(entity, BankDto.class))  // 🔥 replaced convertToDto()
-	            .toList(); // cleaner in Java 16+
+		return bankRepository.findAll(spec).stream().map(entity -> mapper.map(entity, BankDto.class)) // 🔥 replaced
+																										// convertToDto()
+				.toList(); // cleaner in Java 16+
 	}
-
 
 }
