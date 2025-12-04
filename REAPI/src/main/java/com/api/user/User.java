@@ -8,7 +8,7 @@ import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userrelation.UserRelation;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -52,16 +52,19 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private  MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
 
-	@JsonManagedReference(value = "user-userrelation")
+	//@JsonManagedReference(value = "user-userrelation")
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
 	private List<UserPropertyRelation> userProperties = new ArrayList<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "user-main-relations")
+	//@JsonManagedReference(value = "user-main-relations")
+	@JsonIgnore
 	private List<UserRelation> userRelations = new ArrayList<>();
 
 	@OneToMany(mappedBy = "relatedUser", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference(value = "user-related-relations")
+	//@JsonManagedReference(value = "user-related-relations")
+	@JsonIgnore
 	private List<UserRelation> relatedUserRelations = new ArrayList<>();
 
 	public Long getId() {

@@ -7,21 +7,17 @@ import java.util.List;
 
 import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
-import com.api.user.User;
 import com.api.userproperty.UserPropertyRelation;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
@@ -105,9 +101,9 @@ public class Property extends BaseEntity {
 	@Column(length = 2000)
 	private String description;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "posted_by_user_id")
-	private User postedByUser; // The user who posted the property
+	@Column(name = "posted_by_user_id")
+	private Long postedByUser; // The user who posted the property
+
 	@Builder.Default
 	private LocalDateTime postDate = LocalDateTime.now(); // Auto-set when created
 
@@ -118,7 +114,8 @@ public class Property extends BaseEntity {
 
 	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
-	@JsonManagedReference(value = "property-userrelation")
+//	@JsonManagedReference(value = "property-userrelation")
+	@JsonIgnore
 	private List<UserPropertyRelation> userRelations = new ArrayList<>();
 
 	// --- Helper methods for amenities ---
@@ -281,11 +278,11 @@ public class Property extends BaseEntity {
 		this.description = description;
 	}
 
-	public User getPostedByUser() {
+	public Long getPostedByUser() {
 		return postedByUser;
 	}
 
-	public void setPostedByUser(User postedByUser) {
+	public void setPostedByUser(Long postedByUser) {
 		this.postedByUser = postedByUser;
 	}
 

@@ -47,8 +47,8 @@ public class PropertyService {
 
     /** Search properties dynamically */
     public List<PropertyDto> search(String city, String type, String category, Double minArea, Double maxArea,
-                                    Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate) {
-        return repository.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate)
+                                    Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate,Long postedByUser) {
+        return repository.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate,postedByUser)
                 .stream()
                 .map(p -> mapper.map(p, PropertyDto.class))
                 .collect(Collectors.toList());
@@ -102,24 +102,15 @@ public class PropertyService {
                                             String postedBy, String constructionStatus, String currency, String location,
                                             Double minPrice, Double maxPrice, Integer minBedrooms, Integer maxBedrooms,
                                             Integer minBathrooms, Integer maxBathrooms, Double minArea, Double maxArea,
-                                            String amenity, String rentOrSale, LocalDateTime postDate) {
+                                            String amenity, String rentOrSale, LocalDateTime postDate,Long postedByUser) {
         return repository.searchAll(title, address, city, type, category, postedBy, constructionStatus, currency,
                 location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms, maxBathrooms, minArea, maxArea,
-                amenity, rentOrSale, postDate)
+                amenity, rentOrSale, postDate,postedByUser)
                 .stream()
                 .map(p -> mapper.map(p, PropertyDto.class))
                 .collect(Collectors.toList());
     }
 
     /** Get properties posted by a specific user */
-    public List<PropertyDto> getPropertiesPostedByUser(Long userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User id cannot be null");
-        }
-
-        return repository.findByPostedByUserId(userId)
-                .stream()
-                .map(p -> mapper.map(p, PropertyDto.class))
-                .collect(Collectors.toList());
-    }
+   // Use Advance Search API
 }

@@ -9,102 +9,103 @@ import com.api.user.UserDto;
 
 public class UserPropertyRelationDto extends BaseDto {
 
-    private Long id;
+	private Long id;
 
-    // --- Relations as DTOs ---
-    private UserDto user;
-    private PropertyDto property;
+	// --- Relations as DTOs ---
+	private UserDto user;
+	private PropertyDto property;
 
-    // --- Flags ---
-    private boolean favourite = false; // renamed from isFavourite
-    private boolean inquiry = false;   // renamed from isInquiry
+	// --- Flags ---
+	private boolean favourite = false; // renamed from isFavourite
+	private boolean inquiry = false; // renamed from isInquiry
 
-    // --- Dates ---
-    private LocalDateTime favouriteDate;
-    private LocalDateTime inquiryDate;
+	// --- Dates ---
+	private LocalDateTime favouriteDate;
+	private LocalDateTime inquiryDate;
 
-    // --- Comments / Notes ---
-    private String comments;
+	// --- Comments / Notes ---
+	private String comments;
 
-    // --- Status ---
-    private MasterEnums.UserInquiryStatusEnum status = MasterEnums.UserInquiryStatusEnum.ACTIVE;
+	// --- Status ---
+	private MasterEnums.UserInquiryStatusEnum status = MasterEnums.UserInquiryStatusEnum.ACTIVE;
 
-    // --- Constructors ---
-    public UserPropertyRelationDto() {}
+	// --- Constructors ---
+	public UserPropertyRelationDto() {
+	}
 
-    // --- Logic for flags ---
-    public void setFavourite(boolean favourite) {
-        this.favourite = favourite;
-        this.favouriteDate = favourite ? LocalDateTime.now() : null;
-    }
+	// --- Logic for flags ---
+	public void setFavourite(boolean favourite) {
+		this.favourite = favourite;
 
-    public void setInquiry(boolean inquiry) {
-        this.inquiry = inquiry;
-        this.inquiryDate = inquiry ? LocalDateTime.now() : null;
-    }
+	}
 
-    // --- Getters and Setters ---
-    public Long getId() {
-        return id;
-    }
+	public void setInquiry(boolean inquiry) {
+		this.inquiry = inquiry;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	}
 
-    public UserDto getUser() {
-        return user;
-    }
+	// --- Getters and Setters ---
+	public Long getId() {
+		return id;
+	}
 
-    public void setUser(UserDto user) {
-        this.user = user;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public PropertyDto getProperty() {
-        return property;
-    }
+	public UserDto getUser() {
+		return user;
+	}
 
-    public void setProperty(PropertyDto property) {
-        this.property = property;
-    }
+	public void setUser(UserDto user) {
+		this.user = user;
+	}
 
-    public boolean isFavourite() {
-        return favourite;
-    }
+	public PropertyDto getProperty() {
+		return property;
+	}
 
-    public boolean isInquiry() {
-        return inquiry;
-    }
+	public void setProperty(PropertyDto property) {
+		this.property = property;
+	}
 
-    public LocalDateTime getFavouriteDate() {
-        return favouriteDate;
-    }
+	public boolean isFavourite() {
+		return favourite;
+	}
 
-    public void setFavouriteDate(LocalDateTime favouriteDate) {
-        this.favouriteDate = favouriteDate;
-    }
+	public boolean isInquiry() {
+		return inquiry;
+	}
 
-    public LocalDateTime getInquiryDate() {
-        return inquiryDate;
-    }
+	public LocalDateTime getFavouriteDate() {
+		return favouriteDate;
+	}
 
-    public void setInquiryDate(LocalDateTime inquiryDate) {
-        this.inquiryDate = inquiryDate;
-    }
+	public void setFavouriteDate(LocalDateTime favouriteDate) {
+		this.favouriteDate = favouriteDate;
+	}
 
-    public String getComments() {
-        return comments;
-    }
+	public LocalDateTime getInquiryDate() {
+		return inquiryDate;
+	}
 
-    public void setComments(String comments) {
-        this.comments = comments;
-    }
+	public void setInquiryDate(LocalDateTime inquiryDate) {
+		this.inquiryDate = inquiryDate;
+	}
 
-    public MasterEnums.UserInquiryStatusEnum getStatus() {
-        return status;
-    }
+	public String getComments() {
+		return comments;
+	}
 
-    public void setStatus(MasterEnums.UserInquiryStatusEnum status) {
-        this.status = status;
-    }
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
+	public MasterEnums.UserInquiryStatusEnum getStatus() {
+		return status;
+	}
+
+	public void setStatus(MasterEnums.UserInquiryStatusEnum status) {
+		this.status = status;
+	}
 }

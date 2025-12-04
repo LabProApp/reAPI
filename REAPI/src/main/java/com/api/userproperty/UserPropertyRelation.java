@@ -6,7 +6,7 @@ import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 import com.api.prop.Property;
 import com.api.user.User;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,12 +40,14 @@ public class UserPropertyRelation extends BaseEntity {
 	// --- Relations ---
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
-	@JsonBackReference(value = "user-userrelation")
+	//@JsonBackReference(value = "user-userrelation")
+	@JsonIgnore
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "property_id")
-	@JsonBackReference(value = "property-userrelation")
+//	@JsonBackReference(value = "property-userrelation")
+	@JsonIgnore
 	private Property property;
 
 	// --- Flags ---

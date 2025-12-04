@@ -2,12 +2,10 @@ package com.api.prop;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
-import com.api.userproperty.UserPropertyRelationDto;
 
 public class PropertyDto extends BaseDto {
 
@@ -39,7 +37,7 @@ public class PropertyDto extends BaseDto {
 	private LocalDateTime postDate;
 	private String rentOrSale; // Rent or Sale
 	private boolean verified;
-	private List<UserPropertyRelationDto> userRelations = new ArrayList<>();
+	//private List<UserPropertyRelationDto> userRelations = new ArrayList<>();
 
 	// --- Helper methods for amenities ---
 	public void setAmenitiesFromList(List<Integer> amenityIds) {
@@ -225,13 +223,13 @@ public class PropertyDto extends BaseDto {
 		this.rentOrSale = rentOrSale;
 	}
 
-	public List<UserPropertyRelationDto> getUserRelations() {
-		return userRelations;
-	}
-
-	public void setUserRelations(List<UserPropertyRelationDto> userRelations) {
-		this.userRelations = userRelations;
-	}
+	/*
+	 * public List<UserPropertyRelationDto> getUserRelations() { return
+	 * userRelations; }
+	 * 
+	 * public void setUserRelations(List<UserPropertyRelationDto> userRelations) {
+	 * this.userRelations = userRelations; }
+	 */
 
 	public Double getCarpetArea() {
 		return carpetArea;

@@ -1,13 +1,9 @@
 package com.api.user;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
-import com.api.userproperty.UserPropertyRelation;
-import com.api.userrelation.UserRelation;
 
 public class UserDto extends BaseDto {
 
@@ -26,12 +22,6 @@ public class UserDto extends BaseDto {
 	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
 
 	private MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
-
-	private List<UserPropertyRelation> userProperties = new ArrayList<>();
-
-	private List<UserRelation> userRelations = new ArrayList<>();
-
-	private List<UserRelation> relatedUserRelations = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -97,30 +87,6 @@ public class UserDto extends BaseDto {
 		this.userPackage = userPackage;
 	}
 
-	public List<UserPropertyRelation> getUserProperties() {
-		return userProperties;
-	}
-
-	public void setUserProperties(List<UserPropertyRelation> userProperties) {
-		this.userProperties = userProperties;
-	}
-
-	public MasterEnums.UserStatusEnum getUserStatus() {
-		return userStatus;
-	}
-
-	public void setUserStatus(MasterEnums.UserStatusEnum userStatus) {
-		this.userStatus = userStatus;
-	}
-
-	public List<UserRelation> getUserRelations() {
-		return userRelations;
-	}
-
-	public void setUserRelations(List<UserRelation> userRelations) {
-		this.userRelations = userRelations;
-	}
-
 	public String getOtp() {
 		return otp;
 	}
@@ -143,14 +109,6 @@ public class UserDto extends BaseDto {
 
 	public void setIsVerified(Boolean isVerified) {
 		this.isVerified = isVerified;
-	}
-
-	public List<UserRelation> getRelatedUserRelations() {
-		return relatedUserRelations;
-	}
-
-	public void setRelatedUserRelations(List<UserRelation> relatedUserRelations) {
-		this.relatedUserRelations = relatedUserRelations;
 	}
 
 }

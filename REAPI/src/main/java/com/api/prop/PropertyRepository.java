@@ -19,15 +19,15 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 			      AND (:maxArea IS NULL OR p.superArea <= :maxArea)
 			      AND (:minPrice IS NULL OR p.price >= :minPrice)
 			      AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-			      AND (:rentOrSale IS NULL OR p.rentOrSale <= :rentOrSale)
+			      AND (:rentOrSale IS NULL OR LOWER(p.rentOrSale) = LOWER(:rentOrSale))
 			      AND (:postDate IS NULL OR p.postDate >= :postDate)
+			      AND (:postedByUser IS NULL OR p.postedByUser = :postedByUser)
 			""")
 	List<Property> search(String city, String type, String category, Double minArea, Double maxArea, Double minPrice,
-			Double maxPrice, String rentOrSale, LocalDateTime postDate);
+			Double maxPrice, String rentOrSale, LocalDateTime postDate, Long postedByUser);
 
 	@Query("""
 			    SELECT DISTINCT p FROM Property p
-			    LEFT JOIN p.amenities a
 			    WHERE (:title IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%')))
 			      AND (:address IS NULL OR LOWER(p.address) LIKE LOWER(CONCAT('%', :address, '%')))
 			      AND (:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%')))
@@ -45,15 +45,20 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 			      AND (:maxBathrooms IS NULL OR p.bathrooms <= :maxBathrooms)
 			      AND (:minArea IS NULL OR p.superArea >= :minArea)
 			      AND (:maxArea IS NULL OR p.superArea <= :maxArea)
-			      AND (:rentOrSale IS NULL OR p.rentOrSale <= :rentOrSale)
+			      AND (:rentOrSale IS NULL OR LOWER(p.rentOrSale) = LOWER(:rentOrSale))
 			      AND (:postDate IS NULL OR p.postDate >= :postDate)
-			      AND (:amenity IS NULL OR LOWER(a) LIKE LOWER(CONCAT('%', :amenity, '%')))
+			      AND (:postedByUser IS NULL OR p.postedByUser = :postedByUser)
+			      AND (
+			        :amenity IS NULL
+			        OR p.amenities = :amenity
+			        OR p.amenities LIKE CONCAT(:amenity, ',%')
+			        OR p.amenities LIKE CONCAT('%,', :amenity)
+			        OR p.amenities LIKE CONCAT('%,', :amenity, ',%')
+			   )
 			""")
 	List<Property> searchAll(String title, String address, String city, String type, String category, String postedBy,
 			String constructionStatus, String currency, String location, Double minPrice, Double maxPrice,
 			Integer minBedrooms, Integer maxBedrooms, Integer minBathrooms, Integer maxBathrooms, Double minArea,
-			Double maxArea, String amenity, String rentOrSale, LocalDateTime postDate);
-
-	List<Property> findByPostedByUserId(Long userId);
+			Double maxArea, String amenity, String rentOrSale, LocalDateTime postDate, Long postedByUser);
 
 }

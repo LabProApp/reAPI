@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.api.enums.MasterEnums;
-import com.api.notifications.OtpService;
+import com.api.notifications.CommService;
 import com.api.prop.Property;
 import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
@@ -24,15 +24,15 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PropertyRepository propertyRepository;
 	private final UserPropertyRelationRepository propertyRelationRepository;
-	private final OtpService otpService;
+	private final CommService commService;
 	private final ModelMapper mapper;
 
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
-			UserPropertyRelationRepository propertyRelationRepository, OtpService otpService, ModelMapper mapper) {
+			UserPropertyRelationRepository propertyRelationRepository, CommService commService, ModelMapper mapper) {
 		this.userRepository = userRepository;
 		this.propertyRepository = propertyRepository;
 		this.propertyRelationRepository = propertyRelationRepository;
-		this.otpService = otpService;
+		this.commService = commService;
 		this.mapper = mapper;
 	}
 
@@ -58,16 +58,17 @@ public class UserService {
 		userRepository.save(user);
 
 		// Generate OTP
-		String otp = otpService.generateOtp();
+		String otp = commService.generateOtp();
 		user.setOtp(otp);
 		user.setOtpGeneratedAt(LocalDateTime.now());
 		userRepository.save(user);
 
 		// Send OTP
 		if (user.getMobile() != null)
-			otpService.sendOtpOnSms(user.getMobile(), otp);
+			commService.sendSMSMessage(user.getMobile(), "One Time Password is: " + otp + "\nValid for 10 minutes");
 		if (user.getEmail() != null)
-			otpService.sendOtpOnEmail(user.getEmail(), otp);
+			commService.sendEmail(user.getEmail(), "One Time Password is: " + otp + "\nValid for 10 minutes",
+					"OTP for User SignUp");
 
 		return mapper.map(user, UserDto.class);
 	}
@@ -108,15 +109,16 @@ public class UserService {
 			return ResponseEntity.badRequest().body("Please wait 1 min before requesting a new OTP");
 		}
 
-		String newOtp = otpService.generateOtp();
+		String newOtp = commService.generateOtp();
 		user.setOtp(newOtp);
 		user.setOtpGeneratedAt(LocalDateTime.now());
 		userRepository.save(user);
 
-		if (user.getMobile() != null)
-			otpService.sendOtpOnSms(user.getMobile(), newOtp);
-		if (user.getEmail() != null)
-			otpService.sendOtpOnEmail(user.getEmail(), newOtp);
+		if (identifier.contains("@"))
+			commService.sendSMSMessage(user.getMobile(), "Your OTP is: " + newOtp + "\nValid for 10 minutes");
+		else
+			commService.sendEmail(user.getEmail(), "Your OTP is: " + newOtp + "\nValid for 10 minutes",
+					"OTP for User SignUp");
 
 		return ResponseEntity.ok("New OTP has been sent");
 	}

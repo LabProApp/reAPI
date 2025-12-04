@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.util.Date;
 
+import com.api.commons.BaseEntity;
+
 @Entity
 @Table(name = "bank_partners")
-public class Bank {
+public class Bank extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

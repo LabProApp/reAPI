@@ -8,7 +8,11 @@ import org.hibernate.persister.entity.EntityPersister;
 
 public abstract class ShortIdGenerator implements IdentifierGenerator {
 
-    private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final int LENGTH = 6;
 
