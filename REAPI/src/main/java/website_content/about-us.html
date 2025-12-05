@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | Aggarwal Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== Global Styles ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ===== About Us Section ===== */
+        .about-us {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+        }
+
+        .about-us .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .about-us h1 {
+            font-size: 42px;
+            color: #002b5b;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .about-us h1::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #002b5b;
+            margin: 12px auto 0;
+            border-radius: 2px;
+        }
+
+        .about-us .mission {
+            font-size: 18px;
+            max-width: 850px;
+            margin: 30px auto 60px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* ===== Founders Section ===== */
+        .founders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+        }
+
+        .founder {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            flex: 1 1 380px;
+            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .founder:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .founder img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        .founder h3 {
+            font-size: 26px;
+            color: #002b5b;
+            margin-bottom: 8px;
+        }
+
+        .founder p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .founder p strong {
+            color: #000;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .founders {
+                flex-direction: column;
+                align-items: center;
+            }
+            .founder {
+                flex: 1 1 90%;
+            }
+        }
+
+      
+        }
+    </style>
+</head>
+<body>
+
+    <!-- About Us Section -->
+    <section class="about-us">
+        <div class="container">
+            <h1>About Us</h1>
+            <p class="mission">
+                Our mission is to simplify the home buying journey by providing seamless access to homes, smooth loan processes, and comprehensive documentation services—making the experience effortless for our clients.
+            </p>
+
+            <div class="founders">
+                <!-- Founder 1 -->
+                <article class="founder">
+                    <img src="icici.png" alt="Reeva Aggarwal">
+                    <h3>Reeva Aggarwal</h3>
+                   <p style="text-align: center;"><strong>Co-Founder</strong></p>
+                    <p>Reeva Aggarwal is a finance and real estate professional with over a decade of experience guiding clients in making informed financial and property decisions. With expertise in financial planning, investment analysis, and market strategy, she delivers tailored solutions that make homeownership and real estate investments seamless and rewarding. Known for her client-focused approach and strategic insight, Reeva ensures every transaction generates long-term benefits and strategic advantage.</p>
+                </article>
+
+                <!-- Founder 2 -->
+                <article class="founder">
+                    <img src="sbi.png" alt="Gourav Aggarwal">
+                    <h3>Gourav Aggarwal</h3>
+                   <p style="text-align: center;"><strong>Co-Founder</strong></p>
+                    <p>Gourav Aggarwal is a finance and legal professional dedicated to simplifying complex loan and documentation processes. He has expertise in regulatory compliance, risk assessment, and financial structuring, helping clients navigate transactions confidently and efficiently. Passionate about precision and effectiveness, Gourav bridges legal and financial requirements to save clients time, reduce stress, and enable informed decisions. Whether guiding individuals through personal loans or supporting businesses with structured financing, he provides clarity and a smooth, worry-free experience at every step.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+   <footer style="text-align:center; padding:30px 20px; background:#002b5b; color:white;">
+    <div style="margin-bottom:18px; font-size:22px; font-weight:600;">Connect With Us</div>
+    <div style="margin-bottom:20px; display:flex; justify-content:center; gap:25px;">
+        <a href="https://www.facebook.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.youtube.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-youtube"></i></a>
+		<a href="about-us.html" target="_blank" rel="noopener noreferrer" style="color:white; text-decoration:underline;"> About Us</a>
+    </div>
+	  <div style="margin-top:12px; font-size:14px; opacity:0.85;">
+        <a href="terms-of-use.html" target="_blank" rel="noopener noreferrer" style="color:white; text-decoration:underline;">Terms of Use</a>
+ | © 2025 Aggarwal Solutions — All Rights Reserved
+    </div>
+  
+</footer>
+</body>
+</html>

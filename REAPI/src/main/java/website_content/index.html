@@ -3,275 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TIMBRIX Real Estate Solutions</title>
-
+<title>AbodeOne</title>
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<style>
-/* -------------------- GLOBAL -------------------- */
-html { scroll-behavior: smooth; }
-body {
-    margin: 0;
-    font-family: "Poppins", sans-serif;
-    background: #f6f7f9;
-    color: #333;
-}
-
-/* -------------------- HEADER -------------------- */
-header {
-    background: #ffffffeb;
-    backdrop-filter: blur(12px);
-    position: sticky;
-    top: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 40px;
-    border-bottom: 1px solid #e6e6e6;
-}
-
-header .logo-area {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-header .logo-area strong {
-    font-size: 22px;
-    font-weight: 700;
-    color: #002b5b;
-    letter-spacing: 1px;
-}
-
-header nav ul {
-    list-style: none;
-    display: flex;
-    gap: 32px;
-    margin: 0;
-}
-header nav ul li a {
-    font-weight: 500;
-    text-decoration: none;
-    color: #002b5b;
-    transition: 0.3s;
-}
-header nav ul li a:hover {
-    color: #ff6a00;
-    font-weight: 600;
-}
-
-/* Hamburger menu button */
-.hamburger {
-    display: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: #002b5b;
-}
-
-/* -------------------- SECTIONS -------------------- */
-section {
-    padding: 90px 80px;
-    min-height: 50vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* -------------------- CARDS -------------------- */
-.glass-card {
-    background: white;
-    border-radius: 26px;
-    box-shadow: 0 12px 50px rgba(0,0,0,0.10);
-    padding: 100px;
-    display: flex;
-    align-items: center;
-    gap: 65px;
-    max-width: 1500px;
-    width: 100%;
-    opacity: 0;
-    transform: translateY(70px);
-	transition: transform 0.5s ease, opacity 0.5s ease;
-}
-
-.visible {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-}
-
-/* -------------------- TEXT -------------------- */
-.glass-card h1, .glass-card h2 {
-    margin: 0 0 18px 0;
-    color: #012a4a;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.glass-card p {
-    font-size: 17px;
-    line-height: 1.7;
-    color: #444;
-}
-
-.highlight {
-    color: #ff6a00;
-}
-
-/* -------------------- IMAGE -------------------- */
-.section-image {
-    width: 260px;
-    height: 260px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    transition: 0.3s ease;
-}
-.section-image:hover {
-    transform: scale(1.08);
-}
-
-/* -------------------- SECTION COLORS -------------------- */
-#intro { background: #f8fafc; }
-#residential { background: #fff6e8; }
-#commercial { background: #eaf2ff; }
-#rentals { background: #f8f9fa; }
-#loans { background: #fff9e6; }
-#legal { background: #e2f8f9; }
-#partners { background: #f0f1f3; }
-#contact { background: #fff4e7; }
-
-/* -------------------- PARTNER SLIDER -------------------- */
-.partner-track-wrapper {
-    overflow: hidden;
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.partner-track {
-    display: flex;
-    gap: 70px;
-    animation: slide 18s linear infinite;
-}
-
-.partner-track img {
-    width: 160px;
-    height: 160px;
-    object-fit: contain;
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-    transition: 0.3s;
-}
-.partner-track img:hover {
-    transform: scale(1.15);
-}
-
-@keyframes slide {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-}
-
-/* -------------------- CONTACT FORM -------------------- */
-form {
-    margin-top: 15px;
-}
-form input, form textarea {
-    width: 100%;
-    padding: 14px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 16px;
-    background: #fff;
-}
-form button {
-    padding: 14px 30px;
-    background: #ff6a00;
-    border: none;
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-}
-form button:hover {
-    background: #e35d00;
-}
-
-/* -------------------- RESPONSIVE -------------------- */
-@media (max-width: 900px) {
-    .glass-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    .section-image {
-        width: 180px;
-        height: 180px;
-    }
-    header {
-        padding: 12px 20px;
-    }
-    header nav ul {
-        gap: 18px;
-    }
-}
-
-/* Improved mobile responsiveness */
-@media (max-width: 700px) {
-    section {
-        padding: 50px 25px;
-    }
-    .glass-card {
-        padding: 45px 28px;
-        gap: 30px;
-        max-width: 100%;
-    }
-    .section-image {
-        width: 140px;
-        height: 140px;
-    }
-    .glass-card h1, .glass-card h2 { font-size: 22px; }
-    .glass-card p { font-size: 15px; }
-    .partner-track img {
-        width: 100px;
-        height: 100px;
-        padding: 12px;
-    }
-    .hamburger {
-        display: block;
-    }
-    header nav {
-        display: none;
-        position: absolute;
-        top: 70px;
-        right: 0;
-        background: #ffffff;
-        width: 200px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        border-radius: 10px;
-        flex-direction: column;
-        padding: 10px;
-    }
-    header nav ul {
-        flex-direction: column;
-        gap: 15px;
-    }
-}
-
-/* Extra small phones */
-@media (max-width: 500px) {
-    header { padding: 10px 15px; }
-    .glass-card { padding: 35px 22px; border-radius: 20px; gap: 22px; }
-    .section-image { width: 120px; height: 120px; }
-    .partner-track img { width: 80px; height: 80px; padding: 10px; }
-    header .logo-area strong { font-size: 18px; }
-}
-</style>
 </head>
 
 <body>
@@ -290,10 +28,10 @@ form button:hover {
     <nav id="nav-menu">
         <ul>
             <li><a href="#intro">Home</a></li>
-            <li><a href="#residential">Residential Houses & Apartments</a></li>
-            <li><a href="#commercial">Commercial Space</a></li>
+            <li><a href="#residential">Residential Homes & Apartments</a></li>
+            <li><a href="#commercial">Commercial Spaces</a></li>
             <li><a href="#rentals">Rentals & Leasing</a></li>
-            <li><a href="#loans">Financing</a></li>
+            <li><a href="#loans">Financing & Loans</a></li>
             <li><a href="#legal">Legal Services</a></li>
             <li><a href="#partners">Our Channel Partners</a></li>
             <li><a href="#contact">Contact Us</a></li>
@@ -302,17 +40,23 @@ form button:hover {
 </header>
 
 <!-- ======================= SECTIONS ======================= -->
+
+
+
 <section id="intro">
     <div class="glass-card">
-        <img src="intro.jpg" class="section-image">
+        <img src="intro.jpg" class="section-image" alt="Real Estate Intro">
         <div class="text-content">
            <h1>Real Estate Made <span class="highlight">Effortless</span></h1>
-           <p>Your perfect solution for property, financing, and documentation services— all integrated into a smoother, smarter ecosystem designed for modern buyers.</p>
-           <p>At <span class="highlight"> ABODE ONE </span>, we bring you verified listings, trusted partnerships, and complete transparency so your real estate journey stays stress-free from start to finish.</p>
-           <p>Discover homes, commercial spaces, rentals, loans and advisory services backed by a team committed to quality and reliability.</p>
+           <p>Identify your ideal home or office, and access banking and legal documentation services efficiently—with complete clarity and transparency throughout the process.</p>
+           <p>At <span class="highlight">ABODE ONE</span>, we provide verified property listings, trusted partnerships, and a fully transparent process, ensuring your real estate journey is safe, seamless, and stress-free.</p>
+           <p>Explore residential and commercial properties, rental options, financing solutions, and legal documentation services—supported by a dedicated team committed to delivering professional, reliable guidance at every step.</p>
         </div>
     </div>
 </section>
+
+
+
 
 
 <!-- ======================= RESIDENTIAL ======================= -->
@@ -399,12 +143,12 @@ form button:hover {
             <span class="highlight">Our Trusted Channel Partners</span>
         </h2>
 
-      <p style="max-width: 850px; margin: 0 auto 25px auto; font-size: 17px; line-height: 1.7; color: #555;">
+      <p style="max-width: 850px; margin: 0 auto 20px auto; font-size: 17px; line-height: 1.7; color: #555;">
     We partner with top developers, leading financial institutions, and verified service providers to create a trusted real estate ecosystem. 
    </p>
 
 
-        <hr style="width: 80px; border: none; height: 3px; background: #ff6a00; border-radius: 10px; margin: 25px auto 40px auto;">
+        <hr style="width: 200px; border: none; height: 3px; background: #ff6a00; border-radius: 10px; margin: 15px auto 20px auto;">
 
         <div class="partner-track-wrapper">
             <div class="partner-track">
@@ -436,98 +180,63 @@ form button:hover {
 <!-- ======================= CONTACT ======================= -->
 <section id="contact">
     <div class="glass-card">
-        <img src="contactus.jpg" class="section-image">
+        <img src="contactus.jpg" class="section-image" alt="Contact Us">
 
-        <div class="text-content" style="max-width:600px;">
+        <div class="text-content">
             <h2><span class="highlight">Contact Us</span></h2>
             <p>Have a query about buying, renting, investing, or loan assistance? Our expert team along with channel partners is here to support you.</p>
-            <p>Want to Join our trusted network of developers, banks, and service providers to deliver seamless real estate solutions and grow together.</p>
+            <p>Want to join our trusted network of developers, banks, and service providers to deliver seamless real estate solutions and grow together.</p>
+            <p>Share your details, and we’ll reach out with personalized recommendations tailored to your goals.</p>
 
-			<p>Share your details, and we’ll reach out with personalized recommendations tailored to your goals.</p>
-
-        <form action="send_email.php" method="post">
-                <input type="text" placeholder="Your Name" required>
-                <input type="tel" placeholder="Your Phone" required>
-                <input type="email" placeholder="Your Email" required>
-                <textarea placeholder="Your Message" required></textarea>
+            <form id="contactForm" method="post">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="tel" name="phone" placeholder="Your Phone" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
                 <button type="submit">Send Inquiry</button>
             </form>
+
+            <div class="form-message success" id="successMessage">
+                ✅ Your inquiry has been received. We will contact you soon!
+            </div>
+
+            <div class="form-message error" id="errorMessage">
+                ❌ Sorry, something went wrong. Please try again later.
+            </div>
         </div>
     </div>
 </section>
 
-<style>
-/* -------------------- CONTACT FORM STYLING -------------------- */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-}
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-form input,
-form textarea {
-    width: 100%;
-    padding: 12px 14px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    transition: 0.3s;
-}
+    const form = e.target;
+    const formData = new FormData(form);
 
-form input:focus,
-form textarea:focus {
-    outline: none;
-    border-color: #ff6a00;
-    box-shadow: 0 0 5px rgba(255,106,0,0.5);
-}
+    fetch('send_email.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        if(data.trim() === 'success') {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            form.reset();
+        } else {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'block';
+    });
+});
+</script>
 
-form textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-form button {
-    padding: 12px 25px;
-    font-size: 16px;
-    border-radius: 10px;
-    background: #ff6a00;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-form button:hover {
-    background: #e35d00;
-}
-
-/* -------------------- MOBILE RESPONSIVE -------------------- */
-@media (max-width: 700px) {
-    form input,
-    form textarea {
-        font-size: 15px;
-        padding: 10px 12px;
-    }
-    form button {
-        font-size: 15px;
-        padding: 10px 20px;
-    }
-}
-
-@media (max-width: 500px) {
-    form input,
-    form textarea {
-        font-size: 14px;
-        padding: 8px 10px;
-    }
-    form button {
-        font-size: 14px;
-        padding: 8px 18px;
-    }
-}
-</style>
 
 
 
@@ -535,12 +244,17 @@ form button:hover {
 <footer style="text-align:center; padding:30px 20px; background:#002b5b; color:white;">
     <div style="margin-bottom:18px; font-size:22px; font-weight:600;">Connect With Us</div>
     <div style="margin-bottom:20px; display:flex; justify-content:center; gap:25px;">
-        <a href="www.facebook.com" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-facebook-f"></i></a>
-        <a href="www.instagram.com" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-instagram"></i></a>
-        <a href="www.linkedin.com" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-linkedin-in"></i></a>
-        <a href="www.youtube.com" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-youtube"></i></a>
+        <a href="https://www.facebook.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.youtube.com" target="_blank" style="color:white; font-size:26px; transition:0.3s;"><i class="fab fa-youtube"></i></a>
+		<a href="about-us.html" target="_blank" rel="noopener noreferrer" style="color:white; text-decoration:underline;"> About Us</a>
     </div>
-    <div style="margin-top:12px; font-size:14px; opacity:0.85;">© 2025 Aggarwal Solutions — All Rights Reserved</div>
+	  <div style="margin-top:12px; font-size:14px; opacity:0.85;">
+        <a href="terms-of-use.html" target="_blank" rel="noopener noreferrer" style="color:white; text-decoration:underline;">Terms of Use</a>
+ | © 2025 Aggarwal Solutions — All Rights Reserved
+    </div>
+  
 </footer>
 
 <script>
