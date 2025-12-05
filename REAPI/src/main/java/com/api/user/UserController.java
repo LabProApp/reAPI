@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.api.prop.PropertyDto;
 import com.api.userproperty.UserPropertyRelationDto;
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
@@ -23,73 +22,72 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "User APIs", description = "Operations related to User management")
 public class UserController {
 
-    private final UserService userService;
+	private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+	public UserController(UserService userService) {
+		this.userService = userService;
+	}
 
-    @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@RequestBody UserDto userDto) {
-        UserDto savedUser = userService.signup(userDto);
-        return ResponseEntity.ok(savedUser);
-    }
+	@PostMapping("/signup")
+	public ResponseEntity<UserDto> signup(@RequestBody UserDto userDto) {
+		UserDto savedUser = userService.signup(userDto);
+		return ResponseEntity.ok(savedUser);
+	}
 
-    @PostMapping("/verifyOtp")
-    public ResponseEntity<String> verifyOtp(@RequestParam String identifier, @RequestParam String otp) {
-        return userService.verifyOtp(identifier, otp);
-    }
+	@PostMapping("/verifyOtp")
+	public ResponseEntity<String> verifyOtp(@RequestParam String identifier, @RequestParam String otp) {
+		return userService.verifyOtp(identifier, otp);
+	}
 
-    @PostMapping("/resend-otp")
-    public ResponseEntity<String> resendOtp(@RequestParam String identifier) {
-        return userService.resendOtp(identifier);
-    }
+	@PostMapping("/resend-otp")
+	public ResponseEntity<String> resendOtp(@RequestParam String identifier) {
+		return userService.resendOtp(identifier);
+	}
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserDto userDto) {
-        return userService.login(userDto);
-    }
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@RequestBody UserDto userDto) {
+		return userService.login(userDto);
+	}
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        return userService.logout();
-    }
+	@PostMapping("/logout")
+	public ResponseEntity<String> logout() {
+		return userService.logout();
+	}
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
-        return userService.resetPassword(email, newPassword);
-    }
+	@PostMapping("/reset-password")
+	public ResponseEntity<String> resetPassword(@RequestBody UserDto userDto) {
+		return userService.resetPassword(userDto);
+	}
 
-    @GetMapping("/me")
-    @Operation(summary = "Get user by email", description = "Retrieves user details by unique email.")
-    public ResponseEntity<UserDto> getProfile(@RequestParam String email) {
-        UserDto userDto = userService.getProfile(email);
-        return ResponseEntity.ok(userDto);
-    }
+	@GetMapping("/me")
+	public ResponseEntity<UserDto> getProfile(@RequestParam String identifier) {
+		UserDto userDto = userService.getProfile(identifier);
+		return ResponseEntity.ok(userDto);
+	}
 
-    @PutMapping("/update")
-    public ResponseEntity<UserDto> updateProfile(@RequestBody UserDto userDto) {
-        UserDto updatedUser = userService.updateProfile(userDto);
-        return ResponseEntity.ok(updatedUser);
-    }
+	@PutMapping("/update")
+	public ResponseEntity<UserDto> updateProfile(@RequestBody UserDto userDto) {
+		UserDto updatedUser = userService.updateProfile(userDto);
+		return ResponseEntity.ok(updatedUser);
+	}
 
-    @PostMapping("/{userId}/favourite/{propertyId}")
-    public UserPropertyRelationDto markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
-        return userService.markFavourite(userId, propertyId);
-    }
+	@PostMapping("/{userId}/favourite/{propertyId}")
+	public UserPropertyRelationDto markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
+		return userService.markFavourite(userId, propertyId);
+	}
 
-    @PostMapping("/{userId}/interest/{propertyId}")
-    public UserPropertyRelationDto markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
-        return userService.markInterested(userId, propertyId);
-    }
+	@PostMapping("/{userId}/interest/{propertyId}")
+	public UserPropertyRelationDto markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
+		return userService.markInterested(userId, propertyId);
+	}
 
-    @GetMapping("/{userId}/favourites")
-    public List<PropertyDto> getFavouriteProperties(@PathVariable Long userId) {
-        return userService.getFavouriteProperties(userId);
-    }
+	@GetMapping("/{userId}/favourites")
+	public List<PropertyDto> getFavouriteProperties(@PathVariable Long userId) {
+		return userService.getFavouriteProperties(userId);
+	}
 
-    @GetMapping("/{userId}/inqueries")
-    public List<PropertyDto> getInquiredProperties(@PathVariable Long userId) {
-        return userService.getInquiredProperties(userId);
-    }
+	@GetMapping("/{userId}/inqueries")
+	public List<PropertyDto> getInquiredProperties(@PathVariable Long userId) {
+		return userService.getInquiredProperties(userId);
+	}
 }

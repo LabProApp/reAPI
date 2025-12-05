@@ -171,12 +171,18 @@ public class UserService {
 	}
 
 	// ---------------- RESET PASSWORD ----------------
-	public ResponseEntity<String> resetPassword(String emailOrMobile, String newPassword) {
-		Optional<User> userOpt = emailOrMobile.contains("@") ? userRepository.findByEmail(emailOrMobile)
-				: userRepository.findByMobile(emailOrMobile);
+	public ResponseEntity<String> resetPassword(UserDto userDto) {
+		Optional<User> userOpt = null;
+		if (userDto.getEmail() != null)
+			userOpt = userRepository.findByEmail(userDto.getEmail());
 
+		else if (userDto.getMobile() != null)
+			userOpt = userRepository.findByMobile(userDto.getMobile());
+		if (userOpt == null) {
+			throw new IllegalArgumentException("User not found");
+		}
 		User user = userOpt.orElseThrow(() -> new IllegalArgumentException("User not found"));
-		user.setPassword(newPassword);
+		user.setPassword(userDto.getPassword());
 		userRepository.save(user);
 
 		return ResponseEntity.ok("Password reset successfully!");

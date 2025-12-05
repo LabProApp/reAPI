@@ -79,6 +79,14 @@ public class UserDto extends BaseDto {
 		this.userRole = userRole;
 	}
 
+	public MasterEnums.UserStatusEnum getUserStatus() {
+		return userStatus;
+	}
+
+	public void setUserStatus(MasterEnums.UserStatusEnum userStatus) {
+		this.userStatus = userStatus;
+	}
+
 	public MasterEnums.PackageEnum getUserPackage() {
 		return userPackage;
 	}
