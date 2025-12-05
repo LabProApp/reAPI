@@ -8,132 +8,131 @@ import com.api.commons.BaseEntity;
 
 @Entity
 @Table(name = "bank_partners")
-public class Bank extends BaseEntity{
+public class Bank extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    // Bank / Representative Details
-    @NotNull
-    @Size(max = 100)
-    @Column(name = "bank_name", nullable = false)
-    private String bankName;
+	// Bank / Representative Details
+	@NotNull
+	@Size(max = 100)
+	@Column(name = "bank_name", nullable = false)
+	private String bankName;
 
-    @NotNull
-    @Size(max = 100)
-    @Column(name = "contact_name", nullable = false)
-    private String contactName;
+	@NotNull
+	@Size(max = 100)
+	@Column(name = "contact_name", nullable = false)
+	private String contactName;
 
-    @NotNull
-    @Size(max = 15)
-    @Column(name = "contact_number", nullable = false)
-    private String contactNumber;
+	@NotNull
+	@Size(max = 15)
+	@Column(name = "contact_number", nullable = false)
+	private String contactNumber;
 
-    @Size(max = 100)
-    @Column(name = "email")
-    private String email;
+	@Size(max = 100)
+	@Column(name = "email")
+	private String email;
 
-    @Size(max = 100)
-    @Column(name = "branch_name")
-    private String branchName;
+	@Size(max = 100)
+	@Column(name = "branch_name")
+	private String branchName;
 
-    // 🌍 Address Details
-    @Size(max = 255)
-    @Column(name = "location_address")
-    private String locationAddress;
+	// 🌍 Address Details
+	@Size(max = 255)
+	@Column(name = "location_address")
+	private String locationAddress;
 
-    @Size(max = 100)
-    @Column(name = "street")
-    private String street;
+	@Size(max = 100)
+	@Column(name = "street")
+	private String street;
 
-    @Size(max = 100)
-    @Column(name = "city")
-    private String city;
+	@Size(max = 100)
+	@Column(name = "city")
+	private String city;
 
-    @Size(max = 100)
-    @Column(name = "state")
-    private String state;
+	@Size(max = 100)
+	@Column(name = "state")
+	private String state;
 
-    @Size(max = 20)
-    @Column(name = "postal_code")
-    private String postalCode;
+	@Size(max = 20)
+	@Column(name = "postal_code")
+	private String postalCode;
 
-    @Size(max = 100)
-    @Column(name = "country")
-    private String country;
+	@Size(max = 100)
+	@Column(name = "country")
+	private String country;
 
-    @Size(max = 255)
-    @Column(name = "website_url")
-    private String websiteUrl;
+	@Size(max = 255)
+	@Column(name = "website_url")
+	private String websiteUrl;
 
-    // Loan Details
-    @Column(name = "interest_rate")
-    private double interestRate; // Annual %
+	@Column(name = "interest_rate")
+	private double interestRate; // Annual %
 
-    @Size(max = 20)
-    @Column(name = "interest_type")
-    private String interestType; // Fixed / Floating / Hybrid
+	@Size(max = 20)
+	@Column(name = "interest_type")
+	private String interestType; // Fixed / Floating / Hybrid
 
-    @Column(name = "processing_fee")
-    private double processingFee;
+	@Column(name = "processing_fee")
+	private double processingFee;
 
-    @Column(name = "tenure_years")
-    private int tenureYears;
+	@Column(name = "tenure_years")
+	private int tenureYears;
 
-    @Column(name = "max_loan_amount")
-    private double maxLoanAmount;
+	@Column(name = "max_loan_amount")
+	private double maxLoanAmount;
 
-    @Column(name = "min_loan_amount")
-    private double minLoanAmount;
+	@Column(name = "min_loan_amount")
+	private double minLoanAmount;
 
-    @Column(name = "min_cibil_score")
-    private int minCibilScore;
+	@Column(name = "min_cibil_score")
+	private int minCibilScore;
 
-    // Eligibility Requirements
-    @Column(name = "minimum_income")
-    private double minimumIncome;
+	// Eligibility Requirements
+	@Column(name = "minimum_income")
+	private double minimumIncome;
 
-    @Size(max = 50)
-    @Column(name = "employment_type")
-    private String employmentType; // Salaried / Self-employed
+	@Size(max = 50)
+	@Column(name = "employment_type")
+	private String employmentType; // Salaried / Self-employed
 
-    @Column(name = "minimum_age")
-    private int minimumAge;
+	@Column(name = "minimum_age")
+	private int minimumAge;
 
-    @Column(name = "maximum_age")
-    private int maximumAge;
+	@Column(name = "maximum_age")
+	private int maximumAge;
 
-    @Size(max = 50)
-    @Column(name = "nationality_requirement")
-    private String nationalityRequirement;
+	@Size(max = 50)
+	@Column(name = "nationality_requirement")
+	private String nationalityRequirement;
 
-    // Additional Features
-    @Column(name = "prepayment_allowed")
-    private boolean prepaymentAllowed;
+	// Additional Features
+	@Column(name = "prepayment_allowed")
+	private boolean prepaymentAllowed;
 
-    @Column(name = "part_payment_allowed")
-    private boolean partPaymentAllowed;
+	@Column(name = "part_payment_allowed")
+	private boolean partPaymentAllowed;
 
-    @Column(name = "balance_transfer_available")
-    private boolean balanceTransferAvailable;
+	@Column(name = "balance_transfer_available")
+	private boolean balanceTransferAvailable;
 
-    @Column(name = "insurance_bundled")
-    private boolean insuranceBundled;
+	@Column(name = "insurance_bundled")
+	private boolean insuranceBundled;
 
-    @Size(max = 255)
-    @Column(name = "special_offers")
-    private String specialOffers;
+	@Size(max = 255)
+	@Column(name = "special_offers")
+	private String specialOffers;
 
-    @Size(max = 500)
-    @Column(name = "required_documents")
-    private String requiredDocuments;
+	@Size(max = 10000)
+	@Column(name = "required_documents")
+	private String requiredDocuments;
 
-    @Size(max = 1000)
-    @Column(name = "details")
-    private String details;
+	@Size(max = 3000)
+	@Column(name = "details")
+	private String details;
 
-    public Long getId() {
+	public Long getId() {
 		return id;
 	}
 
@@ -406,25 +405,25 @@ public class Bank extends BaseEntity{
 	}
 
 	// Timestamp metadata
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", updatable = false)
-    private Date createdAt;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "created_at", updatable = false)
+	private Date createdAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
-    private Date updatedAt;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "updated_at")
+	private Date updatedAt;
 
-    // Getters and Setters for all fields including new address fields
-    // ...
+	// Getters and Setters for all fields including new address fields
+	// ...
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = new Date();
-        updatedAt = new Date();
-    }
+	@PrePersist
+	protected void onCreate() {
+		createdAt = new Date();
+		updatedAt = new Date();
+	}
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = new Date();
-    }
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = new Date();
+	}
 }
