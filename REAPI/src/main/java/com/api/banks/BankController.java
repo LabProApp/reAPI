@@ -62,7 +62,7 @@ public class BankController {
 	}
 
 	// ✏️ Update interest rate
-	@PutMapping("/{bankId}/interest-rates/")
+	@PutMapping("/{bankId}/interest-rates")
 	public ResponseEntity<?> updateInterestRates(@PathVariable Long bankId, @RequestBody InterestRatesDto dto) {
 		dto.setBankId(bankId);
 		return bankService.updateInterestRates(dto);
