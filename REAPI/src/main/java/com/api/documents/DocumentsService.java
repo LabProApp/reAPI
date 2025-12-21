@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.api.enums.MasterEnums;
+
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 @Transactional
 public class DocumentsService {
@@ -79,6 +83,26 @@ public class DocumentsService {
 		Documents doc = documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
 		return mapper.map(doc, DocumentDto.class);
+	}
+
+	public DocumentDto updateDocumentStatus(Long documentId, MasterEnums.DocumentStatus status, String rejectionReason,
+			String comments) {
+
+		Documents document = documentsRepository.findById(documentId)
+				.orElseThrow(() -> new EntityNotFoundException("Document not found with id: " + documentId));
+
+		document.setDocumentStatus(status);
+		document.setComments(comments);
+
+		if (status == MasterEnums.DocumentStatus.REJECTED) {
+			document.setRejectionReason(rejectionReason);
+		} else {
+			document.setRejectionReason(null);
+		}
+
+		Documents savedDocument = documentsRepository.save(document);
+		return mapper.map(savedDocument, DocumentDto.class);
+
 	}
 
 	// Get all documents by objectType and objectId

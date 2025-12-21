@@ -1,12 +1,15 @@
 package com.api.documents;
 
 import com.api.commons.BaseDto;
+import com.api.enums.MasterEnums;
+
+import jakarta.persistence.Column;
 
 public class DocumentDto extends BaseDto {
 
 	private Long id;
 	private String docUrl;
-	private String  filename;
+	private String filename;
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	private String docType;
 
@@ -17,6 +20,11 @@ public class DocumentDto extends BaseDto {
 	private Long objectId;
 
 	private String caption;
+
+	private MasterEnums.DocumentStatus documentStatus;
+	private String rejectionReason;
+
+	private String comments;
 
 	public Long getId() {
 		return id;
@@ -65,6 +73,7 @@ public class DocumentDto extends BaseDto {
 	public void setCaption(String caption) {
 		this.caption = caption;
 	}
+
 	public String getFilename() {
 		return filename;
 	}
@@ -72,4 +81,29 @@ public class DocumentDto extends BaseDto {
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
+
+	public MasterEnums.DocumentStatus getDocumentStatus() {
+		return documentStatus;
+	}
+
+	public void setDocumentStatus(MasterEnums.DocumentStatus documentStatus) {
+		this.documentStatus = documentStatus;
+	}
+
+	public String getRejectionReason() {
+		return rejectionReason;
+	}
+
+	public void setRejectionReason(String rejectionReason) {
+		this.rejectionReason = rejectionReason;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
 }

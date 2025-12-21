@@ -1,21 +1,21 @@
 package com.api.documents;
 
 import com.api.commons.BaseEntity;
+import com.api.enums.MasterEnums;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Table(name = "documents")
 public class Documents extends BaseEntity {
 
@@ -27,23 +27,33 @@ public class Documents extends BaseEntity {
 	@Column(nullable = false, length = 1000)
 	private String docUrl;
 
-	// filename
 	@Column(nullable = false, length = 256)
 	private String filename;
 
-	// IMAGE, VIDEO, PDF, DOC, etc.
 	@Column(nullable = false, length = 20)
 	private String docType;
 
-	// Generic category: USER, PROPERTY, etc.
 	@Column(nullable = false, length = 50)
 	private String objectType;
 
-	// Generic ID pointing to any table
 	@Column(nullable = false)
 	private Long objectId;
 
 	private String caption;
+
+	// ✅ Document verification status
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private MasterEnums.DocumentStatus documentStatus;
+
+	// Optional: reason if rejected
+	@Column(length = 500)
+	private String rejectionReason;
+
+	// Optional:comments
+	@Column(length = 500)
+	private String comments;
+	/* Getters & Setters */
 
 	public Long getId() {
 		return id;
@@ -59,6 +69,14 @@ public class Documents extends BaseEntity {
 
 	public void setDocUrl(String docUrl) {
 		this.docUrl = docUrl;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 
 	public String getDocType() {
@@ -93,12 +111,27 @@ public class Documents extends BaseEntity {
 		this.caption = caption;
 	}
 
-	public String getFilename() {
-		return filename;
+	public String getRejectionReason() {
+		return rejectionReason;
 	}
 
-	public void setFilename(String filename) {
-		this.filename = filename;
+	public void setRejectionReason(String rejectionReason) {
+		this.rejectionReason = rejectionReason;
 	}
 
+	public MasterEnums.DocumentStatus getDocumentStatus() {
+		return documentStatus;
+	}
+
+	public void setDocumentStatus(MasterEnums.DocumentStatus documentStatus) {
+		this.documentStatus = documentStatus;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
 }

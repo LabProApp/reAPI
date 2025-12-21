@@ -1,5 +1,7 @@
 package com.batch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -12,25 +14,35 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class MailerBatchLauncher {
 
-	private final JobLauncher jobLauncher;
-	private final Job dailyEmailJob;
-	
-	@PostConstruct
-	public void init() {
-	    System.out.println(">>> MailerBatchLauncher initialized!");
-	}
+    private static final Logger log =
+            LoggerFactory.getLogger(MailerBatchLauncher.class);
 
+    private final JobLauncher jobLauncher;
+    private final Job dailyEmailJob;
 
-	public MailerBatchLauncher(JobLauncher jobLauncher, Job dailyEmailJob) {
-		this.jobLauncher = jobLauncher;
-		this.dailyEmailJob = dailyEmailJob;
-	}
+    public MailerBatchLauncher(JobLauncher jobLauncher, Job dailyEmailJob) {
+        this.jobLauncher = jobLauncher;
+        this.dailyEmailJob = dailyEmailJob;
+    }
 
-	@Scheduled(cron = "*/30 * * * * *") 
-	public synchronized  void run() throws Exception {
-		JobParameters params = new JobParametersBuilder().addLong("run.id", System.currentTimeMillis())
-				.toJobParameters();
+    @PostConstruct
+    public void init() {
+        log.info("MailerBatchLauncher initialized");
+    }
 
-		jobLauncher.run(dailyEmailJob, params);
-	}
+    @Scheduled(cron = "*/30 * * * * *")
+    public synchronized void run() throws Exception {
+
+        log.info("Triggering dailyEmailJob via scheduler");
+
+        JobParameters params = new JobParametersBuilder()
+                .addLong("run.id", System.currentTimeMillis())
+                .toJobParameters();
+
+        log.debug("JobParameters created: run.id={}", params.getLong("run.id"));
+
+        jobLauncher.run(dailyEmailJob, params);
+
+        log.info("dailyEmailJob launch request submitted");
+    }
 }

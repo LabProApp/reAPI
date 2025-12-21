@@ -70,8 +70,8 @@ public class BankController {
 
 	// 📃 List interest rates for a bank
 	@GetMapping("/{bankId}/interest-rates")
-	public ResponseEntity<List<InterestRatesDto>> listInterestRates(@PathVariable Long bankId) {
-		return ResponseEntity.ok(bankService.getRatesByBank(bankId));
+	public ResponseEntity<List<InterestRatesDto>> getInterestRatesByBank(@PathVariable Long bankId) {
+		return ResponseEntity.ok(bankService.getInterestRatesByBank(bankId));
 	}
 
 	// 🔎 Advanced filtering

@@ -72,7 +72,7 @@ public class BankService {
 	/**
 	 * List comparison of all loans showing interest rate, processing fee, min CIBIL
 	 */
-	public List<InterestRatesDto> getRatesByBank(Long bankId) {
+	public List<InterestRatesDto> getInterestRatesByBank(Long bankId) {
 		return interestRatesRepository.findByBankId(bankId).stream()
 				.map(ratesDto -> mapper.map(ratesDto, InterestRatesDto.class)).collect(Collectors.toList());
 	}
