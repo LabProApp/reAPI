@@ -30,7 +30,7 @@ public class MailerBatchLauncher {
         log.info("MailerBatchLauncher initialized");
     }
 
-    @Scheduled(cron = "*/30 * * * * *")
+    @Scheduled(cron = "*/30 * 1 * * *")
     public synchronized void run() throws Exception {
 
         log.info("Triggering dailyEmailJob via scheduler");

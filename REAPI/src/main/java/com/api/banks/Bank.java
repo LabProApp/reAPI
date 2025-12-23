@@ -1,10 +1,26 @@
 package com.api.banks;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import java.util.Date;
+import java.util.List;
 
 import com.api.commons.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "bank_partners")
@@ -131,6 +147,18 @@ public class Bank extends BaseEntity {
 	@Size(max = 3000)
 	@Column(name = "details")
 	private String details;
+
+	@OneToMany(mappedBy = "bank", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JsonManagedReference
+	private List<InterestRates> interestRates;
+
+	public List<InterestRates> getInterestRates() {
+		return interestRates;
+	}
+
+	public void setInterestRates(List<InterestRates> interestRates) {
+		this.interestRates = interestRates;
+	}
 
 	public Long getId() {
 		return id;

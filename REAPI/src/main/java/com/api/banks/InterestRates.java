@@ -1,7 +1,10 @@
 package com.api.banks;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,8 +24,9 @@ public class InterestRates {
     private int maxCibil;
     private double interestRate;
 
-    @ManyToOne
-    @JoinColumn(name = "bank_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bank_id", nullable = false)
+    @JsonBackReference
     private Bank bank;
 
 	public Long getId() {

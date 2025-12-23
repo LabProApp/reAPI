@@ -73,6 +73,12 @@ public class BankController {
 	public ResponseEntity<List<InterestRatesDto>> getInterestRatesByBank(@PathVariable Long bankId) {
 		return ResponseEntity.ok(bankService.getInterestRatesByBank(bankId));
 	}
+	// 📃 Get all banks with their interest rates
+	@GetMapping("/with-interest-rates")
+	public ResponseEntity<List<BankDto>> getAllBanksWithInterestRates() {
+	    return ResponseEntity.ok(bankService.getAllBanksWithInterestRates());
+	}
+
 
 	// 🔎 Advanced filtering
 	@GetMapping("/filter")

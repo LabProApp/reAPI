@@ -1,6 +1,7 @@
 package com.api.banks;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -41,19 +42,42 @@ public class BankService {
 	}
 
 	public InterestRatesDto addInterestRates(InterestRatesDto dto) {
-		Bank bank = bankRepository.findById(dto.getBankId()).orElseThrow(() -> new RuntimeException("Bank not found"));
 
-		InterestRates rate = new InterestRates();
-		rate.setBank(bank);
-		rate.setMinCibil(dto.getMinCibil());
-		rate.setMaxCibil(dto.getMaxCibil());
-		rate.setInterestRate(dto.getInterestRate());
+	    if (dto.getMinCibil() == null || dto.getMaxCibil() == null) {
+	        throw new IllegalArgumentException("Min and Max CIBIL cannot be null");
+	    }
 
-		rate = interestRatesRepository.save(rate);
+	    if (dto.getMinCibil() > dto.getMaxCibil()) {
+	        throw new IllegalArgumentException("Min CIBIL cannot be greater than Max CIBIL");
+	    }
 
-		dto.setId(rate.getId());
-		return dto;
+	    Bank bank = bankRepository.findById(dto.getBankId())
+	            .orElseThrow(() -> new RuntimeException("Bank not found"));
+
+	    boolean overlapExists = interestRatesRepository.existsOverlappingRange(
+	            dto.getBankId(),
+	            dto.getMinCibil(),
+	            dto.getMaxCibil()
+	    );
+
+	    if (overlapExists) {
+	        throw new RuntimeException(
+	            "CIBIL range overlaps with an existing interest rate range"
+	        );
+	    }
+
+	    InterestRates rate = new InterestRates();
+	    rate.setBank(bank);
+	    rate.setMinCibil(dto.getMinCibil());
+	    rate.setMaxCibil(dto.getMaxCibil());
+	    rate.setInterestRate(dto.getInterestRate());
+
+	    rate = interestRatesRepository.save(rate);
+	    dto.setId(rate.getId());
+
+	    return dto;
 	}
+
 
 	// ✏️ UPDATE
 	public ResponseEntity<?> updateInterestRates(InterestRatesDto dto) {
@@ -73,11 +97,60 @@ public class BankService {
 	 * List comparison of all loans showing interest rate, processing fee, min CIBIL
 	 */
 	public List<InterestRatesDto> getInterestRatesByBank(Long bankId) {
-		return interestRatesRepository.findByBankId(bankId).stream()
-				.map(ratesDto -> mapper.map(ratesDto, InterestRatesDto.class)).collect(Collectors.toList());
+
+		// Validate bank exists
+		if (!bankRepository.existsById(bankId)) {
+			throw new RuntimeException("Bank not found with id: " + bankId);
+		}
+
+		return interestRatesRepository.findByBankId(bankId).stream().map(this::toInterestDto).toList();
+	}
+	
+	 public List<BankDto> getAllBanksWithInterestRates() {
+
+	        List<Bank> banks = bankRepository.findAll();
+
+	        // Fetch all interest rates in one query
+	        List<InterestRates> rates = interestRatesRepository.findAll();
+
+	        // Group interest rates by bankId
+	        Map<Long, List<InterestRatesDto>> rateMap =
+	                rates.stream()
+	                     .map(this::toInterestDto)
+	                     .collect(Collectors.groupingBy(
+	                             r -> r.getBankId()
+	                     ));
+
+	        // Map banks → BankDto
+	        return banks.stream().map(bank -> {
+	            BankDto dto = new BankDto();
+	            dto.setId(bank.getId());
+	            dto.setBankName(bank.getBankName());
+	            dto.setBranchName(bank.getBranchName());
+	            dto.setCity(bank.getCity());
+	            dto.setState(bank.getState());
+	            dto.setMinLoanAmount(bank.getMinLoanAmount());
+	            dto.setMaxLoanAmount(bank.getMaxLoanAmount());
+	            dto.setMinCibilScore(bank.getMinCibilScore());
+
+	            dto.setInterestRates(
+	                    rateMap.getOrDefault(bank.getId(), List.of())
+	            );
+
+	            return dto;
+	        }).toList();
+	    }
+
+	private InterestRatesDto toInterestDto(InterestRates rate) {
+		InterestRatesDto dto = new InterestRatesDto();
+		dto.setId(rate.getId());
+		dto.setMinCibil(rate.getMinCibil());
+		dto.setMaxCibil(rate.getMaxCibil());
+		dto.setInterestRate(rate.getInterestRate());
+		dto.setBankId(rate.getBank().getId());
+		return dto;
 	}
 
-	
 	public List<LoanComparisonDto> listComparison() {
 
 		return bankRepository.findAll().stream()

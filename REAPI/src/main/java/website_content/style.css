@@ -1,17 +1,18 @@
+/* ===================== GLOBAL ===================== */
+html {
+    scroll-behavior: smooth;
+}
 
-<style>
-/* -------------------- GLOBAL -------------------- */
-html { scroll-behavior: smooth; }
 body {
     margin: 0;
-    font-family: "Poppins", sans-serif;
+    font-family: "Poppins", Arial, sans-serif;
     background: #f6f7f9;
     color: #333;
 }
 
-/* -------------------- HEADER -------------------- */
+/* ===================== HEADER ===================== */
 header {
-    background: #ffffffeb;
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
     position: sticky;
     top: 0;
@@ -41,19 +42,21 @@ header nav ul {
     display: flex;
     gap: 32px;
     margin: 0;
+    padding: 0;
 }
+
 header nav ul li a {
-    font-weight: 500;
     text-decoration: none;
+    font-weight: 500;
     color: #002b5b;
     transition: 0.3s;
 }
+
 header nav ul li a:hover {
     color: #ff6a00;
-    font-weight: 600;
 }
 
-/* Hamburger menu button */
+/* Hamburger */
 .hamburger {
     display: none;
     font-size: 28px;
@@ -61,7 +64,7 @@ header nav ul li a:hover {
     color: #002b5b;
 }
 
-/* -------------------- SECTIONS -------------------- */
+/* ===================== SECTIONS ===================== */
 section {
     padding: 90px 80px;
     min-height: 50vh;
@@ -70,11 +73,11 @@ section {
     justify-content: center;
 }
 
-/* -------------------- CARDS -------------------- */
+/* ===================== GLASS CARD ===================== */
 .glass-card {
-    background: white;
+    background: #ffffff;
     border-radius: 26px;
-    box-shadow: 0 12px 50px rgba(0,0,0,0.10);
+    box-shadow: 0 12px 50px rgba(0, 0, 0, 0.1);
     padding: 120px;
     display: flex;
     align-items: center;
@@ -83,20 +86,20 @@ section {
     width: 100%;
     opacity: 0;
     transform: translateY(70px);
-	transition: transform 0.5s ease, opacity 0.5s ease;
+    transition: 0.5s ease;
 }
 
-.visible {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
+.glass-card.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-/* -------------------- TEXT -------------------- */
-.glass-card h1, .glass-card h2 {
-    margin: 0 0 16px 0;
+/* ===================== TEXT ===================== */
+.glass-card h1,
+.glass-card h2 {
+    margin-bottom: 16px;
     color: #012a4a;
     font-weight: 700;
-    line-height: 1.3;
 }
 
 .glass-card p {
@@ -109,35 +112,34 @@ section {
     color: #ff6a00;
 }
 
-/* -------------------- IMAGE -------------------- */
+/* ===================== IMAGES ===================== */
 .section-image {
     width: 300px;
     height: 300px;
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    transition: 0.3s ease;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    transition: 0.3s;
 }
+
 .section-image:hover {
     transform: scale(1.08);
 }
 
-/* -------------------- SECTION COLORS -------------------- */
+/* ===================== BACKGROUNDS ===================== */
 #intro { background: #664930; }
-#residential { background: #FFDBBB; }
-#commercial { background: #CCBEB1; }
-#rentals { background: #FFDBBB; }
+#residential { background: #ffdbbb; }
+#commercial { background: #ccbeb1; }
+#rentals { background: #ffdbbb; }
 #loans { background: #fff9e6; }
-#legal { background: #F0FFF0; }
+#legal { background: #f0fff0; }
 #partners { background: #f0f1f3; }
 #contact { background: #fff4e7; }
 
-/* -------------------- PARTNER SLIDER -------------------- */
+/* ===================== PARTNERS ===================== */
 .partner-track-wrapper {
     overflow: hidden;
     width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
 }
 
 .partner-track {
@@ -150,15 +152,15 @@ section {
     width: 80px;
     height: 80px;
     object-fit: contain;
-    background: white;
-    padding: 5px;
+    background: #ffffff;
+    padding: 8px;
     border-radius: 10px;
-    /* All-around shadow */
-    box-shadow: 0 0 5px 1px rgba(0.1,0.1,0.1,0.1);
-    transition: 0.1s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.2s;
 }
+
 .partner-track img:hover {
-    transform: scale(1.25);
+    transform: scale(1.2);
 }
 
 @keyframes slide {
@@ -166,170 +168,23 @@ section {
     to { transform: translateX(-50%); }
 }
 
-/* -------------------- CONTACT FORM -------------------- */
+/* ===================== FORMS ===================== */
 form {
-    margin-top: 15px;
-}
-form input, form textarea {
     width: 100%;
-    padding: 14px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 16px;
-    background: #fff;
-}
-form button {
-    padding: 14px 30px;
-    background: #ff6a00;
-    border: none;
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-}
-form button:hover {
-    background: #e35d00;
-}
-
-/* -------------------- RESPONSIVE -------------------- */
-@media (max-width: 900px) {
-    .glass-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    .section-image {
-        width: 180px;
-        height: 180px;
-    }
-    header {
-        padding: 12px 20px;
-    }
-    header nav ul {
-        gap: 18px;
-    }
-}
-
-/* Improved mobile responsiveness */
-@media (max-width: 700px) {
-    section {
-        padding: 50px 25px;
-    }
-    .glass-card {
-        padding: 45px 28px;
-        gap: 30px;
-        max-width: 100%;
-    }
-    .section-image {
-        width: 140px;
-        height: 140px;
-    }
-    .glass-card h1, .glass-card h2 { font-size: 22px; }
-    .glass-card p { font-size: 15px; }
-    .partner-track img {
-        width: 100px;
-        height: 100px;
-        padding: 12px;
-    }
-    .hamburger {
-        display: block;
-    }
-    header nav {
-        display: none;
-        position: absolute;
-        top: 70px;
-        right: 0;
-        background: #ffffff;
-        width: 200px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        border-radius: 10px;
-        flex-direction: column;
-        padding: 10px;
-    }
-    header nav ul {
-        flex-direction: column;
-        gap: 15px;
-    }
-}
-
-/* Extra small phones */
-@media (max-width: 500px) {
-    header { padding: 10px 15px; }
-    .glass-card { padding: 35px 22px; border-radius: 20px; gap: 22px; }
-    .section-image { width: 120px; height: 120px; }
-    .partner-track img { width: 80px; height: 80px; padding: 10px; }
-    header .logo-area strong { font-size: 18px; }
-}
-.site-footer {
-    text-align: center;
-    padding: 30px 20px;
-    background: #002b5b;
-    color: white;
-}
-
-.site-footer .footer-title {
-    margin-bottom: 18px;
-    font-size: 22px;
-    font-weight: 600;
-}
-
-.site-footer .social-icons {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-}
-
-.site-footer .social-icons a {
-    color: white;
-    font-size: 26px;
-    transition: 0.3s;
-}
-
-.site-footer .social-icons a:hover {
-    color: #ffb400; /* Optional hover effect */
-}
-
-.site-footer .footer-bottom {
-    margin-top: 12px;
-    font-size: 14px;
-    opacity: 0.85;
-}
-
-.site-footer .footer-bottom a {
-    color: white;
-    text-decoration: underline;
-    transition: 0.3s;
-}
-
-.site-footer .footer-bottom a:hover {
-    color: #ffb400; /* Optional hover effect */
-}
-
-/* -------------------- CONTACT SECTION -------------------- */
-.text-content {
-    max-width: 800px;
-    margin: 0 auto;
-	text-align: justify;
-}
-
-/* Form Styling */
-form {
+    max-width: 700px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    width: 100%;
+    gap: 14px;
 }
 
 form input,
 form textarea {
     width: 100%;
-    padding: 12px 14px;
+    padding: 14px;
     font-size: 16px;
     border-radius: 10px;
     border: 1px solid #ccc;
-    box-sizing: border-box;
     transition: 0.3s;
 }
 
@@ -337,21 +192,22 @@ form input:focus,
 form textarea:focus {
     outline: none;
     border-color: #ff6a00;
-    box-shadow: 0 0 5px rgba(255,106,0,0.5);
+    box-shadow: 0 0 6px rgba(255, 106, 0, 0.4);
 }
 
 form textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 120px;
 }
 
 form button {
-    padding: 12px 25px;
-    font-size: 16px;
-    border-radius: 10px;
+    align-self: flex-start;
+    padding: 14px 30px;
     background: #ff6a00;
-    color: #fff;
+    color: #ffffff;
     border: none;
+    border-radius: 10px;
+    font-weight: 600;
     cursor: pointer;
     transition: 0.3s;
 }
@@ -360,65 +216,16 @@ form button:hover {
     background: #e35d00;
 }
 
-/* Success & Error Messages */
-.form-message {
-    display: none;
-    margin-top: 15px;
-    font-weight: 600;
-    text-align: center;
-}
-
-.form-message.success {
-    color: green;
-}
-
-.form-message.error {
-    color: red;
-}
-
-/* -------------------- MOBILE RESPONSIVE -------------------- */
-@media (max-width: 700px) {
-    form input,
-    form textarea {
-        font-size: 15px;
-        padding: 10px 12px;
-    }
-    form button {
-        font-size: 15px;
-        padding: 10px 20px;
-    }
-}
-
-@media (max-width: 500px) {
-    form input,
-    form textarea {
-        font-size: 14px;
-        padding: 8px 10px;
-    }
-    form button {
-        font-size: 14px;
-        padding: 8px 18px;
-    }
-}
-body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f4f6f8;
-    color: #333;
-}
-
+/* ===================== ABOUT US ===================== */
 .about-us {
     padding: 80px 20px;
     text-align: center;
     background: #ffffff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .about-us h1 {
     font-size: 42px;
     margin-bottom: 20px;
-    color: #222;
 }
 
 .mission {
@@ -438,39 +245,177 @@ body {
 
 .founder {
     max-width: 320px;
-    text-align: center;
     background: #f9f9f9;
     padding: 30px 20px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: 0.3s;
 }
 
 .founder:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-6px);
 }
 
 .founder img {
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px;
-    border: 5px solid #FFDBBB;
+    border: 5px solid #ffdbbb;
 }
 
 .founder h3 {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #222;
+    margin-top: 16px;
 }
 
-.founder p {
+/* ===================== FOOTER ===================== */
+.site-footer {
+    background: #002b5b;
+    color: #ffffff;
+    padding: 50px 20px 30px;
+    text-align: center;
+}
+
+/* Store Buttons */
+.footer-store-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.footer-store-btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 26px;
+    min-width: 220px;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    transition: 0.3s;
+}
+
+.footer-store-btn i {
+    font-size: 38px;
+}
+
+.footer-store-btn span {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.footer-store-btn strong {
     font-size: 16px;
-    color: #666;
-    line-height: 1.6;
+}
+
+.footer-store-btn:hover {
+    transform: translateY(-4px);
+}
+
+/* Social */
+.footer-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.footer-social a {
+    color: #ffffff;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.footer-social a:hover {
+    color: #ffb400;
+}
+
+/* Bottom */
+.footer-bottom {
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.footer-bottom a {
+    color: #ffffff;
+    text-decoration: underline;
+}
+/* ================= COLORED STORE BUTTONS ================= */
+
+.footer-store-btn.apple {
+    background: linear-gradient(135deg, #000000, #2c2c2c);
+}
+
+.footer-store-btn.android {
+    background: linear-gradient(135deg, #1db954, #0f9d58);
+}
+
+/* Icon colors */
+.footer-store-btn.apple i {
+    color: #ffffff;
+}
+
+.footer-store-btn.android i {
+    color: #ffffff;
+}
+
+/* Hover enhancement */
+.footer-store-btn.apple:hover {
+    background: linear-gradient(135deg, #1a1a1a, #000000);
+}
+
+.footer-store-btn.android:hover {
+    background: linear-gradient(135deg, #34d399, #16a34a);
 }
 
 
-</style>
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 900px) {
+    .glass-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 60px 40px;
+    }
+    .section-image {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (max-width: 700px) {
+    section {
+        padding: 50px 25px;
+    }
+    header nav {
+        display: none;
+    }
+    .hamburger {
+        display: block;
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-store-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 500px) {
+    .glass-card {
+        padding: 35px 22px;
+    }
+    .section-image {
+        width: 120px;
+        height: 120px;
+    }
+}

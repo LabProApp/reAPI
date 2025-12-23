@@ -1,6 +1,7 @@
 package com.api.banks;
 
 import java.util.Date;
+import java.util.List;
 
 import com.api.commons.BaseDto;
 
@@ -48,7 +49,7 @@ public class BankDto extends BaseDto {
 	private String specialOffers;
 	private String requiredDocuments;
 	private String details;
-
+    private List<InterestRatesDto> interestRates;
 	// Metadata
 	private Date createdAt;
 	private Date updatedAt;
@@ -309,6 +310,14 @@ public class BankDto extends BaseDto {
 
 	public void setDetails(String details) {
 		this.details = details;
+	}
+
+	public List<InterestRatesDto> getInterestRates() {
+		return interestRates;
+	}
+
+	public void setInterestRates(List<InterestRatesDto> interestRates) {
+		this.interestRates = interestRates;
 	}
 
 	public Date getCreatedAt() {

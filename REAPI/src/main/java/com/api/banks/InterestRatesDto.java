@@ -3,9 +3,9 @@ package com.api.banks;
 public class InterestRatesDto {
 
 	private Long id;
-	private int minCibil;
-	private int maxCibil;
-	private double interestRate;
+	private Integer minCibil;
+	private Integer maxCibil;
+	private Double interestRate;
 	private Long bankId;
 
 	public Long getId() {
@@ -16,27 +16,27 @@ public class InterestRatesDto {
 		this.id = id;
 	}
 
-	public int getMinCibil() {
+	public Integer getMinCibil() {
 		return minCibil;
 	}
 
-	public void setMinCibil(int minCibil) {
+	public void setMinCibil(Integer minCibil) {
 		this.minCibil = minCibil;
 	}
 
-	public int getMaxCibil() {
+	public Integer getMaxCibil() {
 		return maxCibil;
 	}
 
-	public void setMaxCibil(int maxCibil) {
+	public void setMaxCibil(Integer maxCibil) {
 		this.maxCibil = maxCibil;
 	}
 
-	public double getInterestRate() {
+	public Double getInterestRate() {
 		return interestRate;
 	}
 
-	public void setInterestRate(double interestRate) {
+	public void setInterestRate(Double interestRate) {
 		this.interestRate = interestRate;
 	}
 
@@ -48,7 +48,5 @@ public class InterestRatesDto {
 		this.bankId = bankId;
 	}
 
-	
 
-	
 }
