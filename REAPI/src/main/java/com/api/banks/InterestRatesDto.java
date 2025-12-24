@@ -1,6 +1,8 @@
 package com.api.banks;
 
-public class InterestRatesDto {
+import com.api.commons.BaseEntity;
+
+public class InterestRatesDto extends BaseEntity {
 
 	private Long id;
 	private Integer minCibil;
@@ -47,6 +49,5 @@ public class InterestRatesDto {
 	public void setBankId(Long bankId) {
 		this.bankId = bankId;
 	}
-
 
 }

@@ -1,6 +1,7 @@
 package com.api.banks;
 
 
+import com.api.commons.BaseDto;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
@@ -14,7 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name ="interest_rates")
-public class InterestRates {
+public class InterestRates extends BaseDto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
