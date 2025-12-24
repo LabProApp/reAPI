@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.commons.ResourceNotFoundException;
+import com.api.documents.DocumentsService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,6 +27,7 @@ public class PropertyController {
 
 	@Autowired
 	private PropertyService service;
+	
 
 	@PostMapping("/add")
 	public ResponseEntity<PropertyDto> addProperty(@Valid @RequestBody PropertyDto propertyDto) {
@@ -84,5 +86,4 @@ public class PropertyController {
 		return ResponseEntity.ok(results);
 	}
 
-	
 }

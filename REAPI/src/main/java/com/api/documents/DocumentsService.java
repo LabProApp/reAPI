@@ -111,4 +111,10 @@ public class DocumentsService {
 
 		return docs.stream().map(doc -> mapper.map(doc, DocumentDto.class)).collect(Collectors.toList());
 	}
+	// Get all documents by objectType and objectId
+	public List<DocumentminDto> getminDocumentsByObject(String objectType, Long objectId) {
+		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
+
+		return docs.stream().map(doc -> mapper.map(doc, DocumentminDto.class)).collect(Collectors.toList());
+	}
 }

@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.api.commons.BaseDto;
+import com.api.documents.DocumentDto;
+import com.api.documents.DocumentminDto;
 import com.api.enums.MasterEnums;
 
 public class PropertyDto extends BaseDto {
@@ -37,7 +39,9 @@ public class PropertyDto extends BaseDto {
 	private LocalDateTime postDate;
 	private String rentOrSale; // Rent or Sale
 	private boolean verified;
-	//private List<UserPropertyRelationDto> userRelations = new ArrayList<>();
+	// private List<UserPropertyRelationDto> userRelations = new ArrayList<>();
+
+	private List<DocumentminDto> documentList;
 
 	// --- Helper methods for amenities ---
 	public void setAmenitiesFromList(List<Integer> amenityIds) {
@@ -269,5 +273,13 @@ public class PropertyDto extends BaseDto {
 
 	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
 		this.planPackage = planPackage;
+	}
+
+	public List<DocumentminDto> getDocumentList() {
+		return documentList;
+	}
+
+	public void setDocumentList(List<DocumentminDto> documentList) {
+		this.documentList = documentList;
 	}
 }
