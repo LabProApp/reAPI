@@ -2,6 +2,7 @@ package com.api.documents;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,7 +75,7 @@ public class DocumentsService {
 	public void deleteDocument(Long id) {
 		Documents doc = documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-		//s3Service.deleteFile(doc.getKey());
+		// s3Service.deleteFile(doc.getKey());
 		documentsRepository.delete(doc);
 	}
 
@@ -119,8 +120,36 @@ public class DocumentsService {
 
 	// Get all documents by objectType and objectId
 	public List<DocumentminDto> getminDocumentsByObject(String objectType, Long objectId) {
-		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
 
-		return docs.stream().map(doc -> mapper.map(doc, DocumentminDto.class)).collect(Collectors.toList());
+		if (objectType == null || objectId == null) {
+			return Collections.emptyList(); // avoid null pointer
+		}
+
+		List<Documents> docs;
+
+		docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
+
+		if (docs.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return docs.stream().map(doc -> {
+			DocumentminDto dto = mapper.map(doc, DocumentminDto.class);
+
+			// Generate pre-signed URL if S3 key is present
+			if (doc.getS3key() != null && !doc.getS3key().isEmpty()) {
+				try {
+					dto.setDocUrl(s3Service.generatePresignedUrl(doc.getS3key()));
+				} catch (Exception e) {
+					// Optional: log error and continue
+					System.err.println("Failed to generate presigned URL for key: " + doc.getS3key());
+					e.printStackTrace();
+				}
+			}
+
+			return dto;
+		}).collect(Collectors.toList());
 	}
+
+	
 }

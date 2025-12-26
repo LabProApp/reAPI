@@ -57,10 +57,7 @@ public class PropertyService {
 					// Map documents
 					List<DocumentminDto> documentDtos = documentsService.getminDocumentsByObject("PROPERTY",
 							dto.getId());
-					for (DocumentminDto documentminDto : documentDtos) {
-						documentminDto.setDocUrl(documentsService.generatePresignedUrl(documentminDto.getS3key()));
-					}
-
+					
 					dto.setDocumentList(documentDtos);
 					return dto;
 				}).collect(Collectors.toList());

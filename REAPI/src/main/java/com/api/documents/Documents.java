@@ -44,7 +44,7 @@ public class Documents extends BaseEntity {
 	// ✅ Document verification status
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
-	private MasterEnums.DocumentStatus documentStatus;
+	private MasterEnums.DocumentStatus documentStatus = MasterEnums.DocumentStatus.VERIFIED;
 
 	// Optional: reason if rejected
 	@Column(length = 500)
@@ -62,8 +62,6 @@ public class Documents extends BaseEntity {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-
 
 	public String getFilename() {
 		return filename;
@@ -137,5 +135,4 @@ public class Documents extends BaseEntity {
 		this.s3key = s3key;
 	}
 
-	
 }
