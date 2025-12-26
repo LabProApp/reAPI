@@ -25,7 +25,7 @@ public class Documents extends BaseEntity {
 
 	// AWS S3 key
 	@Column(nullable = false, length = 1000)
-	private String key;
+	private String s3key;
 
 	@Column(nullable = false, length = 256)
 	private String filename;
@@ -129,11 +129,13 @@ public class Documents extends BaseEntity {
 		this.comments = comments;
 	}
 
-	public String getKey() {
-		return key;
+	public String getS3key() {
+		return s3key;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setS3key(String s3key) {
+		this.s3key = s3key;
 	}
+
+	
 }

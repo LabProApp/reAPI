@@ -58,7 +58,7 @@ public class DocumentsService {
 		String key = s3Service.uploadFile(file, objectType.toUpperCase());
 
 		Documents doc = new Documents();
-		doc.setKey(key);
+		doc.setS3key(key);
 		doc.setFilename(sanitizedFilename);
 		doc.setDocType(docType);
 		doc.setCaption(caption);
@@ -74,7 +74,7 @@ public class DocumentsService {
 	public void deleteDocument(Long id) {
 		Documents doc = documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-		s3Service.deleteFile(doc.getKey());
+		//s3Service.deleteFile(doc.getKey());
 		documentsRepository.delete(doc);
 	}
 

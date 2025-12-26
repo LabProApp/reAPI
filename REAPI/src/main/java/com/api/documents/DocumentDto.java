@@ -3,12 +3,11 @@ package com.api.documents;
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 
-import jakarta.persistence.Column;
-
 public class DocumentDto extends BaseDto {
 
 	private Long id;
 	private String docUrl;
+	private String s3key;
 	private String filename;
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	private String docType;
@@ -40,6 +39,14 @@ public class DocumentDto extends BaseDto {
 
 	public void setDocUrl(String docUrl) {
 		this.docUrl = docUrl;
+	}
+
+	public String getS3key() {
+		return s3key;
+	}
+
+	public void setS3key(String s3key) {
+		this.s3key = s3key;
 	}
 
 	public String getDocType() {
