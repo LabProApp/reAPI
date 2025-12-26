@@ -27,15 +27,15 @@ public class ToolsController {
      * Example: { "principal": 5000000, "annualInterestRate": 7.5, "tenureYears": 20, "includeSchedule": true }
      */
     @PostMapping("/homeloancalculator")
-    public ResponseEntity<LoanResponse> calculate(@Valid @RequestBody LoanRequest request) {
-       LoanResponse response = toolService.calculate(request);
+    public ResponseEntity<calcLoanResponse> calculate(@Valid @RequestBody calcLoanRequest request) {
+       calcLoanResponse response = toolService.calculate(request);
         return ResponseEntity.ok(response);
     }
     
   
 
-    @PostMapping("/calculate")
-    public AffordabilityResponse calculate(@RequestBody AffordabilityRequest request) {
+    @PostMapping("/calculateAffordability")
+    public calcLoanResponse calculateAffordability(@RequestBody calcLoanRequest request) {
         return toolService.calculateAffordability(request);
     }
 }

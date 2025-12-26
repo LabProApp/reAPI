@@ -23,9 +23,9 @@ public class Documents extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// AWS S3 URL
+	// AWS S3 key
 	@Column(nullable = false, length = 1000)
-	private String docUrl;
+	private String key;
 
 	@Column(nullable = false, length = 256)
 	private String filename;
@@ -63,13 +63,7 @@ public class Documents extends BaseEntity {
 		this.id = id;
 	}
 
-	public String getDocUrl() {
-		return docUrl;
-	}
 
-	public void setDocUrl(String docUrl) {
-		this.docUrl = docUrl;
-	}
 
 	public String getFilename() {
 		return filename;
@@ -133,5 +127,13 @@ public class Documents extends BaseEntity {
 
 	public void setComments(String comments) {
 		this.comments = comments;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 }

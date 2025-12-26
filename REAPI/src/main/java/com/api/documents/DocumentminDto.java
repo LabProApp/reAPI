@@ -6,6 +6,7 @@ public class DocumentminDto {
 
 	private Long id;
 	private String docUrl;
+	private String key;
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	private String docType;
 	// Generic category: USER, PROPERTY, etc.
@@ -13,7 +14,7 @@ public class DocumentminDto {
 	// Generic ID pointing to any table
 	private Long objectId;
 	private String caption;
-	private MasterEnums.DocumentStatus documentStatus;
+	private MasterEnums.DocumentStatus documentStatus; 
 	private String rejectionReason;
 	private String comments;
 
@@ -31,6 +32,14 @@ public class DocumentminDto {
 
 	public void setDocUrl(String docUrl) {
 		this.docUrl = docUrl;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public String getDocType() {

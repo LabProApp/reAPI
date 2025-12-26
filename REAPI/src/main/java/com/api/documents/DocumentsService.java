@@ -55,10 +55,10 @@ public class DocumentsService {
 		String sanitizedFilename = (originalFilename != null) ? originalFilename.replaceAll("[^a-zA-Z0-9._-]", "")
 				: "file";
 
-		String s3Url = s3Service.uploadFile(file, objectType.toUpperCase());
+		String key = s3Service.uploadFile(file, objectType.toUpperCase());
 
 		Documents doc = new Documents();
-		doc.setDocUrl(s3Url);
+		doc.setKey(key);
 		doc.setFilename(sanitizedFilename);
 		doc.setDocType(docType);
 		doc.setCaption(caption);
@@ -74,7 +74,7 @@ public class DocumentsService {
 	public void deleteDocument(Long id) {
 		Documents doc = documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-		s3Service.deleteFile(doc.getDocUrl());
+		s3Service.deleteFile(doc.getKey());
 		documentsRepository.delete(doc);
 	}
 
@@ -83,6 +83,11 @@ public class DocumentsService {
 		Documents doc = documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
 		return mapper.map(doc, DocumentDto.class);
+	}
+
+	public String generatePresignedUrl(String key) {
+		return s3Service.generatePresignedUrl(key);
+
 	}
 
 	public DocumentDto updateDocumentStatus(Long documentId, MasterEnums.DocumentStatus status, String rejectionReason,
@@ -111,6 +116,7 @@ public class DocumentsService {
 
 		return docs.stream().map(doc -> mapper.map(doc, DocumentDto.class)).collect(Collectors.toList());
 	}
+
 	// Get all documents by objectType and objectId
 	public List<DocumentminDto> getminDocumentsByObject(String objectType, Long objectId) {
 		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
