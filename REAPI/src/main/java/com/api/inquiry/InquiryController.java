@@ -1,4 +1,4 @@
-package com.api.loans;
+package com.api.inquiry;
 
 import java.util.List;
 
@@ -9,38 +9,38 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/loan-inquiries")
-public class BankLoanInquiryController {
+public class InquiryController {
 
-    private final BankLoanInquiryService service;
+    private final InquiryService service;
 
-    public BankLoanInquiryController(BankLoanInquiryService service) {
+    public InquiryController(InquiryService service) {
         this.service = service;
     }
 
     // CREATE
     @PostMapping
-    public ResponseEntity<BankLoanInquiryDto> create(
-            @RequestBody BankLoanInquiryDto dto) {
+    public ResponseEntity<InquiryDto> create(
+            @RequestBody InquiryDto dto) {
         return ResponseEntity.ok(service.create(dto));
     }
 
     // READ BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<BankLoanInquiryDto> getById(@PathVariable Long id) {
+    public ResponseEntity<InquiryDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     // READ ALL
     @GetMapping
-    public ResponseEntity<List<BankLoanInquiryDto>> getAll() {
+    public ResponseEntity<List<InquiryDto>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<BankLoanInquiryDto> update(
+    public ResponseEntity<InquiryDto> update(
             @PathVariable Long id,
-            @RequestBody BankLoanInquiryDto dto) {
+            @RequestBody InquiryDto dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
