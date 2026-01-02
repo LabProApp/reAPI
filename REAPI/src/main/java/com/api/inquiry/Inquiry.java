@@ -33,10 +33,10 @@ public class Inquiry extends BaseEntity {
 	@Column(length = 100)
 	private String email;
 
-	@Column(nullable = false)
+
 	private Integer age;
 
-	@Column(nullable = false)
+
 	private Double monthlyIncome;
 
 	@Enumerated(EnumType.STRING)
@@ -49,17 +49,15 @@ public class Inquiry extends BaseEntity {
 	/*
 	 * ========================= LOAN DETAILS =========================
 	 */
-	@Column(nullable = false)
-	private Double budget;
 
-	@Column(nullable = false)
+	private Double budget;
 	private Double requiredLoanAmount;
 
-	@Column(nullable = false)
+
 	private Integer loanTenureYears;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 30)
+	@Column(length = 30)
 	private MasterEnums.LoanType loanType;
 
 	/*

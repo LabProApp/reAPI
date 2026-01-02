@@ -34,11 +34,11 @@ public class InquiryDto extends BaseEntity{
 	@Email
 	private String email;
 
-	@NotNull
-	@Min(18)
+
+
 	private Integer age;
 
-	@NotNull
+	
 	private Double monthlyIncome;
 
 	@NotNull
@@ -49,16 +49,16 @@ public class InquiryDto extends BaseEntity{
 	/* =========================
 	 * LOAN DETAILS
 	 * ========================= */
-	@NotNull
+	
 	private Double budget;
 
-	@NotNull
+
 	private Double requiredLoanAmount;
 
-	@NotNull
+	
 	private Integer loanTenureYears;
 
-	@NotNull
+
 	private MasterEnums.LoanType loanType;
 
 	/* =========================
