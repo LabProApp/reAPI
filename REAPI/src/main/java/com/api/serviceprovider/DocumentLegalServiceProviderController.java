@@ -51,7 +51,7 @@ public class DocumentLegalServiceProviderController {
 		return ResponseEntity.ok(dtoPage);
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/id/{id}")
 	public ResponseEntity<DocumentLegalServiceProviderDto> get(@PathVariable Long id) {
 		return service.getById(id).map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class))
 				.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
