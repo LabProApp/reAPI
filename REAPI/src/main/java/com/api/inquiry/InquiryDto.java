@@ -1,29 +1,25 @@
 package com.api.inquiry;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public class InquiryDto extends BaseEntity{
+public class InquiryDto extends BaseEntity {
 
-	/* =========================
-	 * IDENTIFIERS (SYSTEM)
-	 * ========================= */
+	/*
+	 * ========================= IDENTIFIERS (SYSTEM) =========================
+	 */
 	private Long id;
 
-
-
-	/* =========================
-	 * APPLICANT DETAILS
-	 * ========================= */
+	/*
+	 * ========================= APPLICANT DETAILS =========================
+	 */
 	@NotBlank
 	private String applicantName;
 
@@ -33,37 +29,23 @@ public class InquiryDto extends BaseEntity{
 
 	@Email
 	private String email;
-
-
-
 	private Integer age;
-
-	
 	private Double monthlyIncome;
-
 	@NotNull
 	private MasterEnums.InquiryType inquiryType;
-
 	private String comments;
 
-	/* =========================
-	 * LOAN DETAILS
-	 * ========================= */
-	
+	/*
+	 * ========================= LOAN DETAILS =========================
+	 */
+
 	private Double budget;
-
-
 	private Double requiredLoanAmount;
-
-	
 	private Integer loanTenureYears;
-
-
 	private MasterEnums.LoanType loanType;
-
-	/* =========================
-	 * PROPERTY DETAILS
-	 * ========================= */
+	/*
+	 * ========================= PROPERTY DETAILS =========================
+	 */
 	private MasterEnums.PropertyTypeEnum propertyType;
 
 	private String propertyState;
@@ -72,15 +54,15 @@ public class InquiryDto extends BaseEntity{
 
 	private Boolean propertyIdentified;
 
-	/* =========================
-	 * LEAD SOURCE
-	 * ========================= */
-	private String leadSource;   // APP / WEBSITE / WHATSAPP / AGENT
+	/*
+	 * ========================= LEAD SOURCE =========================
+	 */
+	private String leadSource; // APP / WEBSITE / WHATSAPP / AGENT
 	private String campaignCode; // FB_AD_01, GOOGLE_HOMELOAN
 
-	/* =========================
-	 * BANK & STATUS (OPS)
-	 * ========================= */
+	/*
+	 * ========================= BANK & STATUS (OPS) =========================
+	 */
 	private String preferredBank;
 
 	private MasterEnums.InquiryStatus inquiryStatus;
@@ -88,16 +70,16 @@ public class InquiryDto extends BaseEntity{
 	private Long assignedAgentId;
 	private String assignedAgentName;
 
-	/* =========================
-	 * APPROVAL DETAILS
-	 * ========================= */
+	/*
+	 * ========================= APPROVAL DETAILS =========================
+	 */
 	private String approvedBank;
 	private Double approvedLoanAmount;
 	private Double approvedInterestRate;
 
-	/* =========================
-	 * IMPORTANT DATES
-	 * ========================= */
+	/*
+	 * ========================= IMPORTANT DATES =========================
+	 */
 	private LocalDate expectedPurchaseDate;
 
 	public Long getId() {

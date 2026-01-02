@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/loan-inquiries")
+@RequestMapping("/api/inquiries")
 public class InquiryController {
 
     private final InquiryService service;
@@ -18,26 +18,26 @@ public class InquiryController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<InquiryDto> create(
             @RequestBody InquiryDto dto) {
         return ResponseEntity.ok(service.create(dto));
     }
 
     // READ BY ID
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<InquiryDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     // READ ALL
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<InquiryDto>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     // UPDATE
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<InquiryDto> update(
             @PathVariable Long id,
             @RequestBody InquiryDto dto) {
@@ -45,7 +45,7 @@ public class InquiryController {
     }
 
     // DELETE
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
