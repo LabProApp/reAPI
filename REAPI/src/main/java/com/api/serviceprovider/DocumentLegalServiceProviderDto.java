@@ -7,9 +7,7 @@ import com.api.enums.MasterEnums;
 import com.api.enums.MasterEnums.DocumentLegalServiceProviderStatus;
 
 public class DocumentLegalServiceProviderDto extends BaseDto {
-
 	private Long id;
-
 	private String legalname;
 	private String contactname;
 	private String city;

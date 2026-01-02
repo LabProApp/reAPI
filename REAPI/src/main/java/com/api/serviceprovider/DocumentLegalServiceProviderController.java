@@ -26,6 +26,7 @@ public class DocumentLegalServiceProviderController {
 
 	@Autowired
 	private ModelMapper modelMapper;
+	
 
 	// Public listing with pagination, filtering & sorting
 	@GetMapping("/search")
