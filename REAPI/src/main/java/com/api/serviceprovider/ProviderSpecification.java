@@ -6,48 +6,32 @@ import jakarta.persistence.criteria.Join;
 
 public class ProviderSpecification {
 
-    public static Specification<DocumentLegalServiceProvider> hasCity(String city) {
-        return (root, query, cb) ->
-                (city == null || city.isEmpty())
-                        ? null
-                        : cb.equal(cb.lower(root.get("city")), city.toLowerCase());
-    }
+	public static Specification<DocumentLegalServiceProvider> containsText(String q) {
+		return (root, query, cb) -> {
+			if (q == null || q.trim().isEmpty()) {
+				return cb.conjunction();
+			}
 
-    public static Specification<DocumentLegalServiceProvider> hasService(String service) {
-        return (root, query, cb) -> {
-            if (service == null || service.isEmpty()) return null;
+			String like = "%" + q.toLowerCase() + "%";
 
-            Join<DocumentLegalServiceProvider, String> services =
-                    root.join("services");  // List<String> element-collection join
+			return cb.or(cb.like(cb.lower(root.get("legalname")), like),
+					cb.like(cb.lower(root.get("contactname")), like), cb.like(cb.lower(root.get("email")), like),
+					cb.like(cb.lower(root.get("phone1")), like), cb.like(cb.lower(root.get("phone2")), like));
+		};
+	}
 
-            return cb.equal(
-                    cb.lower(services),  // this refers to the String value
-                    service.toLowerCase()
-            );
-        };
-    }
+	public static Specification<DocumentLegalServiceProvider> hasCity(String city) {
+		return (root, query, cb) -> city == null || city.isBlank() ? cb.conjunction()
+				: cb.equal(cb.lower(root.get("city")), city.toLowerCase());
+	}
 
-    public static Specification<DocumentLegalServiceProvider> nameContains(String q) {
-        return (root, query, cb) ->
-                (q == null || q.isEmpty())
-                        ? null
-                        : cb.like(
-                                cb.lower(root.get("name")),
-                                "%" + q.toLowerCase() + "%"
-                        );
-    }
+	public static Specification<DocumentLegalServiceProvider> hasState(String state) {
+		return (root, query, cb) -> state == null || state.isBlank() ? cb.conjunction()
+				: cb.equal(cb.lower(root.get("state")), state.toLowerCase());
+	}
 
-    public static Specification<DocumentLegalServiceProvider> minRating(Double min) {
-        return (root, query, cb) ->
-                min == null
-                        ? null
-                        : cb.greaterThanOrEqualTo(root.get("rating"), min);
-    }
-
-    public static Specification<DocumentLegalServiceProvider> statusIs(DocumentLegalServiceProvider.Status status) {
-        return (root, query, cb) ->
-                status == null
-                        ? null
-                        : cb.equal(root.get("status"), status);
-    }
+	public static Specification<DocumentLegalServiceProvider> hasCountry(String country) {
+		return (root, query, cb) -> country == null || country.isBlank() ? cb.conjunction()
+				: cb.equal(cb.lower(root.get("country")), country.toLowerCase());
+	}
 }

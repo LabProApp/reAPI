@@ -16,13 +16,20 @@ public class DocumentLegalServiceProviderService {
 	@Autowired
 	private DocumentLegalServiceProviderRepository repo;
 
-	public Page<DocumentLegalServiceProvider> search(String q, String city, String service, Double minRating,
-			DocumentLegalServiceProvider.Status status, Pageable pageable) {
-		Specification<DocumentLegalServiceProvider> spec = Specification.where(ProviderSpecification.nameContains(q))
-				.and(ProviderSpecification.hasCity(city)).and(ProviderSpecification.hasService(service))
-				.and(ProviderSpecification.minRating(minRating)).and(ProviderSpecification.statusIs(status));
+	public Page<DocumentLegalServiceProvider> search(
+	        String q,
+	        String city,
+	        String state,
+	        String country,
+	        Pageable pageable) {
 
-		return repo.findAll(spec, pageable);
+	    Specification<DocumentLegalServiceProvider> spec = Specification
+	            .where(ProviderSpecification.containsText(q))
+	            .and(ProviderSpecification.hasCity(city))
+	            .and(ProviderSpecification.hasState(state))
+	            .and(ProviderSpecification.hasCountry(country));
+
+	    return repo.findAll(spec, pageable);
 	}
 
 	public Optional<DocumentLegalServiceProvider> getById(Long id) {
@@ -44,7 +51,8 @@ public class DocumentLegalServiceProviderService {
 		p.setState(req.getState());
 		p.setCountry(req.getCountry());
 		p.setAddress(req.getAddress());
-		p.setPhone(req.getPhone());
+		p.setPhone1(req.getPhone1());
+		p.setPhone2(req.getPhone2());
 		p.setEmail(req.getEmail());
 		p.setServices(req.getServices());
 		if (req.getStatus() != null)

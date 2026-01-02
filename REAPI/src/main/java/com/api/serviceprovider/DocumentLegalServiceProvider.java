@@ -41,7 +41,8 @@ public class DocumentLegalServiceProvider extends BaseEntity {
 	private String country;
 
 	private String address;
-	private String phone;
+	private String phone1;
+	private String phone2;
 	private String email;
 
 	@Enumerated(EnumType.STRING)
@@ -113,12 +114,19 @@ public class DocumentLegalServiceProvider extends BaseEntity {
 		this.address = address;
 	}
 
-	public String getPhone() {
-		return phone;
+	public String getPhone1() {
+		return phone1;
 	}
 
-	public void setPhone(String phone) {
-		this.phone = phone;
+	public void setPhone1(String phone) {
+		this.phone1 = phone;
+	}
+	public String getPhone2() {
+		return phone2;
+	}
+
+	public void setPhone2(String phone) {
+		this.phone2 = phone;
 	}
 
 	public String getEmail() {

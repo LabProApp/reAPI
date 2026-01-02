@@ -21,75 +21,68 @@ import java.util.stream.Collectors;
 @Tag(name = "Document Legal Vendor Services", description = "Operations for Document Legal Vendor Services")
 public class DocumentLegalServiceProviderController {
 
-    @Autowired
-    private DocumentLegalServiceProviderService service;
+	@Autowired
+	private DocumentLegalServiceProviderService service;
 
-    @Autowired
-    private ModelMapper modelMapper;
+	@Autowired
+	private ModelMapper modelMapper;
 
-    // Public listing with pagination, filtering & sorting
-    @GetMapping
-    public ResponseEntity<Page<DocumentLegalServiceProviderDto>> list(
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String serviceType,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) DocumentLegalServiceProvider.Status status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "name,asc") String[] sort) {
+	// Public listing with pagination, filtering & sorting
+	@GetMapping("/search")
 
-        Sort.Direction dir = Sort.Direction.fromString(sort[1]);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sort[0]));
+	public ResponseEntity<Page<DocumentLegalServiceProviderDto>> list(@RequestParam(required = false) String q,
+			@RequestParam(required = false) String city, @RequestParam(required = false) String state,
+			@RequestParam(required = false) String country, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "legalname,asc") String sort) {
 
-        Page<DocumentLegalServiceProvider> result = service.search(q, city, serviceType, minRating, status, pageable);
+		// Safe sort parsing
+		String[] sortParts = sort.split(",");
+		String sortField = sortParts[0];
+		Sort.Direction direction = sortParts.length > 1 ? Sort.Direction.fromString(sortParts[1]) : Sort.Direction.ASC;
 
-        // Convert entity page to DTO page
-        List<DocumentLegalServiceProviderDto> dtoList = result.getContent()
-                .stream()
-                .map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class))
-                .collect(Collectors.toList());
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
 
-        Page<DocumentLegalServiceProviderDto> dtoPage = new PageImpl<>(dtoList, pageable, result.getTotalElements());
+		Page<DocumentLegalServiceProvider> result = service.search(q, city, state, country, pageable);
 
-        return ResponseEntity.ok(dtoPage);
-    }
+		// Entity → DTO
+		Page<DocumentLegalServiceProviderDto> dtoPage = result
+				.map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class));
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DocumentLegalServiceProviderDto> get(@PathVariable Long id) {
-        return service.getById(id)
-                .map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class))
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+		return ResponseEntity.ok(dtoPage);
+	}
 
-    // Admin endpoints
-    @PostMapping
-    public ResponseEntity<DocumentLegalServiceProviderDto> create(
-            @Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
+	@GetMapping("/{id}")
+	public ResponseEntity<DocumentLegalServiceProviderDto> get(@PathVariable Long id) {
+		return service.getById(id).map(provider -> modelMapper.map(provider, DocumentLegalServiceProviderDto.class))
+				.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+	}
 
-        DocumentLegalServiceProvider entity = modelMapper.map(requestDto, DocumentLegalServiceProvider.class);
-        DocumentLegalServiceProvider created = service.create(entity);
-        DocumentLegalServiceProviderDto dto = modelMapper.map(created, DocumentLegalServiceProviderDto.class);
+	// Admin endpoints
+	@PostMapping
+	public ResponseEntity<DocumentLegalServiceProviderDto> create(
+			@Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
 
-        return ResponseEntity.ok(dto);
-    }
+		DocumentLegalServiceProvider entity = modelMapper.map(requestDto, DocumentLegalServiceProvider.class);
+		DocumentLegalServiceProvider created = service.create(entity);
+		DocumentLegalServiceProviderDto dto = modelMapper.map(created, DocumentLegalServiceProviderDto.class);
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DocumentLegalServiceProviderDto> update(
-            @PathVariable Long id,
-            @Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
+		return ResponseEntity.ok(dto);
+	}
 
-        DocumentLegalServiceProvider entity = modelMapper.map(requestDto, DocumentLegalServiceProvider.class);
-        DocumentLegalServiceProvider updated = service.update(id, entity);
-        DocumentLegalServiceProviderDto dto = modelMapper.map(updated, DocumentLegalServiceProviderDto.class);
+	@PutMapping("/{id}")
+	public ResponseEntity<DocumentLegalServiceProviderDto> update(@PathVariable Long id,
+			@Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
 
-        return ResponseEntity.ok(dto);
-    }
+		DocumentLegalServiceProvider entity = modelMapper.map(requestDto, DocumentLegalServiceProvider.class);
+		DocumentLegalServiceProvider updated = service.update(id, entity);
+		DocumentLegalServiceProviderDto dto = modelMapper.map(updated, DocumentLegalServiceProviderDto.class);
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
+		return ResponseEntity.ok(dto);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@PathVariable Long id) {
+		service.delete(id);
+		return ResponseEntity.noContent().build();
+	}
 }
