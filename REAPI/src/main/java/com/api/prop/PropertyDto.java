@@ -30,7 +30,7 @@ public class PropertyDto extends BaseDto {
 	private String postedBy;
 	private String constructionStatus;
 	private String currency;
-
+	private String contactNumber;
 	private LocalDate readyDate;
 	private String category;
 	private String projectName;
@@ -213,6 +213,14 @@ public class PropertyDto extends BaseDto {
 
 	public LocalDateTime getPostDate() {
 		return postDate;
+	}
+
+	public String getContactNumber() {
+		return contactNumber;
+	}
+
+	public void setContactNumber(String contactNumber) {
+		this.contactNumber = contactNumber;
 	}
 
 	public void setPostDate(LocalDateTime postDate) {

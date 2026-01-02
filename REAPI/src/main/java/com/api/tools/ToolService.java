@@ -14,65 +14,130 @@ public class ToolService {
 	private static final int OUTPUT_SCALE = 2;
 
 	public calcLoanResponse calculate(calcLoanRequest req) {
-		BigDecimal principal = req.getPrincipal();
-		double annualRatePercent = req.getAnnualInterestRate();
-		int years = req.getTenureYears();
-		boolean includeSchedule = req.getIncludeSchedule();
 
-		int totalMonths = years * 12;
-		// monthly rate as decimal
-		BigDecimal monthlyRate = BigDecimal.valueOf(annualRatePercent / 12);
+	    BigDecimal principal = req.getPrincipal(); // Loan amount
+	    BigDecimal annualRatePercent = BigDecimal.valueOf(req.getAnnualInterestRate());
+	    int years = req.getTenureYears();
+	    boolean includeSchedule = req.getIncludeSchedule();
 
-		// Monthly payment formula: M = P * r * (1+r)^n / ((1+r)^n - 1)
-		BigDecimal onePlusRPowerN = (BigDecimal.ONE.add(monthlyRate)).pow(totalMonths);
-		BigDecimal numerator = principal.multiply(monthlyRate).multiply(onePlusRPowerN);
-		BigDecimal denominator = onePlusRPowerN.subtract(BigDecimal.ONE);
+	    int totalMonths = years * 12;
 
-		BigDecimal monthlyPayment;
-		if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
-			monthlyPayment = principal.divide(BigDecimal.valueOf(totalMonths), OUTPUT_SCALE, RoundingMode.HALF_UP);
-		} else {
-			monthlyPayment = numerator.divide(denominator, OUTPUT_SCALE, RoundingMode.HALF_UP);
-		}
+	    // annual % → decimal → monthly rate
+	    BigDecimal monthlyRate = annualRatePercent
+	            .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
+	            .divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP);
 
-		BigDecimal totalPayment = monthlyPayment.multiply(BigDecimal.valueOf(totalMonths)).setScale(OUTPUT_SCALE,
-				RoundingMode.HALF_UP);
-		BigDecimal totalInterest = totalPayment.subtract(principal).setScale(OUTPUT_SCALE, RoundingMode.HALF_UP);
+	    BigDecimal monthlyPayment;
 
-		calcLoanResponse resp = new calcLoanResponse();
-		resp.setMonthlyPayment(monthlyPayment);
-		resp.setTotalPayment(totalPayment);
-		resp.setTotalInterest(totalInterest);
-		resp.setTotalMonths(totalMonths);
+	    if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
+	        // Zero-interest loan
+	        monthlyPayment = principal.divide(
+	                BigDecimal.valueOf(totalMonths),
+	                OUTPUT_SCALE,
+	                RoundingMode.HALF_UP
+	        );
+	    } else {
+	        // EMI formula
+	        // M = P * r * (1+r)^n / ((1+r)^n - 1)
+	        BigDecimal onePlusR = BigDecimal.ONE.add(monthlyRate);
+	        BigDecimal onePlusRPowerN = onePlusR.pow(totalMonths);
 
-		if (includeSchedule) {
-			resp.setAmortizationSchedule(generateSchedule(principal, monthlyRate, monthlyPayment, totalMonths));
-		}
-		return resp;
+	        BigDecimal numerator = principal
+	                .multiply(monthlyRate)
+	                .multiply(onePlusRPowerN);
+
+	        BigDecimal denominator = onePlusRPowerN.subtract(BigDecimal.ONE);
+
+	        monthlyPayment = numerator.divide(
+	                denominator,
+	                OUTPUT_SCALE,
+	                RoundingMode.HALF_UP
+	        );
+	    }
+
+	    BigDecimal totalPayment = monthlyPayment
+	            .multiply(BigDecimal.valueOf(totalMonths))
+	            .setScale(OUTPUT_SCALE, RoundingMode.HALF_UP);
+
+	    BigDecimal totalInterest = totalPayment
+	            .subtract(principal)
+	            .setScale(OUTPUT_SCALE, RoundingMode.HALF_UP);
+
+	    calcLoanResponse resp = new calcLoanResponse();
+	    resp.setMonthlyPayment(monthlyPayment);
+	    resp.setTotalPayment(totalPayment);
+	    resp.setTotalInterest(totalInterest);
+	    resp.setTotalMonths(totalMonths);
+
+	    if (includeSchedule) {
+	        resp.setAmortizationSchedule(
+	                generateSchedule(principal, monthlyRate, monthlyPayment, totalMonths)
+	        );
+	    }
+
+	    return resp;
 	}
+
 
 	public calcLoanResponse calculateAffordability(calcLoanRequest req) {
 
-		double monthlyIncome = req.getMonthlyIncome();
-		double existingEmi = req.getExistingEmi();
-		double annualRate = req.getAnnualInterestRate();
-		int tenureMonths = req.getTenureYears() * 12;
-		double foir = req.getFoirPercent() / 100;
+	    BigDecimal monthlyIncome = BigDecimal.valueOf(req.getMonthlyIncome());
+	    BigDecimal existingEmi = BigDecimal.valueOf(req.getExistingEmi());
+	    BigDecimal annualRatePercent = BigDecimal.valueOf(req.getAnnualInterestRate());
+	    BigDecimal foirPercent = BigDecimal.valueOf(req.getFoirPercent());
 
-		// Step 1: Calculate affordable EMI
-		double affordableEmi = (monthlyIncome * foir) - existingEmi;
-		if (affordableEmi < 0)
-			affordableEmi = 0;
+	    int tenureMonths = req.getTenureYears() * 12;
 
-		// Step 2: Convert rate to monthly
-		double monthlyRate = annualRate / 12 / 100;
+	    // FOIR % → decimal
+	    BigDecimal foir = foirPercent
+	            .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
 
-		// Step 3: Calculate eligible loan amount using EMI formula
-		double eligibleLoan = affordableEmi * ((Math.pow(1 + monthlyRate, tenureMonths) - 1)
-				/ (monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)));
+	    // Step 1: Affordable EMI
+	    BigDecimal affordableEmi = monthlyIncome
+	            .multiply(foir)
+	            .subtract(existingEmi);
 
-		return new calcLoanResponse(affordableEmi, eligibleLoan);
+	    if (affordableEmi.compareTo(BigDecimal.ZERO) < 0) {
+	        affordableEmi = BigDecimal.ZERO;
+	    }
+
+	    // Step 2: Annual % → monthly decimal rate
+	    BigDecimal monthlyRate = annualRatePercent
+	            .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
+	            .divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP);
+
+	    BigDecimal eligibleLoan;
+
+	    if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
+	        // Zero-interest case
+	        eligibleLoan = affordableEmi.multiply(
+	                BigDecimal.valueOf(tenureMonths)
+	        );
+	    } else {
+	        // Reverse EMI formula
+	        // P = EMI * ((1+r)^n - 1) / (r * (1+r)^n)
+	        BigDecimal onePlusR = BigDecimal.ONE.add(monthlyRate);
+	        BigDecimal onePlusRPowerN = onePlusR.pow(tenureMonths);
+
+	        BigDecimal numerator = onePlusRPowerN.subtract(BigDecimal.ONE);
+	        BigDecimal denominator = monthlyRate.multiply(onePlusRPowerN);
+
+	        eligibleLoan = affordableEmi
+	                .multiply(numerator)
+	                .divide(denominator, OUTPUT_SCALE, RoundingMode.HALF_UP);
+	    }
+
+	    eligibleLoan = eligibleLoan.setScale(OUTPUT_SCALE, RoundingMode.HALF_UP);
+	    affordableEmi = affordableEmi.setScale(OUTPUT_SCALE, RoundingMode.HALF_UP);
+
+	    calcLoanResponse resp = new calcLoanResponse();
+	    resp.setMonthlyPayment(affordableEmi);
+	    resp.setEligibleLoan(eligibleLoan.doubleValue());
+	    resp.setTotalMonths(tenureMonths);
+
+	    return resp;
 	}
+
 
 	private List<AmortizationEntry> generateSchedule(BigDecimal principal, BigDecimal monthlyRate,
 			BigDecimal monthlyPayment, int totalMonths) {

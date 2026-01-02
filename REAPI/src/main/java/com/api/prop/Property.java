@@ -82,7 +82,7 @@ public class Property extends BaseEntity {
 
 	@NotBlank(message = "PostedBy is required (e.g., Owner, Broker, Builder)")
 	private String postedBy;
-
+	private String contactNumber;
 	@NotBlank(message = "Construction status is required (e.g., Ready to Move, Under Construction)")
 	private String constructionStatus;
 
@@ -348,6 +348,14 @@ public class Property extends BaseEntity {
 
 	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
 		this.planPackage = planPackage;
+	}
+
+	public String getContactNumber() {
+		return contactNumber;
+	}
+
+	public void setContactNumber(String contactNumber) {
+		this.contactNumber = contactNumber;
 	}
 
 }
