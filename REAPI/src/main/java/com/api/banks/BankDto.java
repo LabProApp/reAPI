@@ -15,7 +15,7 @@ public class BankDto extends BaseDto {
 	private String contactNumber;
 	private String email;
 	private String branchName;
-
+	private String bankLogoUrl;
 	// Address Details
 	private String locationAddress;
 	private String street;
@@ -49,7 +49,7 @@ public class BankDto extends BaseDto {
 	private String specialOffers;
 	private String requiredDocuments;
 	private String details;
-    private List<InterestRatesDto> interestRates;
+	private List<InterestRatesDto> interestRates;
 	// Metadata
 	private Date createdAt;
 	private Date updatedAt;
@@ -70,6 +70,14 @@ public class BankDto extends BaseDto {
 
 	public void setBankName(String bankName) {
 		this.bankName = bankName;
+	}
+
+	public String getBankLogoUrl() {
+		return bankLogoUrl;
+	}
+
+	public void setBankLogoUrl(String bankLogoUrl) {
+		this.bankLogoUrl = bankLogoUrl;
 	}
 
 	public String getContactName() {

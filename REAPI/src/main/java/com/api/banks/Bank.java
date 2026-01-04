@@ -35,6 +35,10 @@ public class Bank extends BaseEntity {
 	@Size(max = 100)
 	@Column(name = "bank_name", nullable = false)
 	private String bankName;
+	
+	@Size(max = 500)
+	@Column(name = "bank_name", nullable = false)
+	private String bankLogoUrl;
 
 	@NotNull
 	@Size(max = 100)
