@@ -3,7 +3,6 @@ package com.api.enums;
 import lombok.Getter;
 
 public final class MasterEnums implements BaseEnum {
-
 	@Getter
 	public enum EmploymentType {
 		SALARIED, SELF_EMPLOYED, PUBLIC_SECTOR;
