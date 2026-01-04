@@ -92,7 +92,7 @@ public final class MasterEnums implements BaseEnum {
 	@Getter
 
 	public enum LaunchTypeEnum {
-		READY_TO_MOVE, PRE_LAUNCH, RESALE, UNDER_CONSTRUCTION;
+		READY_TO_MOVE, NEW_LAUNCH, RESALE, UNDER_CONSTRUCTION;
 
 	}
 
