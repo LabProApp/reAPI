@@ -101,9 +101,7 @@ public class UserService {
 
 		User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-		if (Boolean.TRUE.equals(user.getIsVerified())) {
-			return ResponseEntity.badRequest().body("User already verified");
-		}
+		
 
 		if (user.getOtpGeneratedAt() != null && user.getOtpGeneratedAt().plusSeconds(60).isAfter(LocalDateTime.now())) {
 			return ResponseEntity.badRequest().body("Please wait 1 min before requesting a new OTP");
