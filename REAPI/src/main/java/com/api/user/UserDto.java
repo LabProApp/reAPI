@@ -13,6 +13,7 @@ public class UserDto extends BaseDto {
 	private String password;
 	private String address;
 	private String mobile;
+
 	private String otp;
 	private LocalDateTime otpGeneratedAt;
 	private Boolean isVerified = false;

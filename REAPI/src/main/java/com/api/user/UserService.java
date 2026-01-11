@@ -122,24 +122,34 @@ public class UserService {
 	}
 
 	// ---------------- LOGIN ----------------
-	public ResponseEntity<String> login(UserDto reqDto) {
-		User user = null;
+	public ResponseEntity<UserDto> login(UserDto reqDto) {
+	    User user;
 
-		if (reqDto.getEmail() != null) {
-			user = userRepository.findByEmail(reqDto.getEmail())
-					.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
-		} else if (reqDto.getMobile() != null) {
-			user = userRepository.findByMobile(reqDto.getMobile())
-					.orElseThrow(() -> new IllegalArgumentException("Invalid mobile or password"));
-		} else {
-			return ResponseEntity.badRequest().body("Email or mobile required for login");
-		}
+	    // Find user by email or mobile
+	    if (reqDto.getEmail() != null) {
+	        user = userRepository.findByEmail(reqDto.getEmail())
+	                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+	    } else if (reqDto.getMobile() != null) {
+	        user = userRepository.findByMobile(reqDto.getMobile())
+	                .orElseThrow(() -> new IllegalArgumentException("Invalid mobile or password"));
+	    } else {
+	        return ResponseEntity.badRequest().build(); // email or mobile required
+	    }
 
-		if (!reqDto.getPassword().equals(user.getPassword())) {
-			return ResponseEntity.status(401).body("Invalid credentials");
-		}
+	    // Validate password
+	    if (!reqDto.getPassword().equals(user.getPassword())) {
+	        return ResponseEntity.status(401).build(); // invalid credentials
+	    }
 
-		return ResponseEntity.ok("Login successful for user: " + user.getName());
+	    // Optionally generate token
+	    String token = "hardcoded-token"; // replace with JWT if needed
+
+	    // Create response DTO
+	  
+		UserDto responseDto = mapper.map(user, UserDto.class);
+
+	    // Return response
+	    return ResponseEntity.ok(responseDto);
 	}
 
 	// ---------------- PROFILE ----------------
