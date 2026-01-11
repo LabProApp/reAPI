@@ -5,9 +5,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import com.api.documents.DocumentminDto;
+import com.api.documents.DocumentsService;
 
 @Service
 public class BankService {
@@ -15,6 +19,8 @@ public class BankService {
 	private final BankRepository bankRepository;
 	private final InterestRatesRepository interestRatesRepository;
 	private final ModelMapper mapper;
+	@Autowired
+	private DocumentsService documentsService;
 
 	public BankService(BankRepository bankRepository, ModelMapper mapper,
 			InterestRatesRepository interestRatesRepository) {
@@ -25,9 +31,27 @@ public class BankService {
 
 	// 🧾 Get all loans
 	// 🧾 Get all banks
+	// 🧾 Get all banks with logos and documents
 	public List<BankDto> getAllBanks() {
-		return bankRepository.findAll().stream().map(this::toDto) // ✅ use service's toDto method
-				.collect(Collectors.toList());
+		return bankRepository.findAll().stream().map(bank -> {
+			// Convert entity to DTO
+			BankDto dto = toDto(bank);
+			// Set bank logo URL
+			if (bank.getBankLogoUrl() != null && !bank.getBankLogoUrl().isEmpty()) {
+
+				List<DocumentminDto> documentDtos = documentsService.getminDocumentsByObject("BANK", dto.getId());
+				for (DocumentminDto documentminDto : documentDtos) {
+					if (documentminDto.getCaption().equalsIgnoreCase("LOGO"))
+
+						dto.setBankLogoUrl(documentminDto.getDocUrl());
+				}
+
+			} else {
+				dto.setBankLogoUrl(null); // or default placeholder
+			}
+
+			return dto;
+		}).collect(Collectors.toList());
 	}
 
 	// ➕ Add a new loan representative
@@ -44,147 +68,141 @@ public class BankService {
 
 	// Convert Bank entity to BankDto
 	public BankDto toDto(Bank bank) {
-	    if (bank == null) return null;
+		if (bank == null)
+			return null;
 
-	    BankDto dto = new BankDto();
-	    
-	    // 🔹 Basic Info
-	    dto.setId(bank.getId());
-	    dto.setBankName(bank.getBankName());
-	    dto.setContactName(bank.getContactName());
-	    dto.setContactNumber(bank.getContactNumber());
-	    dto.setEmail(bank.getEmail());
-	    dto.setBranchName(bank.getBranchName());
-	    
-	    // 🔹 Address Info
-	    dto.setLocationAddress(bank.getLocationAddress());
-	    dto.setStreet(bank.getStreet());
-	    dto.setCity(bank.getCity());
-	    dto.setState(bank.getState());
-	    dto.setPostalCode(bank.getPostalCode());
-	    dto.setCountry(bank.getCountry());
-	    dto.setWebsiteUrl(bank.getWebsiteUrl());
+		BankDto dto = new BankDto();
 
-	    // 🔹 Loan Info
-	    dto.setInterestRate(bank.getInterestRate());
-	    dto.setInterestType(bank.getInterestType());
-	    dto.setProcessingFee(bank.getProcessingFee());
-	    dto.setTenureYears(bank.getTenureYears());
-	    dto.setMaxLoanAmount(bank.getMaxLoanAmount());
-	    dto.setMinLoanAmount(bank.getMinLoanAmount());
-	    dto.setMinCibilScore(bank.getMinCibilScore());
+		// 🔹 Basic Info
+		dto.setId(bank.getId());
+		dto.setBankName(bank.getBankName());
+		dto.setContactName(bank.getContactName());
+		dto.setContactNumber(bank.getContactNumber());
+		dto.setEmail(bank.getEmail());
+		dto.setBranchName(bank.getBranchName());
 
-	    // 🔹 Eligibility
-	    dto.setMinimumIncome(bank.getMinimumIncome());
-	    dto.setEmploymentType(bank.getEmploymentType());
-	    dto.setMinimumAge(bank.getMinimumAge());
-	    dto.setMaximumAge(bank.getMaximumAge());
-	    dto.setNationalityRequirement(bank.getNationalityRequirement());
+		// 🔹 Address Info
+		dto.setLocationAddress(bank.getLocationAddress());
+		dto.setStreet(bank.getStreet());
+		dto.setCity(bank.getCity());
+		dto.setState(bank.getState());
+		dto.setPostalCode(bank.getPostalCode());
+		dto.setCountry(bank.getCountry());
+		dto.setWebsiteUrl(bank.getWebsiteUrl());
 
-	    // 🔹 Additional Features
-	    dto.setPrepaymentAllowed(bank.isPrepaymentAllowed());
-	    dto.setPartPaymentAllowed(bank.isPartPaymentAllowed());
-	    dto.setBalanceTransferAvailable(bank.isBalanceTransferAvailable());
-	    dto.setInsuranceBundled(bank.isInsuranceBundled());
-	    dto.setSpecialOffers(bank.getSpecialOffers());
-	    dto.setRequiredDocuments(bank.getRequiredDocuments());
-	    dto.setDetails(bank.getDetails());
+		// 🔹 Loan Info
+		dto.setInterestRate(bank.getInterestRate());
+		dto.setInterestType(bank.getInterestType());
+		dto.setProcessingFee(bank.getProcessingFee());
+		dto.setTenureYears(bank.getTenureYears());
+		dto.setMaxLoanAmount(bank.getMaxLoanAmount());
+		dto.setMinLoanAmount(bank.getMinLoanAmount());
+		dto.setMinCibilScore(bank.getMinCibilScore());
 
-	    // 🔹 Nested InterestRates collection (manual mapping)
-	    if (bank.getInterestRates() != null) {
-	        dto.setInterestRates(
-	            bank.getInterestRates().stream()
-	                .map(ir -> {
-	                    InterestRatesDto irDto = new InterestRatesDto();
-	                    irDto.setId(ir.getId());
-	                    irDto.setMinCibil(ir.getMinCibil());
-	                    irDto.setMaxCibil(ir.getMaxCibil());
-	                    irDto.setInterestRate(ir.getInterestRate());
-	                    return irDto;
-	                })
-	                .collect(Collectors.toList())
-	        );
-	    }
+		// 🔹 Eligibility
+		dto.setMinimumIncome(bank.getMinimumIncome());
+		dto.setEmploymentType(bank.getEmploymentType());
+		dto.setMinimumAge(bank.getMinimumAge());
+		dto.setMaximumAge(bank.getMaximumAge());
+		dto.setNationalityRequirement(bank.getNationalityRequirement());
 
-	    // 🔹 Metadata
-	    dto.setCreatedAt(bank.getCreatedAt());
-	    dto.setUpdatedAt(bank.getUpdatedAt());
+		// 🔹 Additional Features
+		dto.setPrepaymentAllowed(bank.isPrepaymentAllowed());
+		dto.setPartPaymentAllowed(bank.isPartPaymentAllowed());
+		dto.setBalanceTransferAvailable(bank.isBalanceTransferAvailable());
+		dto.setInsuranceBundled(bank.isInsuranceBundled());
+		dto.setSpecialOffers(bank.getSpecialOffers());
+		dto.setRequiredDocuments(bank.getRequiredDocuments());
+		dto.setDetails(bank.getDetails());
 
-	    return dto;
+		// 🔹 Nested InterestRates collection (manual mapping)
+		if (bank.getInterestRates() != null) {
+			dto.setInterestRates(bank.getInterestRates().stream().map(ir -> {
+				InterestRatesDto irDto = new InterestRatesDto();
+				irDto.setId(ir.getId());
+				irDto.setMinCibil(ir.getMinCibil());
+				irDto.setMaxCibil(ir.getMaxCibil());
+				irDto.setInterestRate(ir.getInterestRate());
+				return irDto;
+			}).collect(Collectors.toList()));
+		}
+
+		// 🔹 Metadata
+		dto.setCreatedAt(bank.getCreatedAt());
+		dto.setUpdatedAt(bank.getUpdatedAt());
+
+		return dto;
 	}
-
 
 	// Convert BankDto to Bank entity
 	public Bank toEntity(BankDto dto) {
-	    if (dto == null) return null;
+		if (dto == null)
+			return null;
 
-	    Bank bank = new Bank();
+		Bank bank = new Bank();
 
-	    // 🔹 Basic Info
-	    bank.setId(dto.getId());
-	    bank.setBankName(dto.getBankName());
-	    bank.setContactName(dto.getContactName());
-	    bank.setContactNumber(dto.getContactNumber());
-	    bank.setEmail(dto.getEmail());
-	    bank.setBranchName(dto.getBranchName());
+		// 🔹 Basic Info
+		bank.setId(dto.getId());
+		bank.setBankName(dto.getBankName());
+		bank.setContactName(dto.getContactName());
+		bank.setContactNumber(dto.getContactNumber());
+		bank.setEmail(dto.getEmail());
+		bank.setBranchName(dto.getBranchName());
 
-	    // 🔹 Address Info
-	    bank.setLocationAddress(dto.getLocationAddress());
-	    bank.setStreet(dto.getStreet());
-	    bank.setCity(dto.getCity());
-	    bank.setState(dto.getState());
-	    bank.setPostalCode(dto.getPostalCode());
-	    bank.setCountry(dto.getCountry());
-	    bank.setWebsiteUrl(dto.getWebsiteUrl());
+		// 🔹 Address Info
+		bank.setLocationAddress(dto.getLocationAddress());
+		bank.setStreet(dto.getStreet());
+		bank.setCity(dto.getCity());
+		bank.setState(dto.getState());
+		bank.setPostalCode(dto.getPostalCode());
+		bank.setCountry(dto.getCountry());
+		bank.setWebsiteUrl(dto.getWebsiteUrl());
 
-	    // 🔹 Loan Info
-	    bank.setInterestRate(dto.getInterestRate());
-	    bank.setInterestType(dto.getInterestType());
-	    bank.setProcessingFee(dto.getProcessingFee());
-	    bank.setTenureYears(dto.getTenureYears());
-	    bank.setMaxLoanAmount(dto.getMaxLoanAmount());
-	    bank.setMinLoanAmount(dto.getMinLoanAmount());
-	    bank.setMinCibilScore(dto.getMinCibilScore());
+		// 🔹 Loan Info
+		bank.setInterestRate(dto.getInterestRate());
+		bank.setInterestType(dto.getInterestType());
+		bank.setProcessingFee(dto.getProcessingFee());
+		bank.setTenureYears(dto.getTenureYears());
+		bank.setMaxLoanAmount(dto.getMaxLoanAmount());
+		bank.setMinLoanAmount(dto.getMinLoanAmount());
+		bank.setMinCibilScore(dto.getMinCibilScore());
 
-	    // 🔹 Eligibility
-	    bank.setMinimumIncome(dto.getMinimumIncome());
-	    bank.setEmploymentType(dto.getEmploymentType());
-	    bank.setMinimumAge(dto.getMinimumAge());
-	    bank.setMaximumAge(dto.getMaximumAge());
-	    bank.setNationalityRequirement(dto.getNationalityRequirement());
+		// 🔹 Eligibility
+		bank.setMinimumIncome(dto.getMinimumIncome());
+		bank.setEmploymentType(dto.getEmploymentType());
+		bank.setMinimumAge(dto.getMinimumAge());
+		bank.setMaximumAge(dto.getMaximumAge());
+		bank.setNationalityRequirement(dto.getNationalityRequirement());
 
-	    // 🔹 Additional Features
-	    bank.setPrepaymentAllowed(dto.isPrepaymentAllowed());
-	    bank.setPartPaymentAllowed(dto.isPartPaymentAllowed());
-	    bank.setBalanceTransferAvailable(dto.isBalanceTransferAvailable());
-	    bank.setInsuranceBundled(dto.isInsuranceBundled());
-	    bank.setSpecialOffers(dto.getSpecialOffers());
-	    bank.setRequiredDocuments(dto.getRequiredDocuments());
-	    bank.setDetails(dto.getDetails());
+		// 🔹 Additional Features
+		bank.setPrepaymentAllowed(dto.isPrepaymentAllowed());
+		bank.setPartPaymentAllowed(dto.isPartPaymentAllowed());
+		bank.setBalanceTransferAvailable(dto.isBalanceTransferAvailable());
+		bank.setInsuranceBundled(dto.isInsuranceBundled());
+		bank.setSpecialOffers(dto.getSpecialOffers());
+		bank.setRequiredDocuments(dto.getRequiredDocuments());
+		bank.setDetails(dto.getDetails());
 
-	    // 🔹 Nested InterestRates collection (manual mapping)
-	    if (dto.getInterestRates() != null) {
-	        List<InterestRates> rates = dto.getInterestRates().stream()
-	            .map(irDto -> {
-	                InterestRates ir = new InterestRates();
-	                ir.setId(irDto.getId());
-	                ir.setMinCibil(irDto.getMinCibil());
-	                ir.setMaxCibil(irDto.getMaxCibil());
-	                ir.setInterestRate(irDto.getInterestRate());
-	                ir.setBank(bank); // important: set the parent bank
-	                return ir;
-	            })
-	            .collect(Collectors.toList());
-	        bank.setInterestRates(rates);
-	    }
+		// 🔹 Nested InterestRates collection (manual mapping)
+		if (dto.getInterestRates() != null) {
+			List<InterestRates> rates = dto.getInterestRates().stream().map(irDto -> {
+				InterestRates ir = new InterestRates();
+				ir.setId(irDto.getId());
+				ir.setMinCibil(irDto.getMinCibil());
+				ir.setMaxCibil(irDto.getMaxCibil());
+				ir.setInterestRate(irDto.getInterestRate());
+				ir.setBank(bank); // important: set the parent bank
+				return ir;
+			}).collect(Collectors.toList());
+			bank.setInterestRates(rates);
+		}
 
-	    // 🔹 Metadata (optional, usually handled by @PrePersist/@PreUpdate)
-	    bank.setCreatedAt(dto.getCreatedAt());
-	    bank.setUpdatedAt(dto.getUpdatedAt());
+		// 🔹 Metadata (optional, usually handled by @PrePersist/@PreUpdate)
+		bank.setCreatedAt(dto.getCreatedAt());
+		bank.setUpdatedAt(dto.getUpdatedAt());
 
-	    return bank;
+		return bank;
 	}
-
 
 	public InterestRatesDto addInterestRates(InterestRatesDto dto) {
 

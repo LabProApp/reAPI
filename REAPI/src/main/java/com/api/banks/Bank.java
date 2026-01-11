@@ -37,7 +37,7 @@ public class Bank extends BaseEntity {
 	private String bankName;
 	
 	@Size(max = 500)
-	@Column(name = "bank_name", nullable = false)
+	@Column(name = "bank_logoUrl", nullable = false)
 	private String bankLogoUrl;
 
 	@NotNull
@@ -275,6 +275,14 @@ public class Bank extends BaseEntity {
 
 	public void setInterestRate(double interestRate) {
 		this.interestRate = interestRate;
+	}
+
+	public String getBankLogoUrl() {
+		return bankLogoUrl;
+	}
+
+	public void setBankLogoUrl(String bankLogoUrl) {
+		this.bankLogoUrl = bankLogoUrl;
 	}
 
 	public String getInterestType() {
