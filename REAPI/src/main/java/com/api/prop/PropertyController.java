@@ -79,7 +79,7 @@ public class PropertyController {
 			@RequestParam(required = false) Integer minBathrooms, @RequestParam(required = false) Integer maxBathrooms,
 			@RequestParam(required = false) Double minArea, @RequestParam(required = false) Double maxArea,
 			@RequestParam(required = false) String amenity, @RequestParam(required = false) String rentOrSale,
-			@RequestParam(required = false) LocalDateTime postDate, Long postedByUser) {
+			@RequestParam(required = false) LocalDateTime postDate, @RequestParam(required = false) Long postedByUser) {
 		List<PropertyDto> results = service.advancedSearch(title, address, city, type, category, postedBy,
 				constructionStatus, currency, location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms,
 				maxBathrooms, minArea, maxArea, amenity, rentOrSale, postDate, postedByUser);
