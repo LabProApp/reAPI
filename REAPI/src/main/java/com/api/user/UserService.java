@@ -101,8 +101,6 @@ public class UserService {
 
 		User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-		
-
 		if (user.getOtpGeneratedAt() != null && user.getOtpGeneratedAt().plusSeconds(60).isAfter(LocalDateTime.now())) {
 			return ResponseEntity.badRequest().body("Please wait 1 min before requesting a new OTP");
 		}
@@ -123,39 +121,46 @@ public class UserService {
 
 	// ---------------- LOGIN ----------------
 	public ResponseEntity<UserDto> login(UserDto reqDto) {
-	    User user;
+		User user;
 
-	    // Find user by email or mobile
-	    if (reqDto.getEmail() != null) {
-	        user = userRepository.findByEmail(reqDto.getEmail())
-	                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
-	    } else if (reqDto.getMobile() != null) {
-	        user = userRepository.findByMobile(reqDto.getMobile())
-	                .orElseThrow(() -> new IllegalArgumentException("Invalid mobile or password"));
-	    } else {
-	        return ResponseEntity.badRequest().build(); // email or mobile required
-	    }
+		// Find user by email or mobile
+		if (reqDto.getEmail() != null) {
+			user = userRepository.findByEmail(reqDto.getEmail())
+					.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+		} else if (reqDto.getMobile() != null) {
+			user = userRepository.findByMobile(reqDto.getMobile())
+					.orElseThrow(() -> new IllegalArgumentException("Invalid mobile or password"));
+		} else {
+			return ResponseEntity.badRequest().build(); // email or mobile required
+		}
 
-	    // Validate password
-	    if (!reqDto.getPassword().equals(user.getPassword())) {
-	        return ResponseEntity.status(401).build(); // invalid credentials
-	    }
+		// Validate password
+		if (!reqDto.getPassword().equals(user.getPassword())) {
+			return ResponseEntity.status(401).build(); // invalid credentials
+		}
 
-	    // Optionally generate token
-	    String token = "hardcoded-token"; // replace with JWT if needed
+		// Optionally generate token
+		String token = "hardcoded-token"; // replace with JWT if needed
 
-	    // Create response DTO
-	  
+		// Create response DTO
+
 		UserDto responseDto = mapper.map(user, UserDto.class);
 
-	    // Return response
-	    return ResponseEntity.ok(responseDto);
+		// Return response
+		return ResponseEntity.ok(responseDto);
 	}
 
 	// ---------------- PROFILE ----------------
 	public UserDto getProfile(String emailOrMobile) {
 		Optional<User> userOpt = emailOrMobile.contains("@") ? userRepository.findByEmail(emailOrMobile)
 				: userRepository.findByMobile(emailOrMobile);
+
+		return userOpt.map(user -> mapper.map(user, UserDto.class))
+				.orElseThrow(() -> new IllegalArgumentException("User not found"));
+	}
+
+	public UserDto getProfilebyUserId(Long userId) {
+		Optional<User> userOpt = userRepository.findById(userId);
 
 		return userOpt.map(user -> mapper.map(user, UserDto.class))
 				.orElseThrow(() -> new IllegalArgumentException("User not found"));
