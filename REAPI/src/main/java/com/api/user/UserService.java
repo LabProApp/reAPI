@@ -167,8 +167,7 @@ public class UserService {
 	}
 
 	public UserDto updateProfile(UserDto userDto) {
-		Optional<User> userOpt = userDto.getEmail() != null ? userRepository.findByEmail(userDto.getEmail())
-				: userRepository.findByMobile(userDto.getMobile());
+		Optional<User> userOpt = userRepository.findById(userDto.getId());
 
 		User updated = userOpt.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -178,6 +177,11 @@ public class UserService {
 			updated.setAddress(userDto.getAddress());
 		if (userDto.getMobile() != null)
 			updated.setMobile(userDto.getMobile());
+		if (userDto.getUserPackage() != null)
+			updated.setUserPackage(userDto.getUserPackage());
+
+		if (userDto.getEmail() != null)
+			updated.setEmail(userDto.getEmail());
 
 		userRepository.save(updated);
 		return mapper.map(updated, UserDto.class);
