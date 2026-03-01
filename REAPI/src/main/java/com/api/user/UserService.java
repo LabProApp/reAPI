@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.api.enums.MasterEnums;
 import com.api.notifications.CommService;
@@ -54,7 +55,9 @@ public class UserService {
 		if (user.getUserRole() == null) {
 			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
 		}
-		user.setUserStatus(MasterEnums.UserStatusEnum.PENDING);
+		// user.setUserStatus(MasterEnums.UserStatusEnum.PENDING); Temporary change to
+		// create Active user
+		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
 		userRepository.save(user);
 
 		// Generate OTP
@@ -206,9 +209,12 @@ public class UserService {
 	}
 
 	// ---------------- PROPERTY RELATIONS ----------------
+	@Transactional
 	public UserPropertyRelationDto markFavourite(Long userId, Long propertyId) {
+
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
 		Property property = propertyRepository.findById(propertyId)
 				.orElseThrow(() -> new RuntimeException("Property not found with id: " + propertyId));
 
@@ -217,27 +223,26 @@ public class UserService {
 					UserPropertyRelation newRelation = new UserPropertyRelation();
 					newRelation.setUser(user);
 					newRelation.setProperty(property);
+					newRelation.setFavourite(false); // default
 					return newRelation;
 				});
 
-		// Toggle favourite status
-		if (relation.isFavourite()) {
-			relation.setFavourite(false);
-			relation.setFavouriteDate(null);
-		} else {
-			relation.setFavourite(true);
-			relation.setFavouriteDate(LocalDateTime.now());
-		}
+		boolean isFav = Boolean.TRUE.equals(relation.isFavourite());
 
-		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
+		relation.setFavourite(!isFav);
+		relation.setFavouriteDate(!isFav ? LocalDateTime.now() : null);
 
-		// Convert entity to DTO
-		return mapper.map(savedRelation, UserPropertyRelationDto.class);
+		UserPropertyRelation saved = propertyRelationRepository.save(relation);
+
+		return mapper.map(saved, UserPropertyRelationDto.class);
 	}
 
+	@Transactional
 	public UserPropertyRelationDto markInterested(Long userId, Long propertyId) {
+
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
 		Property property = propertyRepository.findById(propertyId)
 				.orElseThrow(() -> new RuntimeException("Property not found with id: " + propertyId));
 
@@ -246,21 +251,17 @@ public class UserService {
 					UserPropertyRelation newRelation = new UserPropertyRelation();
 					newRelation.setUser(user);
 					newRelation.setProperty(property);
+					newRelation.setInquiry(false); // default
 					return newRelation;
 				});
 
-		// Toggle inquiry status
-		if (relation.isInquiry()) {
-			relation.setInquiry(false);
-			relation.setInquiryDate(null);
-		} else {
-			relation.setInquiry(true);
-			relation.setInquiryDate(LocalDateTime.now());
-		}
+		boolean isInterested = Boolean.TRUE.equals(relation.isInquiry());
+
+		relation.setInquiry(!isInterested);
+		relation.setInquiryDate(!isInterested ? LocalDateTime.now() : null);
 
 		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
 
-		// Convert entity to DTO
 		return mapper.map(savedRelation, UserPropertyRelationDto.class);
 	}
 
