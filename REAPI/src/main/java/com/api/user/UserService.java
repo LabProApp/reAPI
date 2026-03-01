@@ -210,7 +210,7 @@ public class UserService {
 
 	// ---------------- PROPERTY RELATIONS ----------------
 	@Transactional
-	public UserPropertyRelationDto markFavourite(Long userId, Long propertyId) {
+	public Long markFavourite(Long userId, Long propertyId) {
 
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
@@ -227,18 +227,18 @@ public class UserService {
 					return newRelation;
 				});
 
-		boolean isFav = Boolean.TRUE.equals(relation.isFavourite());
+		boolean isFav = Boolean.TRUE.equals(relation.getFavourite());
 
 		relation.setFavourite(!isFav);
 		relation.setFavouriteDate(!isFav ? LocalDateTime.now() : null);
 
-		UserPropertyRelation saved = propertyRelationRepository.save(relation);
+		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
 
-		return mapper.map(saved, UserPropertyRelationDto.class);
+		return propertyId;
 	}
 
 	@Transactional
-	public UserPropertyRelationDto markInterested(Long userId, Long propertyId) {
+	public Long markInterested(Long userId, Long propertyId) {
 
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
@@ -255,31 +255,102 @@ public class UserService {
 					return newRelation;
 				});
 
-		boolean isInterested = Boolean.TRUE.equals(relation.isInquiry());
+		boolean isInterested = Boolean.TRUE.equals(relation.getInquiry());
 
 		relation.setInquiry(!isInterested);
 		relation.setInquiryDate(!isInterested ? LocalDateTime.now() : null);
 
 		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
 
-		return mapper.map(savedRelation, UserPropertyRelationDto.class);
+		return propertyId;
 	}
 
+	@Transactional
 	public List<PropertyDto> getFavouriteProperties(Long userId) {
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isFavourite) // filter
-																													// favorites
-				.map(UserPropertyRelation::getProperty) // get Property entity
-				.map(property -> mapper.map(property, PropertyDto.class)) // map to DTO
-				.collect(Collectors.toList());
-	}
+		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndFavouriteTrue(userId);
 
+		return relations.stream().map(upr -> {
+			Property p = upr.getProperty();
+			PropertyDto dto = new PropertyDto();
+			dto.setId(p.getId());
+			dto.setTitle(p.getTitle());
+			dto.setAddress(p.getAddress());
+			dto.setCity(p.getCity());
+			dto.setState(p.getState());
+			dto.setType(p.getType());
+			dto.setRentOrSale(p.getRentOrSale());
+			dto.setCategory(p.getCategory());
+			dto.setPrice(p.getPrice());
+			dto.setBedrooms(p.getBedrooms());
+			dto.setBathrooms(p.getBathrooms());
+			dto.setLocation(p.getLocation());
+			dto.setCurrency(p.getCurrency());
+			dto.setPlanPackage(p.getPlanPackage());
+			dto.setPropertyStatus(p.getPropertyStatus());
+			dto.setVerified(p.isVerified());
+			dto.setCarpetArea(p.getCarpetArea());
+			dto.setSuperArea(p.getSuperArea());
+			dto.setAmenitiesFromList(p.getAmenitiesAsList());
+			dto.setPostedBy(p.getPostedBy());
+			dto.setPostDate(p.getPostDate());
+			dto.setPostedByUser(p.getPostedByUser());
+			dto.setCode(p.getCode());
+			dto.setLastUpdatedTs(p.getLastUpdatedTs());
+			dto.setUpdatedBy(p.getUpdatedBy());
+			dto.setContactNumber(p.getContactNumber());
+			dto.setConstructionStatus(p.getConstructionStatus());
+			dto.setCategory(p.getCategory());
+			dto.setProjectName(p.getProjectName());
+			dto.setDescription(p.getDescription());
+			dto.setReadyDate(p.getReadyDate());
+			dto.setProjectName(p.getProjectName());
+		
+			// skip documentList or set manually
+			return dto;
+		}).collect(Collectors.toList());
+	}
+	@Transactional
 	public List<PropertyDto> getInquiredProperties(Long userId) {
-		return propertyRelationRepository.findByUserId(userId).stream().filter(UserPropertyRelation::isInquiry)
-				.map(UserPropertyRelation::getProperty).map(property -> mapper.map(property, PropertyDto.class)) // map
-																													// entity
-																													// to
-																													// DTO
-				.collect(Collectors.toList());
+		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndInquiryTrue(userId);
+
+		return relations.stream().map(upr -> {
+			Property p = upr.getProperty();
+			PropertyDto dto = new PropertyDto();
+			dto.setId(p.getId());
+			dto.setTitle(p.getTitle());
+			dto.setAddress(p.getAddress());
+			dto.setCity(p.getCity());
+			dto.setState(p.getState());
+			dto.setType(p.getType());
+			dto.setRentOrSale(p.getRentOrSale());
+			dto.setCategory(p.getCategory());
+			dto.setPrice(p.getPrice());
+			dto.setBedrooms(p.getBedrooms());
+			dto.setBathrooms(p.getBathrooms());
+			dto.setLocation(p.getLocation());
+			dto.setCurrency(p.getCurrency());
+			dto.setPlanPackage(p.getPlanPackage());
+			dto.setPropertyStatus(p.getPropertyStatus());
+			dto.setVerified(p.isVerified());
+			dto.setCarpetArea(p.getCarpetArea());
+			dto.setSuperArea(p.getSuperArea());
+			dto.setAmenitiesFromList(p.getAmenitiesAsList());
+			dto.setPostedBy(p.getPostedBy());
+			dto.setPostDate(p.getPostDate());
+			dto.setPostedByUser(p.getPostedByUser());
+			dto.setCode(p.getCode());
+			dto.setLastUpdatedTs(p.getLastUpdatedTs());
+			dto.setUpdatedBy(p.getUpdatedBy());
+			dto.setContactNumber(p.getContactNumber());
+			dto.setConstructionStatus(p.getConstructionStatus());
+			dto.setCategory(p.getCategory());
+			dto.setProjectName(p.getProjectName());
+			dto.setDescription(p.getDescription());
+			dto.setReadyDate(p.getReadyDate());
+			dto.setProjectName(p.getProjectName());
+			// skip documentList or set manually
+			return dto;
+		}).collect(Collectors.toList());
 	}
 
 	// ---------------- LOGOUT ----------------

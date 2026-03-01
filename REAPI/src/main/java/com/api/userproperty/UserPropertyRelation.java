@@ -52,11 +52,11 @@ public class UserPropertyRelation extends BaseEntity {
 
 	// --- Flags ---
 	@Builder.Default
-	private boolean isFavourite = false;
+	private boolean favourite = false;
 
 	// renamed from isInterested → isInquiry
 	@Builder.Default
-	private boolean isInquiry = false;
+	private boolean inquiry = false;
 
 	// --- Dates ---
 	private LocalDateTime favouriteDate;
@@ -77,22 +77,22 @@ public class UserPropertyRelation extends BaseEntity {
 	// --- Logic ---
 
 	public void setFavourite(boolean isFavourite) {
-		this.isFavourite = isFavourite;
+		this.favourite = isFavourite;
 		this.favouriteDate = isFavourite ? LocalDateTime.now() : null;
 	}
 
 	// renamed logic
 	public void setInquiry(boolean isInquiry) {
-		this.isInquiry = isInquiry;
+		this.inquiry = isInquiry;
 		this.inquiryDate = isInquiry ? LocalDateTime.now() : null;
 	}
 
-	public boolean isFavourite() {
-		return isFavourite;
+	public boolean getFavourite() {
+		return favourite;
 	}
 
-	public boolean isInquiry() {
-		return isInquiry;
+	public boolean getInquiry() {
+		return inquiry;
 	}
 
 	public Long getId() {

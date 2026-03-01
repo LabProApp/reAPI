@@ -5,10 +5,14 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserPropertyRelationRepository extends JpaRepository<UserPropertyRelation, Long> {
-	List<UserPropertyRelation> findByUserId(Long userId);
+public interface UserPropertyRelationRepository 
+extends JpaRepository<UserPropertyRelation, Long> {
 
-	
-	Optional<UserPropertyRelation> findByUserIdAndPropertyId(Long userId, Long propertyId);
-	//Optional<UserPropertyRelation> findByUser_IdAndProperty_Id(Long userId, Long propertyId);
+List<UserPropertyRelation> findByUserId(Long userId);
+
+Optional<UserPropertyRelation> findByUserIdAndPropertyId(Long userId, Long propertyId);
+
+List<UserPropertyRelation> findByUserIdAndInquiryTrue(Long userId);
+
+List<UserPropertyRelation> findByUserIdAndFavouriteTrue(Long userId);
 }

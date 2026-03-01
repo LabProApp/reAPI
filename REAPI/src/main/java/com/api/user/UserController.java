@@ -76,12 +76,12 @@ public class UserController {
 	}
 
 	@PostMapping("/{userId}/favourite/{propertyId}")
-	public UserPropertyRelationDto markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
+	public Long markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
 		return userService.markFavourite(userId, propertyId);
 	}
 
 	@PostMapping("/{userId}/interest/{propertyId}")
-	public UserPropertyRelationDto markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
+	public Long markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
 		return userService.markInterested(userId, propertyId);
 	}
 
