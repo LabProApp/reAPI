@@ -294,6 +294,7 @@ public class UserService {
 			dto.setPostedBy(p.getPostedBy());
 			dto.setPostDate(p.getPostDate());
 			dto.setPostedByUser(p.getPostedByUser());
+			dto.setContactNumber(p.getContactNumber());
 			dto.setCode(p.getCode());
 			dto.setLastUpdatedTs(p.getLastUpdatedTs());
 			dto.setUpdatedBy(p.getUpdatedBy());
@@ -336,6 +337,7 @@ public class UserService {
 			dto.setSuperArea(p.getSuperArea());
 			dto.setAmenitiesFromList(p.getAmenitiesAsList());
 			dto.setPostedBy(p.getPostedBy());
+			dto.setContactNumber(p.getContactNumber());
 			dto.setPostDate(p.getPostDate());
 			dto.setPostedByUser(p.getPostedByUser());
 			dto.setCode(p.getCode());
