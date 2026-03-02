@@ -55,53 +55,38 @@ public class ClientLeadService {
 				.collect(Collectors.toList());
 	}
 
-	public List<ClientLeadDTO> getByBrokerWithFilters(
-	        Long brokerId,
-	        List<String> status,
-	        LocalDateTime startDate,
-	        LocalDateTime endDate
-	) {
+	public List<ClientLeadDTO> getByBrokerWithFilters(Long brokerId, List<String> status, LocalDateTime startDate,
+			LocalDateTime endDate) {
 
-	    List<ClientLead> leads;
+		List<ClientLead> leads;
 
-	    if ((status == null || status.isEmpty()) && startDate == null && endDate == null) {
-	        leads = repository.findByBrokerId(brokerId);
-	    } 
-	    else if ((status == null || status.isEmpty()) && startDate != null && endDate != null) {
-	        leads = repository.findByBrokerIdAndInquiryDateBetween(brokerId, startDate, endDate);
-	    } 
-	    else if ((status != null && !status.isEmpty()) && startDate == null && endDate == null) {
-	        leads = repository.findByBrokerIdAndStatusIn(brokerId, status);
-	    } 
-	    else if ((status != null && !status.isEmpty()) && startDate != null && endDate != null) {
-	        leads = repository.findByBrokerIdAndStatusInAndInquiryDateBetween(
-	                brokerId, status, startDate, endDate);
-	    } 
-	    else {
-	        // partial date given → treat missing as open-ended
-	        if (startDate == null) startDate = LocalDateTime.MIN;
-	        if (endDate == null) endDate = LocalDateTime.now();
+		if ((status == null || status.isEmpty()) && startDate == null && endDate == null) {
+			leads = repository.findByBrokerId(brokerId);
+		} else if ((status == null || status.isEmpty()) && startDate != null && endDate != null) {
+			leads = repository.findByBrokerIdAndInquiryDateBetween(brokerId, startDate, endDate);
+		} else if ((status != null && !status.isEmpty()) && startDate == null && endDate == null) {
+			leads = repository.findByBrokerIdAndStatusIn(brokerId, status);
+		} else if ((status != null && !status.isEmpty()) && startDate != null && endDate != null) {
+			leads = repository.findByBrokerIdAndStatusInAndInquiryDateBetween(brokerId, status, startDate, endDate);
+		} else {
+			// partial date given → treat missing as open-ended
+			if (startDate == null)
+				startDate = LocalDateTime.MIN;
+			if (endDate == null)
+				endDate = LocalDateTime.now();
 
-	        if (status == null || status.isEmpty()) {
-	            leads = repository.findByBrokerIdAndInquiryDateBetween(brokerId, startDate, endDate);
-	        } else {
-	            leads = repository.findByBrokerIdAndStatusInAndInquiryDateBetween(
-	                    brokerId, status, startDate, endDate);
-	        }
-	    }
+			if (status == null || status.isEmpty()) {
+				leads = repository.findByBrokerIdAndInquiryDateBetween(brokerId, startDate, endDate);
+			} else {
+				leads = repository.findByBrokerIdAndStatusInAndInquiryDateBetween(brokerId, status, startDate, endDate);
+			}
+		}
 
-	    return leads.stream()
-	            .map(e -> mapper.map(e, ClientLeadDTO.class))
-	            .toList();
+		return leads.stream().map(e -> mapper.map(e, ClientLeadDTO.class)).toList();
 	}
 
 	public List<ClientLeadDTO> getByStatus(String status) {
 		return repository.findByStatus(status).stream().map(e -> mapper.map(e, ClientLeadDTO.class))
-				.collect(Collectors.toList());
-	}
-
-	public List<ClientLeadDTO> getByContacted(Boolean contacted) {
-		return repository.findByContacted(contacted).stream().map(e -> mapper.map(e, ClientLeadDTO.class))
 				.collect(Collectors.toList());
 	}
 

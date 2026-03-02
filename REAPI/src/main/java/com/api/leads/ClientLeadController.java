@@ -68,8 +68,5 @@ public class ClientLeadController {
 		return service.getByStatus(status);
 	}
 
-	@GetMapping("/contacted/{contacted}")
-	public List<ClientLeadDTO> getByContacted(@PathVariable Boolean contacted) {
-		return service.getByContacted(contacted);
-	}
+	
 }
