@@ -16,8 +16,8 @@ public class UserPropertyRelationDto extends BaseDto {
 	private PropertyDto property;
 
 	// --- Flags ---
-	private boolean favourite = false; // renamed from isFavourite
-	private boolean inquiry = false; // renamed from isInquiry
+	private boolean favourite = false; 
+	private boolean inquiry = false;
 
 	// --- Dates ---
 	private LocalDateTime favouriteDate;
