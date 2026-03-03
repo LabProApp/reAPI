@@ -23,10 +23,19 @@ public class ClientLeadService {
 	}
 
 	// ➕ CREATE
+	// ➕ CREATE (DUPLICATE SAFE)
 	public ClientLeadDTO createLead(ClientLeadDTO dto) {
-		ClientLead entity = mapper.map(dto, ClientLead.class);
-		ClientLead saved = repository.save(entity);
-		return mapper.map(saved, ClientLeadDTO.class);
+
+	    // 🚫 DUPLICATE CHECK
+	    if (repository.existsByUserIdAndPropertyId(dto.getUserId(), dto.getPropertyId())) {
+	        throw new RuntimeException("Lead already exists for this user and property");
+	    }
+
+	    ClientLead entity = mapper.map(dto, ClientLead.class);
+	    entity.setInquiryDate(LocalDateTime.now()); // force server time
+
+	    ClientLead saved = repository.save(entity);
+	    return mapper.map(saved, ClientLeadDTO.class);
 	}
 
 	// ✏ UPDATE

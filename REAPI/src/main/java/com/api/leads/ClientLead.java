@@ -1,7 +1,9 @@
 package com.api.leads;
 
 import java.time.LocalDateTime;
+
 import com.api.commons.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,9 +11,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "client_lead")
+@Table(name = "client_lead", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "property_id" }))
 public class ClientLead extends BaseEntity {
 
 	@Id
@@ -20,7 +23,7 @@ public class ClientLead extends BaseEntity {
 
 	// 🔗 Relations
 	private Long brokerId; // user who showed interest
-	
+
 	private Long userId; // user who showed interest
 	private Long propertyId; // property they are interested in
 
@@ -48,7 +51,7 @@ public class ClientLead extends BaseEntity {
 	private String status; // NEW, CONTACTED, VISIT_PLANNED, CLOSED, DROPPED
 
 	// 📝 Notes
-	@Column(length = 500)
+	@Column(length = 5000)
 	private String remark;
 
 	// 🔍 Lead Source

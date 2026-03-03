@@ -23,5 +23,5 @@ public interface ClientLeadRepository extends JpaRepository<ClientLead, Long> {
 
 	List<ClientLead> findByBrokerIdAndStatusInAndInquiryDateBetween(Long brokerId, List<String> status,
 			LocalDateTime start, LocalDateTime end);
-
+    boolean existsByUserIdAndPropertyId(Long userId, Long propertyId);
 }
