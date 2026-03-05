@@ -36,6 +36,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "property")
 public class Property extends BaseEntity {
 
+	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -50,9 +52,6 @@ public class Property extends BaseEntity {
 	private String city;
 	@Enumerated(EnumType.STRING)
 	private MasterEnums.PropertyStatusEnum propertyStatus;
-
-	@Enumerated(EnumType.STRING)
-	private MasterEnums.PackageEnum planPackage;
 
 	@NotBlank(message = "State is required")
 	private String state;
@@ -111,6 +110,45 @@ public class Property extends BaseEntity {
 	private String rentOrSale; // Rent or Sale
 
 	private boolean verified;
+
+	private String landmark;
+	private Double latitude;
+	private Double longitude;
+
+	private Integer floorNumber;
+	private Integer totalFloors;
+
+	private Integer parkingCount;
+	private String parkingType; // Covered, Open, Both
+
+	private String facing; // East, West, North, South
+
+	private Integer propertyAge; // in years
+	private String ownershipType; // Freehold, Leasehold
+
+	private Boolean negotiable;
+	private Boolean loanAvailable;
+
+	private Double monthlyRent;
+	private Double securityDeposit;
+	private Double brokerage;
+
+	private String preferredTenants; // Family, Bachelor, Company
+
+	private Boolean petsAllowed;
+	private Boolean nonVegAllowed;
+
+	private String leaseDuration; // 11 months, 1 year
+	private String noticePeriod; // 1 month, 2 months
+
+	private Boolean maintenanceIncluded;
+	private String builderName;
+	private Boolean reraApproved;
+	private String reraNumber;
+
+
+	private Integer viewsCount;
+	private Integer shortListCount;
 
 	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
@@ -342,20 +380,219 @@ public class Property extends BaseEntity {
 		this.verified = verified;
 	}
 
-	public MasterEnums.PackageEnum getPlanPackage() {
-		return planPackage;
-	}
-
-	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
-		this.planPackage = planPackage;
-	}
-
 	public String getContactNumber() {
 		return contactNumber;
 	}
 
 	public void setContactNumber(String contactNumber) {
 		this.contactNumber = contactNumber;
+	}
+	public String getLandmark() {
+		return landmark;
+	}
+
+	public void setLandmark(String landmark) {
+		this.landmark = landmark;
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+
+	public Integer getFloorNumber() {
+		return floorNumber;
+	}
+
+	public void setFloorNumber(Integer floorNumber) {
+		this.floorNumber = floorNumber;
+	}
+
+	public Integer getTotalFloors() {
+		return totalFloors;
+	}
+
+	public void setTotalFloors(Integer totalFloors) {
+		this.totalFloors = totalFloors;
+	}
+
+	public Integer getParkingCount() {
+		return parkingCount;
+	}
+
+	public void setParkingCount(Integer parkingCount) {
+		this.parkingCount = parkingCount;
+	}
+
+	public String getParkingType() {
+		return parkingType;
+	}
+
+	public void setParkingType(String parkingType) {
+		this.parkingType = parkingType;
+	}
+
+	public String getFacing() {
+		return facing;
+	}
+
+	public void setFacing(String facing) {
+		this.facing = facing;
+	}
+
+	public Integer getPropertyAge() {
+		return propertyAge;
+	}
+
+	public void setPropertyAge(Integer propertyAge) {
+		this.propertyAge = propertyAge;
+	}
+
+	public String getOwnershipType() {
+		return ownershipType;
+	}
+
+	public void setOwnershipType(String ownershipType) {
+		this.ownershipType = ownershipType;
+	}
+
+	public Boolean getNegotiable() {
+		return negotiable;
+	}
+
+	public void setNegotiable(Boolean negotiable) {
+		this.negotiable = negotiable;
+	}
+
+	public Boolean getLoanAvailable() {
+		return loanAvailable;
+	}
+
+	public void setLoanAvailable(Boolean loanAvailable) {
+		this.loanAvailable = loanAvailable;
+	}
+
+	public Integer getViewsCount() {
+		return viewsCount;
+	}
+
+	public void setViewsCount(Integer viewsCount) {
+		this.viewsCount = viewsCount;
+	}
+
+	public Integer getShortListCount() {
+		return shortListCount;
+	}
+
+	public void setShortListCount(Integer shortListCount) {
+		this.shortListCount = shortListCount;
+	}
+
+	public Double getMonthlyRent() {
+		return monthlyRent;
+	}
+
+	public void setMonthlyRent(Double monthlyRent) {
+		this.monthlyRent = monthlyRent;
+	}
+
+	public Double getSecurityDeposit() {
+		return securityDeposit;
+	}
+
+	public void setSecurityDeposit(Double securityDeposit) {
+		this.securityDeposit = securityDeposit;
+	}
+
+	public Double getBrokerage() {
+		return brokerage;
+	}
+
+	public void setBrokerage(Double brokerage) {
+		this.brokerage = brokerage;
+	}
+
+	public String getPreferredTenants() {
+		return preferredTenants;
+	}
+
+	public void setPreferredTenants(String preferredTenants) {
+		this.preferredTenants = preferredTenants;
+	}
+
+	public Boolean getPetsAllowed() {
+		return petsAllowed;
+	}
+
+	public void setPetsAllowed(Boolean petsAllowed) {
+		this.petsAllowed = petsAllowed;
+	}
+
+	public Boolean getNonVegAllowed() {
+		return nonVegAllowed;
+	}
+
+	public void setNonVegAllowed(Boolean nonVegAllowed) {
+		this.nonVegAllowed = nonVegAllowed;
+	}
+
+	public String getLeaseDuration() {
+		return leaseDuration;
+	}
+
+	public void setLeaseDuration(String leaseDuration) {
+		this.leaseDuration = leaseDuration;
+	}
+
+	public String getNoticePeriod() {
+		return noticePeriod;
+	}
+
+	public void setNoticePeriod(String noticePeriod) {
+		this.noticePeriod = noticePeriod;
+	}
+
+	public Boolean getMaintenanceIncluded() {
+		return maintenanceIncluded;
+	}
+
+	public void setMaintenanceIncluded(Boolean maintenanceIncluded) {
+		this.maintenanceIncluded = maintenanceIncluded;
+	}
+
+	public String getBuilderName() {
+		return builderName;
+	}
+
+	public void setBuilderName(String builderName) {
+		this.builderName = builderName;
+	}
+
+	public Boolean getReraApproved() {
+		return reraApproved;
+	}
+
+	public void setReraApproved(Boolean reraApproved) {
+		this.reraApproved = reraApproved;
+	}
+
+	public String getReraNumber() {
+		return reraNumber;
+	}
+
+	public void setReraNumber(String reraNumber) {
+		this.reraNumber = reraNumber;
 	}
 
 }

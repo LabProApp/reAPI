@@ -67,12 +67,16 @@ public class UserService {
 		userRepository.save(user);
 
 		// Send OTP
-		if (user.getMobile() != null)
-			commService.sendSMSMessage(user.getMobile(), "One Time Password is: " + otp + "\nValid for 10 minutes");
-		if (user.getEmail() != null)
-			commService.sendEmail(user.getEmail(), "One Time Password is: " + otp + "\nValid for 10 minutes",
-					"OTP for User SignUp");
+		try {
+			if (user.getMobile() != null)
+				commService.sendSMSMessage(user.getMobile(), "One Time Password is: " + otp + "\nValid for 10 minutes");
+			if (user.getEmail() != null)
+				commService.sendEmail(user.getEmail(), "One Time Password is: " + otp + "\nValid for 10 minutes",
+						"OTP for User SignUp");
 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return mapper.map(user, UserDto.class);
 	}
 
@@ -113,12 +117,15 @@ public class UserService {
 		user.setOtpGeneratedAt(LocalDateTime.now());
 		userRepository.save(user);
 
-		if (identifier.contains("@"))
-			commService.sendSMSMessage(user.getMobile(), "Your OTP is: " + newOtp + "\nValid for 10 minutes");
-		else
-			commService.sendEmail(user.getEmail(), "Your OTP is: " + newOtp + "\nValid for 10 minutes",
-					"OTP for User SignUp");
-
+		try {
+			if (identifier.contains("@"))
+				commService.sendSMSMessage(user.getMobile(), "Your OTP is: " + newOtp + "\nValid for 10 minutes");
+			else
+				commService.sendEmail(user.getEmail(), "Your OTP is: " + newOtp + "\nValid for 10 minutes",
+						"OTP for User SignUp");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return ResponseEntity.ok("New OTP has been sent");
 	}
 
@@ -272,44 +279,88 @@ public class UserService {
 		return relations.stream().map(upr -> {
 			Property p = upr.getProperty();
 			PropertyDto dto = new PropertyDto();
+
+			// --- Basic Info ---
 			dto.setId(p.getId());
 			dto.setTitle(p.getTitle());
 			dto.setAddress(p.getAddress());
 			dto.setCity(p.getCity());
 			dto.setState(p.getState());
 			dto.setType(p.getType());
-			dto.setRentOrSale(p.getRentOrSale());
 			dto.setCategory(p.getCategory());
-			dto.setPrice(p.getPrice());
-			dto.setBedrooms(p.getBedrooms());
-			dto.setBathrooms(p.getBathrooms());
-			dto.setLocation(p.getLocation());
-			dto.setCurrency(p.getCurrency());
-			dto.setPlanPackage(p.getPlanPackage());
+			dto.setRentOrSale(p.getRentOrSale());
 			dto.setPropertyStatus(p.getPropertyStatus());
 			dto.setVerified(p.isVerified());
+
+			// --- Pricing ---
+			dto.setPrice(p.getPrice());
+			dto.setCurrency(p.getCurrency());
+			dto.setMonthlyRent(p.getMonthlyRent());
+			dto.setSecurityDeposit(p.getSecurityDeposit());
+			dto.setBrokerage(p.getBrokerage());
+			dto.setNegotiable(p.getNegotiable());
+			dto.setLoanAvailable(p.getLoanAvailable());
+
+			// --- Area & Rooms ---
+			dto.setBedrooms(p.getBedrooms());
+			dto.setBathrooms(p.getBathrooms());
 			dto.setCarpetArea(p.getCarpetArea());
 			dto.setSuperArea(p.getSuperArea());
-			dto.setAmenitiesFromList(p.getAmenitiesAsList());
+
+			// --- Location ---
+			dto.setLocation(p.getLocation());
+			dto.setLandmark(p.getLandmark());
+			dto.setLatitude(p.getLatitude());
+			dto.setLongitude(p.getLongitude());
+			dto.setFacing(p.getFacing());
+
+			// --- Building Info ---
+			dto.setFloorNumber(p.getFloorNumber());
+			dto.setTotalFloors(p.getTotalFloors());
+			dto.setParkingCount(p.getParkingCount());
+			dto.setParkingType(p.getParkingType());
+			dto.setPropertyAge(p.getPropertyAge());
+			dto.setOwnershipType(p.getOwnershipType());
+			dto.setConstructionStatus(p.getConstructionStatus());
+			dto.setReadyDate(p.getReadyDate());
+
+			// --- Project / Builder ---
+			dto.setProjectName(p.getProjectName());
+			dto.setBuilderName(p.getBuilderName());
+			dto.setReraApproved(p.getReraApproved());
+			dto.setReraNumber(p.getReraNumber());
+
+			// --- Tenant Rules (for Rent) ---
+			dto.setPreferredTenants(p.getPreferredTenants());
+			dto.setPetsAllowed(p.getPetsAllowed());
+			dto.setNonVegAllowed(p.getNonVegAllowed());
+			dto.setLeaseDuration(p.getLeaseDuration());
+			dto.setNoticePeriod(p.getNoticePeriod());
+			dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
+
+			// --- Meta ---
 			dto.setPostedBy(p.getPostedBy());
-			dto.setPostDate(p.getPostDate());
 			dto.setPostedByUser(p.getPostedByUser());
+			dto.setPostDate(p.getPostDate());
 			dto.setContactNumber(p.getContactNumber());
+			dto.setDescription(p.getDescription());
+
+			// --- Stats ---
+			dto.setViewsCount(p.getViewsCount());
+			dto.setShortListCount(p.getShortListCount());
+
+			// --- Amenities ---
+			dto.setAmenitiesFromList(p.getAmenitiesAsList());
+
+			// --- Audit ---
 			dto.setCode(p.getCode());
 			dto.setLastUpdatedTs(p.getLastUpdatedTs());
 			dto.setUpdatedBy(p.getUpdatedBy());
-			dto.setContactNumber(p.getContactNumber());
-			dto.setConstructionStatus(p.getConstructionStatus());
-			dto.setCategory(p.getCategory());
-			dto.setProjectName(p.getProjectName());
-			dto.setDescription(p.getDescription());
-			dto.setReadyDate(p.getReadyDate());
-			dto.setProjectName(p.getProjectName());
-		
-			// skip documentList or set manually
+
 			return dto;
 		}).collect(Collectors.toList());
 	}
+
 	@Transactional
 	public List<PropertyDto> getInquiredProperties(Long userId) {
 		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndInquiryTrue(userId);
@@ -317,40 +368,84 @@ public class UserService {
 		return relations.stream().map(upr -> {
 			Property p = upr.getProperty();
 			PropertyDto dto = new PropertyDto();
+
+			// --- Basic Info ---
 			dto.setId(p.getId());
 			dto.setTitle(p.getTitle());
 			dto.setAddress(p.getAddress());
 			dto.setCity(p.getCity());
 			dto.setState(p.getState());
 			dto.setType(p.getType());
-			dto.setRentOrSale(p.getRentOrSale());
 			dto.setCategory(p.getCategory());
-			dto.setPrice(p.getPrice());
-			dto.setBedrooms(p.getBedrooms());
-			dto.setBathrooms(p.getBathrooms());
-			dto.setLocation(p.getLocation());
-			dto.setCurrency(p.getCurrency());
-			dto.setPlanPackage(p.getPlanPackage());
+			dto.setRentOrSale(p.getRentOrSale());
 			dto.setPropertyStatus(p.getPropertyStatus());
 			dto.setVerified(p.isVerified());
+
+			// --- Pricing ---
+			dto.setPrice(p.getPrice());
+			dto.setCurrency(p.getCurrency());
+			dto.setMonthlyRent(p.getMonthlyRent());
+			dto.setSecurityDeposit(p.getSecurityDeposit());
+			dto.setBrokerage(p.getBrokerage());
+			dto.setNegotiable(p.getNegotiable());
+			dto.setLoanAvailable(p.getLoanAvailable());
+
+			// --- Area & Rooms ---
+			dto.setBedrooms(p.getBedrooms());
+			dto.setBathrooms(p.getBathrooms());
 			dto.setCarpetArea(p.getCarpetArea());
 			dto.setSuperArea(p.getSuperArea());
-			dto.setAmenitiesFromList(p.getAmenitiesAsList());
+
+			// --- Location ---
+			dto.setLocation(p.getLocation());
+			dto.setLandmark(p.getLandmark());
+			dto.setLatitude(p.getLatitude());
+			dto.setLongitude(p.getLongitude());
+			dto.setFacing(p.getFacing());
+
+			// --- Building Info ---
+			dto.setFloorNumber(p.getFloorNumber());
+			dto.setTotalFloors(p.getTotalFloors());
+			dto.setParkingCount(p.getParkingCount());
+			dto.setParkingType(p.getParkingType());
+			dto.setPropertyAge(p.getPropertyAge());
+			dto.setOwnershipType(p.getOwnershipType());
+			dto.setConstructionStatus(p.getConstructionStatus());
+			dto.setReadyDate(p.getReadyDate());
+
+			// --- Project / Builder ---
+			dto.setProjectName(p.getProjectName());
+			dto.setBuilderName(p.getBuilderName());
+			dto.setReraApproved(p.getReraApproved());
+			dto.setReraNumber(p.getReraNumber());
+
+			// --- Tenant Rules (for Rent) ---
+			dto.setPreferredTenants(p.getPreferredTenants());
+			dto.setPetsAllowed(p.getPetsAllowed());
+			dto.setNonVegAllowed(p.getNonVegAllowed());
+			dto.setLeaseDuration(p.getLeaseDuration());
+			dto.setNoticePeriod(p.getNoticePeriod());
+			dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
+
+			// --- Meta ---
 			dto.setPostedBy(p.getPostedBy());
-			dto.setContactNumber(p.getContactNumber());
-			dto.setPostDate(p.getPostDate());
 			dto.setPostedByUser(p.getPostedByUser());
+			dto.setPostDate(p.getPostDate());
+			dto.setContactNumber(p.getContactNumber());
+			dto.setDescription(p.getDescription());
+
+			// --- Stats ---
+			dto.setViewsCount(p.getViewsCount());
+			dto.setShortListCount(p.getShortListCount());
+
+			// --- Amenities ---
+			dto.setAmenitiesFromList(p.getAmenitiesAsList());
+
+			// --- Audit ---
 			dto.setCode(p.getCode());
 			dto.setLastUpdatedTs(p.getLastUpdatedTs());
 			dto.setUpdatedBy(p.getUpdatedBy());
-			dto.setContactNumber(p.getContactNumber());
-			dto.setConstructionStatus(p.getConstructionStatus());
-			dto.setCategory(p.getCategory());
-			dto.setProjectName(p.getProjectName());
-			dto.setDescription(p.getDescription());
-			dto.setReadyDate(p.getReadyDate());
-			dto.setProjectName(p.getProjectName());
-			// skip documentList or set manually
+
 			return dto;
 		}).collect(Collectors.toList());
 	}

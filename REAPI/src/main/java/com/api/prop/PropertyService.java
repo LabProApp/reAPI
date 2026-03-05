@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+ 
 import com.api.commons.ResourceNotFoundException;
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
@@ -68,31 +68,87 @@ public class PropertyService {
 		Property updatedProperty = mapper.map(updatedDto, Property.class);
 
 		Property saved = repository.findById(id).map(existing -> {
-			existing.setTitle(updatedProperty.getTitle());
-			existing.setDescription(updatedProperty.getDescription());
-			existing.setProjectName(updatedProperty.getProjectName());
-			existing.setAddress(updatedProperty.getAddress());
-			existing.setCity(updatedProperty.getCity());
-			existing.setType(updatedProperty.getType());
-			existing.setPrice(updatedProperty.getPrice());
-			existing.setBedrooms(updatedProperty.getBedrooms());
-			existing.setBathrooms(updatedProperty.getBathrooms());
-			existing.setLocation(updatedProperty.getLocation());
-			existing.setCarpetArea(updatedProperty.getCarpetArea());
-			existing.setSuperArea(updatedProperty.getSuperArea());
-			existing.setAmenities(updatedProperty.getAmenities());
-			existing.setPostedBy(updatedProperty.getPostedBy());
-			existing.setConstructionStatus(updatedProperty.getConstructionStatus());
-			existing.setPropertyStatus(updatedProperty.getPropertyStatus());
-			existing.setPlanPackage(updatedProperty.getPlanPackage());
-			existing.setCurrency(updatedProperty.getCurrency());
-			existing.setReadyDate(updatedProperty.getReadyDate());
-			existing.setCategory(updatedProperty.getCategory());
-			existing.setRentOrSale(updatedProperty.getRentOrSale());
-			existing.setPostDate(updatedProperty.getPostDate());
-			existing.setPostedByUser(updatedProperty.getPostedByUser());
 
-			return repository.save(existing);
+		    // --- Basic Info ---
+		    existing.setTitle(updatedProperty.getTitle());
+		    existing.setDescription(updatedProperty.getDescription());
+		    existing.setProjectName(updatedProperty.getProjectName());
+		    existing.setAddress(updatedProperty.getAddress());
+		    existing.setCity(updatedProperty.getCity());
+		    existing.setState(updatedProperty.getState());
+		    existing.setType(updatedProperty.getType());
+		    existing.setCategory(updatedProperty.getCategory());
+		    existing.setRentOrSale(updatedProperty.getRentOrSale());
+		    existing.setPropertyStatus(updatedProperty.getPropertyStatus());
+		    existing.setVerified(updatedProperty.isVerified());
+
+		    // --- Pricing ---
+		    existing.setPrice(updatedProperty.getPrice());
+		    existing.setCurrency(updatedProperty.getCurrency());
+		    existing.setMonthlyRent(updatedProperty.getMonthlyRent());
+		    existing.setSecurityDeposit(updatedProperty.getSecurityDeposit());
+		    existing.setBrokerage(updatedProperty.getBrokerage());
+		    existing.setNegotiable(updatedProperty.getNegotiable());
+		    existing.setLoanAvailable(updatedProperty.getLoanAvailable());
+
+		    // --- Area & Rooms ---
+		    existing.setBedrooms(updatedProperty.getBedrooms());
+		    existing.setBathrooms(updatedProperty.getBathrooms());
+		    existing.setCarpetArea(updatedProperty.getCarpetArea());
+		    existing.setSuperArea(updatedProperty.getSuperArea());
+
+		    // --- Location ---
+		    existing.setLocation(updatedProperty.getLocation());
+		    existing.setLandmark(updatedProperty.getLandmark());
+		    existing.setLatitude(updatedProperty.getLatitude());
+		    existing.setLongitude(updatedProperty.getLongitude());
+		    existing.setFacing(updatedProperty.getFacing());
+
+		    // --- Building Info ---
+		    existing.setFloorNumber(updatedProperty.getFloorNumber());
+		    existing.setTotalFloors(updatedProperty.getTotalFloors());
+		    existing.setParkingCount(updatedProperty.getParkingCount());
+		    existing.setParkingType(updatedProperty.getParkingType());
+		    existing.setPropertyAge(updatedProperty.getPropertyAge());
+		    existing.setOwnershipType(updatedProperty.getOwnershipType());
+		    existing.setConstructionStatus(updatedProperty.getConstructionStatus());
+		    existing.setReadyDate(updatedProperty.getReadyDate());
+
+		    // --- Project / Builder ---
+		    existing.setBuilderName(updatedProperty.getBuilderName());
+		    existing.setReraApproved(updatedProperty.getReraApproved());
+		    existing.setReraNumber(updatedProperty.getReraNumber());
+
+		    // --- Tenant Rules ---
+		    existing.setPreferredTenants(updatedProperty.getPreferredTenants());
+		    existing.setPetsAllowed(updatedProperty.getPetsAllowed());
+		    existing.setNonVegAllowed(updatedProperty.getNonVegAllowed());
+		    existing.setLeaseDuration(updatedProperty.getLeaseDuration());
+		    existing.setNoticePeriod(updatedProperty.getNoticePeriod());
+		    existing.setMaintenanceIncluded(updatedProperty.getMaintenanceIncluded());
+
+		    // --- Meta ---
+		    existing.setPostedBy(updatedProperty.getPostedBy());
+		    existing.setContactNumber(updatedProperty.getContactNumber());
+
+		    // --- Stats (usually NOT updated from API, but safe if needed) ---
+		    existing.setViewsCount(updatedProperty.getViewsCount());
+		    existing.setShortListCount(updatedProperty.getShortListCount());
+
+		    // --- Amenities ---
+		    existing.setAmenities(updatedProperty.getAmenities());
+
+		    // --- Audit ---
+		    existing.setLastUpdatedTs(LocalDateTime.now());
+		    existing.setUpdatedBy(updatedProperty.getUpdatedBy());
+
+		    // ❌ DO NOT update these:
+		    // existing.setPostDate(...)
+		    // existing.setPostedByUser(...)
+		    // existing.setId(...)
+
+		    return repository.save(existing);
+
 		}).orElseThrow(() -> new ResourceNotFoundException("Property not found with id " + id));
 
 		return mapper.map(saved, PropertyDto.class);

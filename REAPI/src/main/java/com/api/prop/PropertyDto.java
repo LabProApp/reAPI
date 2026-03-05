@@ -2,51 +2,152 @@ package com.api.prop;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.api.commons.BaseDto;
-import com.api.documents.DocumentDto;
 import com.api.documents.DocumentminDto;
 import com.api.enums.MasterEnums;
+import com.api.userproperty.UserPropertyRelation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public class PropertyDto extends BaseDto {
 
 	private Long id;
 
+	// ================= BASIC INFO =================
+
+	@NotBlank(message = "Title is required")
 	private String title;
+
+	@NotBlank(message = "Address is required")
 	private String address;
+
+	@NotBlank(message = "City is required")
 	private String city;
-	private MasterEnums.PropertyStatusEnum propertyStatus;
-	private MasterEnums.PackageEnum planPackage;
+
+	@NotBlank(message = "State is required")
 	private String state;
+
+	@Enumerated(EnumType.STRING)
+	private MasterEnums.PropertyStatusEnum propertyStatus;
+
+	@NotBlank(message = "Type is required (Apartment, Villa, Plot, Office)")
 	private String type;
+
+	@NotNull(message = "Price is required")
+	@Positive(message = "Price must be greater than 0")
 	private Double price;
+
+	@Min(value = 0)
 	private Integer bedrooms;
+
+	@Min(value = 0)
 	private Integer bathrooms;
+
+	@NotBlank(message = "Location is required")
 	private String location;
-	private Double carpetArea; // in square feet
-	private Double superArea; // in square feet
-	private String amenities; // e.g., "1,2,3"
-	private String postedBy;
-	private String constructionStatus;
-	private String currency;
+
+	private Double carpetArea;
+	private Double superArea;
+
+	private String amenities; // "1,2,3"
+
+	@NotBlank(message = "PostedBy is required")
+	private String postedBy; // Owner, Broker, Builder
+
 	private String contactNumber;
+
+	@NotBlank(message = "Construction status is required")
+	private String constructionStatus;
+
+	private String currency = "INR";
+
 	private LocalDate readyDate;
-	private String category;
+
+	@NotBlank(message = "Category is required")
+	private String category; // Residential, Commercial
+
 	private String projectName;
+
 	private String description;
+
 	private Long postedByUser;
-	private LocalDateTime postDate;
-	private String rentOrSale; // Rent or Sale
+
+	private LocalDateTime postDate = LocalDateTime.now();
+
+	@NotBlank(message = "Rent/Sale is required")
+	private String rentOrSale; // Rent / Sale
+
 	private boolean verified;
-	// private List<UserPropertyRelationDto> userRelations = new ArrayList<>();
 
+	// ================= LOCATION DETAILS =================
+
+	private String landmark;
+	private Double latitude;
+	private Double longitude;
+
+	// ================= BUILDING DETAILS =================
+
+	private Integer floorNumber;
+	private Integer totalFloors;
+
+	private Integer parkingCount;
+	private String parkingType; // Covered, Open, Both
+
+	private String facing;
+	private Integer propertyAge;
+	private String ownershipType; // Freehold, Leasehold
+
+	private Boolean negotiable;
+	private Boolean loanAvailable;
+
+	// ================= RENT DETAILS =================
+
+	private Double monthlyRent;
+	private Double securityDeposit;
+	private Double brokerage;
+	private String preferredTenants; // Family, Bachelor
+	private Boolean petsAllowed;
+	private Boolean nonVegAllowed;
+	private String leaseDuration;
+	private String noticePeriod;
+	private Boolean maintenanceIncluded;
+
+	// ================= PROJECT / BUILDER =================
+
+	private String builderName;
+	private Boolean reraApproved;
+	private String reraNumber;
+
+	// ================= SYSTEM METRICS =================
+
+	private Integer viewsCount;
+	private Integer shortListCount;
 	private List<DocumentminDto> documentList;
+	// ================= RELATIONS =================
 
-	// --- Helper methods for amenities ---
+	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
+	private List<UserPropertyRelation> userRelations = new ArrayList<>();
+
+	// ================= AMENITIES HELPERS =================
+
 	public void setAmenitiesFromList(List<Integer> amenityIds) {
 		if (amenityIds != null && !amenityIds.isEmpty()) {
-			this.amenities = String.join(",", amenityIds.stream().map(String::valueOf).toList());
+			this.amenities = amenityIds.stream().map(String::valueOf).collect(Collectors.joining(","));
 		} else {
 			this.amenities = null;
 		}
@@ -54,9 +155,9 @@ public class PropertyDto extends BaseDto {
 
 	public List<Integer> getAmenitiesAsList() {
 		if (this.amenities == null || this.amenities.isEmpty()) {
-			return java.util.Collections.emptyList();
+			return Collections.emptyList();
 		}
-		return java.util.Arrays.stream(this.amenities.split(",")).map(Integer::valueOf).toList();
+		return Arrays.stream(this.amenities.split(",")).map(Integer::valueOf).collect(Collectors.toList());
 	}
 
 	public Long getId() {
@@ -99,6 +200,14 @@ public class PropertyDto extends BaseDto {
 		this.state = state;
 	}
 
+	public MasterEnums.PropertyStatusEnum getPropertyStatus() {
+		return propertyStatus;
+	}
+
+	public void setPropertyStatus(MasterEnums.PropertyStatusEnum propertyStatus) {
+		this.propertyStatus = propertyStatus;
+	}
+
 	public String getType() {
 		return type;
 	}
@@ -113,6 +222,14 @@ public class PropertyDto extends BaseDto {
 
 	public void setPrice(Double price) {
 		this.price = price;
+	}
+
+	public List<DocumentminDto> getDocumentList() {
+		return documentList;
+	}
+
+	public void setDocumentList(List<DocumentminDto> documentList) {
+		this.documentList = documentList;
 	}
 
 	public Integer getBedrooms() {
@@ -139,6 +256,22 @@ public class PropertyDto extends BaseDto {
 		this.location = location;
 	}
 
+	public Double getCarpetArea() {
+		return carpetArea;
+	}
+
+	public void setCarpetArea(Double carpetArea) {
+		this.carpetArea = carpetArea;
+	}
+
+	public Double getSuperArea() {
+		return superArea;
+	}
+
+	public void setSuperArea(Double superArea) {
+		this.superArea = superArea;
+	}
+
 	public String getAmenities() {
 		return amenities;
 	}
@@ -153,6 +286,14 @@ public class PropertyDto extends BaseDto {
 
 	public void setPostedBy(String postedBy) {
 		this.postedBy = postedBy;
+	}
+
+	public String getContactNumber() {
+		return contactNumber;
+	}
+
+	public void setContactNumber(String contactNumber) {
+		this.contactNumber = contactNumber;
 	}
 
 	public String getConstructionStatus() {
@@ -215,14 +356,6 @@ public class PropertyDto extends BaseDto {
 		return postDate;
 	}
 
-	public String getContactNumber() {
-		return contactNumber;
-	}
-
-	public void setContactNumber(String contactNumber) {
-		this.contactNumber = contactNumber;
-	}
-
 	public void setPostDate(LocalDateTime postDate) {
 		this.postDate = postDate;
 	}
@@ -235,38 +368,6 @@ public class PropertyDto extends BaseDto {
 		this.rentOrSale = rentOrSale;
 	}
 
-	/*
-	 * public List<UserPropertyRelationDto> getUserRelations() { return
-	 * userRelations; }
-	 * 
-	 * public void setUserRelations(List<UserPropertyRelationDto> userRelations) {
-	 * this.userRelations = userRelations; }
-	 */
-
-	public Double getCarpetArea() {
-		return carpetArea;
-	}
-
-	public void setCarpetArea(Double carpetArea) {
-		this.carpetArea = carpetArea;
-	}
-
-	public Double getSuperArea() {
-		return superArea;
-	}
-
-	public void setSuperArea(Double superArea) {
-		this.superArea = superArea;
-	}
-
-	public MasterEnums.PropertyStatusEnum getPropertyStatus() {
-		return propertyStatus;
-	}
-
-	public void setPropertyStatus(MasterEnums.PropertyStatusEnum propertyStatus) {
-		this.propertyStatus = propertyStatus;
-	}
-
 	public boolean isVerified() {
 		return verified;
 	}
@@ -275,19 +376,223 @@ public class PropertyDto extends BaseDto {
 		this.verified = verified;
 	}
 
-	public MasterEnums.PackageEnum getPlanPackage() {
-		return planPackage;
+	public String getLandmark() {
+		return landmark;
 	}
 
-	public void setPlanPackage(MasterEnums.PackageEnum planPackage) {
-		this.planPackage = planPackage;
+	public void setLandmark(String landmark) {
+		this.landmark = landmark;
 	}
 
-	public List<DocumentminDto> getDocumentList() {
-		return documentList;
+	public Double getLatitude() {
+		return latitude;
 	}
 
-	public void setDocumentList(List<DocumentminDto> documentList) {
-		this.documentList = documentList;
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
 	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+
+	public Integer getFloorNumber() {
+		return floorNumber;
+	}
+
+	public void setFloorNumber(Integer floorNumber) {
+		this.floorNumber = floorNumber;
+	}
+
+	public Integer getTotalFloors() {
+		return totalFloors;
+	}
+
+	public void setTotalFloors(Integer totalFloors) {
+		this.totalFloors = totalFloors;
+	}
+
+	public Integer getParkingCount() {
+		return parkingCount;
+	}
+
+	public void setParkingCount(Integer parkingCount) {
+		this.parkingCount = parkingCount;
+	}
+
+	public String getParkingType() {
+		return parkingType;
+	}
+
+	public void setParkingType(String parkingType) {
+		this.parkingType = parkingType;
+	}
+
+	public String getFacing() {
+		return facing;
+	}
+
+	public void setFacing(String facing) {
+		this.facing = facing;
+	}
+
+	public Integer getPropertyAge() {
+		return propertyAge;
+	}
+
+	public void setPropertyAge(Integer propertyAge) {
+		this.propertyAge = propertyAge;
+	}
+
+	public String getOwnershipType() {
+		return ownershipType;
+	}
+
+	public void setOwnershipType(String ownershipType) {
+		this.ownershipType = ownershipType;
+	}
+
+	public Boolean getNegotiable() {
+		return negotiable;
+	}
+
+	public void setNegotiable(Boolean negotiable) {
+		this.negotiable = negotiable;
+	}
+
+	public Boolean getLoanAvailable() {
+		return loanAvailable;
+	}
+
+	public void setLoanAvailable(Boolean loanAvailable) {
+		this.loanAvailable = loanAvailable;
+	}
+
+	public Double getMonthlyRent() {
+		return monthlyRent;
+	}
+
+	public void setMonthlyRent(Double monthlyRent) {
+		this.monthlyRent = monthlyRent;
+	}
+
+	public Double getSecurityDeposit() {
+		return securityDeposit;
+	}
+
+	public void setSecurityDeposit(Double securityDeposit) {
+		this.securityDeposit = securityDeposit;
+	}
+
+	public Double getBrokerage() {
+		return brokerage;
+	}
+
+	public void setBrokerage(Double brokerage) {
+		this.brokerage = brokerage;
+	}
+
+	public String getPreferredTenants() {
+		return preferredTenants;
+	}
+
+	public void setPreferredTenants(String preferredTenants) {
+		this.preferredTenants = preferredTenants;
+	}
+
+	public Boolean getPetsAllowed() {
+		return petsAllowed;
+	}
+
+	public void setPetsAllowed(Boolean petsAllowed) {
+		this.petsAllowed = petsAllowed;
+	}
+
+	public Boolean getNonVegAllowed() {
+		return nonVegAllowed;
+	}
+
+	public void setNonVegAllowed(Boolean nonVegAllowed) {
+		this.nonVegAllowed = nonVegAllowed;
+	}
+
+	public String getLeaseDuration() {
+		return leaseDuration;
+	}
+
+	public void setLeaseDuration(String leaseDuration) {
+		this.leaseDuration = leaseDuration;
+	}
+
+	public String getNoticePeriod() {
+		return noticePeriod;
+	}
+
+	public void setNoticePeriod(String noticePeriod) {
+		this.noticePeriod = noticePeriod;
+	}
+
+	public Boolean getMaintenanceIncluded() {
+		return maintenanceIncluded;
+	}
+
+	public void setMaintenanceIncluded(Boolean maintenanceIncluded) {
+		this.maintenanceIncluded = maintenanceIncluded;
+	}
+
+	public String getBuilderName() {
+		return builderName;
+	}
+
+	public void setBuilderName(String builderName) {
+		this.builderName = builderName;
+	}
+
+	public Boolean getReraApproved() {
+		return reraApproved;
+	}
+
+	public void setReraApproved(Boolean reraApproved) {
+		this.reraApproved = reraApproved;
+	}
+
+	public String getReraNumber() {
+		return reraNumber;
+	}
+
+	public void setReraNumber(String reraNumber) {
+		this.reraNumber = reraNumber;
+	}
+
+	public Integer getViewsCount() {
+		return viewsCount;
+	}
+
+	public void setViewsCount(Integer viewsCount) {
+		this.viewsCount = viewsCount;
+	}
+
+	public Integer getShortListCount() {
+		return shortListCount;
+	}
+
+	public void setShortListCount(Integer shortListCount) {
+		this.shortListCount = shortListCount;
+	}
+
+	public List<UserPropertyRelation> getUserRelations() {
+		return userRelations;
+	}
+
+	public void setUserRelations(List<UserPropertyRelation> userRelations) {
+		this.userRelations = userRelations;
+	}
+
+	// ================= GETTERS & SETTERS =================
+	// (Generate using Lombok or IDE)
+
 }
