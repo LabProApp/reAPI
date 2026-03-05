@@ -12,10 +12,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
-import lombok.Getter;
-import lombok.Setter;
-@Getter
-@Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
@@ -46,4 +42,44 @@ public abstract class BaseEntity {
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public LocalDateTime getCreatedTs() {
+		return createdTs;
+	}
+
+	public void setCreatedTs(LocalDateTime createdTs) {
+		this.createdTs = createdTs;
+	}
+
+	public LocalDateTime getLastUpdatedTs() {
+		return lastUpdatedTs;
+	}
+
+	public void setLastUpdatedTs(LocalDateTime lastUpdatedTs) {
+		this.lastUpdatedTs = lastUpdatedTs;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
 }

@@ -16,7 +16,6 @@ import com.api.prop.Property;
 import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
 import com.api.userproperty.UserPropertyRelation;
-import com.api.userproperty.UserPropertyRelationDto;
 import com.api.userproperty.UserPropertyRelationRepository;
 
 @Service
