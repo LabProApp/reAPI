@@ -15,6 +15,7 @@ public final class MasterEnums implements BaseEnum {
 
 	}
 
+	
 	@Getter
 	public enum InquiryType {
 		HOME_LOAN, 

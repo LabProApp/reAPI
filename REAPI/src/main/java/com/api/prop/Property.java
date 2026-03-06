@@ -126,6 +126,7 @@ public class Property extends BaseEntity {
 	private Integer propertyAge; // in years
 	private String ownershipType; // Freehold, Leasehold
 
+	private String furnishing;
 	private Boolean negotiable;
 	private Boolean loanAvailable;
 
@@ -466,7 +467,13 @@ public class Property extends BaseEntity {
 	public void setOwnershipType(String ownershipType) {
 		this.ownershipType = ownershipType;
 	}
+	public String getFurnishing() {
+	    return furnishing;
+	}
 
+	public void setFurnishing(String furnishing) {
+	    this.furnishing = furnishing;
+	}
 	public Boolean getNegotiable() {
 		return negotiable;
 	}

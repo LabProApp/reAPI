@@ -111,6 +111,7 @@ public class PropertyService {
 		    existing.setParkingType(updatedProperty.getParkingType());
 		    existing.setPropertyAge(updatedProperty.getPropertyAge());
 		    existing.setOwnershipType(updatedProperty.getOwnershipType());
+		    existing.setFurnishing(updatedProperty.getFurnishing());
 		    existing.setConstructionStatus(updatedProperty.getConstructionStatus());
 		    existing.setReadyDate(updatedProperty.getReadyDate());
 

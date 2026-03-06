@@ -110,7 +110,7 @@ public class PropertyDto extends BaseDto {
 	private String facing;
 	private Integer propertyAge;
 	private String ownershipType; // Freehold, Leasehold
-
+	private String furnishing;
 	private Boolean negotiable;
 	private Boolean loanAvailable;
 
@@ -275,7 +275,13 @@ public class PropertyDto extends BaseDto {
 	public String getAmenities() {
 		return amenities;
 	}
+	public String getFurnishing() {
+	    return furnishing;
+	}
 
+	public void setFurnishing(String furnishing) {
+	    this.furnishing = furnishing;
+	}
 	public void setAmenities(String amenities) {
 		this.amenities = amenities;
 	}

@@ -320,6 +320,7 @@ public class UserService {
 			dto.setParkingType(p.getParkingType());
 			dto.setPropertyAge(p.getPropertyAge());
 			dto.setOwnershipType(p.getOwnershipType());
+			dto.setFurnishing(p.getFurnishing());
 			dto.setConstructionStatus(p.getConstructionStatus());
 			dto.setReadyDate(p.getReadyDate());
 
@@ -409,6 +410,7 @@ public class UserService {
 			dto.setParkingType(p.getParkingType());
 			dto.setPropertyAge(p.getPropertyAge());
 			dto.setOwnershipType(p.getOwnershipType());
+			dto.setFurnishing(p.getFurnishing());
 			dto.setConstructionStatus(p.getConstructionStatus());
 			dto.setReadyDate(p.getReadyDate());
 
