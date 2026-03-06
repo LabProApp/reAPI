@@ -45,8 +45,7 @@ public class Property extends BaseEntity {
 	@NotBlank(message = "Title is required")
 	private String title;
 
-	@NotBlank(message = "Address is required")
-	private String address;
+	@NotBlank(message = "Address is required")	private String address;
 
 	@NotBlank(message = "City is required")
 	private String city;
@@ -82,7 +81,7 @@ public class Property extends BaseEntity {
 	@NotBlank(message = "PostedBy is required (e.g., Owner, Broker, Builder)")
 	private String postedBy;
 	private String contactNumber;
-	@NotBlank(message = "Construction status is required (e.g., Ready to Move, Under Construction)")
+	
 	private String constructionStatus;
 
 	@Column(nullable = false)
@@ -94,7 +93,7 @@ public class Property extends BaseEntity {
 	@NotBlank(message = "Category is required (e.g., Residential, Commercial, Agricultural)")
 	private String category;
 
-	@NotBlank(message = "Project name is required")
+
 	private String projectName;
 
 	@Column(length = 2000)

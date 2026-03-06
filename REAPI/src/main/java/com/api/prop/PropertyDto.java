@@ -32,7 +32,7 @@ public class PropertyDto extends BaseDto {
 	@NotBlank(message = "Title is required")
 	private String title;
 
-	@NotBlank(message = "Address is required")
+
 	private String address;
 
 	@NotBlank(message = "City is required")
