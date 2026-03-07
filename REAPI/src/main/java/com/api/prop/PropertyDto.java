@@ -104,7 +104,7 @@ public class PropertyDto extends BaseDto {
 	private Integer floorNumber;
 	private Integer totalFloors;
 
-	private Integer parkingCount;
+	private String parkingCount;
 	private String parkingType; // Covered, Open, Both
 
 	private String facing;
@@ -422,11 +422,11 @@ public class PropertyDto extends BaseDto {
 		this.totalFloors = totalFloors;
 	}
 
-	public Integer getParkingCount() {
+	public String getParkingCount() {
 		return parkingCount;
 	}
 
-	public void setParkingCount(Integer parkingCount) {
+	public void setParkingCount(String parkingCount) {
 		this.parkingCount = parkingCount;
 	}
 

@@ -117,7 +117,7 @@ public class Property extends BaseEntity {
 	private Integer floorNumber;
 	private Integer totalFloors;
 
-	private Integer parkingCount;
+	private String parkingCount;
 	private String parkingType; // Covered, Open, Both
 
 	private String facing; // East, West, North, South
@@ -427,11 +427,11 @@ public class Property extends BaseEntity {
 		this.totalFloors = totalFloors;
 	}
 
-	public Integer getParkingCount() {
+	public String getParkingCount() {
 		return parkingCount;
 	}
 
-	public void setParkingCount(Integer parkingCount) {
+	public void setParkingCount(String parkingCount) {
 		this.parkingCount = parkingCount;
 	}
 
