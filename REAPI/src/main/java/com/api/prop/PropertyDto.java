@@ -139,7 +139,7 @@ public class PropertyDto extends BaseDto {
 	private List<DocumentminDto> documentList;
 	// ================= RELATIONS =================
 
-	@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+
 	@JsonIgnore
 	private List<UserPropertyRelation> userRelations = new ArrayList<>();
 
