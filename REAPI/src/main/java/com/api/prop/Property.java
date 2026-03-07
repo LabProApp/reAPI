@@ -122,7 +122,7 @@ public class Property extends BaseEntity {
 
 	private String facing; // East, West, North, South
 
-	private Integer propertyAge; // in years
+	private String propertyAge; // in years
 	private String ownershipType; // Freehold, Leasehold
 
 	private String furnishing;
@@ -451,11 +451,11 @@ public class Property extends BaseEntity {
 		this.facing = facing;
 	}
 
-	public Integer getPropertyAge() {
+	public String getPropertyAge() {
 		return propertyAge;
 	}
 
-	public void setPropertyAge(Integer propertyAge) {
+	public void setPropertyAge(String propertyAge) {
 		this.propertyAge = propertyAge;
 	}
 

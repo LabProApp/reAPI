@@ -108,7 +108,7 @@ public class PropertyDto extends BaseDto {
 	private String parkingType; // Covered, Open, Both
 
 	private String facing;
-	private Integer propertyAge;
+	private String propertyAge;
 	private String ownershipType; // Freehold, Leasehold
 	private String furnishing;
 	private Boolean negotiable;
@@ -446,11 +446,11 @@ public class PropertyDto extends BaseDto {
 		this.facing = facing;
 	}
 
-	public Integer getPropertyAge() {
+	public String getPropertyAge() {
 		return propertyAge;
 	}
 
-	public void setPropertyAge(Integer propertyAge) {
+	public void setPropertyAge(String propertyAge) {
 		this.propertyAge = propertyAge;
 	}
 
