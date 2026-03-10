@@ -27,13 +27,11 @@ public class MasterLookupService {
 				.map(entity -> mapper.map(entity, MasterLookupDto.class)).collect(Collectors.toList());
 	}
 
-	// Return list of names for child values
-	public List<String> getChildByMaster(Long parentId, String status) {
-		return repository.findByParentIdAndStatusIgnoreCase(parentId, status).stream().map(entity -> entity.getValue()) // Only
-																														// extract
-																														// the
-																														// "name"
-																														// field
+	public List<MasterLookupDto> getChildByMaster(Long parentId, String status, String type) {
+
+		List<MasterLookup> entities = repository.findByParentIdAndStatusAndType(parentId, status, type);
+
+		return entities.stream().map(e -> new MasterLookupDto(e.getId(), e.getValue(), e.getType()))
 				.toList();
 	}
 

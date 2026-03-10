@@ -37,12 +37,19 @@ public class MasterLookupController {
 	 * Get child values by parent master ID Example:
 	 * /api/master/1/cities?status=ACTIVE (Fetch all cities for stateId = 1)
 	 */
-	@GetMapping("/{parentId}/cities")
-	public List<String> getChildValues(@PathVariable Long parentId,
-			@RequestParam(defaultValue = "ACTIVE") String status) {
+	 @GetMapping("/{parentId}/child")
+	    public List<MasterLookupDto> getChildValues(
+	            @PathVariable Long parentId,
+	            @RequestParam(defaultValue = "ACTIVE") String status,
+	            @RequestParam String type) {
 
-		return service.getChildByMaster(parentId, status);
-	}
+	       
+	        List<MasterLookupDto> response = service.getChildByMaster(parentId, status, type);
+
+	     
+
+	        return response;
+	    }
 
 	/**
      * GET all enums

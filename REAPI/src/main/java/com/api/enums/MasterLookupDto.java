@@ -11,6 +11,12 @@ public class MasterLookupDto {
 
 	private MasterLookupDto parent; // State for which this City belongs
 
+	public MasterLookupDto(Long id, String value, String type) {
+		this.id = id;
+		this.value = value;
+		this.type = type;
+	}
+
 	public Long getId() {
 		return id;
 	}
