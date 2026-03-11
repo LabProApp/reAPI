@@ -22,17 +22,19 @@ public class MasterLookupService {
 	}
 
 	// Generic master lookup
+	// Generic master lookup
 	public List<MasterLookupDto> getMasterValues(String type, String status) {
-		return repository.findByTypeIgnoreCaseAndStatusIgnoreCase(type, status).stream()
-				.map(entity -> mapper.map(entity, MasterLookupDto.class)).collect(Collectors.toList());
+
+		List<MasterLookup> entities = repository.findByTypeIgnoreCaseAndStatusIgnoreCase(type, status);
+
+		return entities.stream().map(e -> new MasterLookupDto(e.getId(), e.getValue(), e.getType())).toList();
 	}
 
 	public List<MasterLookupDto> getChildByMaster(Long parentId, String status, String type) {
 
 		List<MasterLookup> entities = repository.findByParentIdAndStatusAndType(parentId, status, type);
 
-		return entities.stream().map(e -> new MasterLookupDto(e.getId(), e.getValue(), e.getType()))
-				.toList();
+		return entities.stream().map(e -> new MasterLookupDto(e.getId(), e.getValue(), e.getType())).toList();
 	}
 
 	/**

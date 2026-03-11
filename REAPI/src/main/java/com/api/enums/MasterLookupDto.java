@@ -7,16 +7,14 @@ public class MasterLookupDto {
 	private String type; // CITY / STATE / BANK etc.
 	private String code;
 	private String value;
-	private String status;
-
-	private MasterLookupDto parent; // State for which this City belongs
+	
 
 	public MasterLookupDto(Long id, String value, String type) {
 		this.id = id;
 		this.value = value;
 		this.type = type;
 	}
-
+	
 	public Long getId() {
 		return id;
 	}
@@ -49,21 +47,7 @@ public class MasterLookupDto {
 		this.value = value;
 	}
 
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public MasterLookupDto getParent() {
-		return parent;
-	}
-
-	public void setParent(MasterLookupDto parent) {
-		this.parent = parent;
-	}
+	
 
 	// Getters & Setters
 }
