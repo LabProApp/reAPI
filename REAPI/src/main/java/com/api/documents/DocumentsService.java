@@ -115,7 +115,19 @@ public class DocumentsService {
 	public List<DocumentDto> getDocumentsByObject(String objectType, Long objectId) {
 		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
 
-		return docs.stream().map(doc -> mapper.map(doc, DocumentDto.class)).collect(Collectors.toList());
+		return docs.stream().map(doc -> {
+			DocumentDto dto = mapper.map(doc, DocumentDto.class);
+			if (doc.getS3key() != null && !doc.getS3key().isBlank()) {
+				try {
+					dto.setDocUrl(s3Service.generatePresignedUrl(doc.getS3key()));
+				} catch (Exception e) {
+					// Optional: logging
+					System.err.println("Failed to generate presigned URL for key: " + doc.getS3key());
+					e.printStackTrace();
+				}
+			}
+			return dto;
+		}).collect(Collectors.toList());
 	}
 
 	// Get all documents by objectType and objectId
