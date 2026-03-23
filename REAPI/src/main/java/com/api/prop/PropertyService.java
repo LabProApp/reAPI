@@ -36,31 +36,272 @@ public class PropertyService {
 	}
 
 	/** Get all properties */
+	/** Get all properties */
 	public List<PropertyDto> getAllProperties() {
-		return repository.findAll().stream().map(p -> mapper.map(p, PropertyDto.class)).collect(Collectors.toList());
+
+	    return repository.findAll()
+	            .stream()
+	            .map(p -> {
+
+	                PropertyDto dto = new PropertyDto();
+
+	                // ================= BASIC INFO =================
+	                dto.setId(p.getId());
+	                dto.setTitle(p.getTitle());
+	                dto.setAddress(p.getAddress());
+	                dto.setCity(p.getCity());
+	                dto.setState(p.getState());
+	                dto.setPropertyStatus(p.getPropertyStatus());
+	                dto.setType(p.getType());
+	                dto.setPrice(p.getPrice());
+	                dto.setBedrooms(p.getBedrooms());
+	                dto.setBathrooms(p.getBathrooms());
+	                dto.setLocation(p.getLocation());
+	                dto.setCarpetArea(p.getCarpetArea());
+	                dto.setSuperArea(p.getSuperArea());
+	                dto.setAmenities(p.getAmenities());
+	                dto.setPostedBy(p.getPostedBy());
+	                dto.setContactNumber(p.getContactNumber());
+	                dto.setConstructionStatus(p.getConstructionStatus());
+	                dto.setCurrency(p.getCurrency());
+	                dto.setReadyDate(p.getReadyDate());
+	                dto.setCategory(p.getCategory());
+	                dto.setProjectName(p.getProjectName());
+	                dto.setDescription(p.getDescription());
+	                dto.setPostedByUser(p.getPostedByUser());
+	                dto.setPostDate(p.getPostDate());
+	                dto.setRentOrSale(p.getRentOrSale());
+	                dto.setVerified(p.isVerified());
+
+	                // ================= LOCATION =================
+	                dto.setLandmark(p.getLandmark());
+	                dto.setLatitude(p.getLatitude());
+	                dto.setLongitude(p.getLongitude());
+
+	                // ================= BUILDING =================
+	                dto.setFloorNumber(p.getFloorNumber());
+	                dto.setTotalFloors(p.getTotalFloors());
+	                dto.setParkingCount(p.getParkingCount());
+	                dto.setParkingType(p.getParkingType());
+	                dto.setFacing(p.getFacing());
+	                dto.setPropertyAge(p.getPropertyAge());
+	                dto.setOwnershipType(p.getOwnershipType());
+	                dto.setFurnishing(p.getFurnishing());
+	                dto.setNegotiable(p.getNegotiable());
+	                dto.setLoanAvailable(p.getLoanAvailable());
+
+	                // ================= RENT =================
+	                dto.setMonthlyRent(p.getMonthlyRent());
+	                dto.setSecurityDeposit(p.getSecurityDeposit());
+	                dto.setBrokerage(p.getBrokerage());
+	                dto.setPreferredTenants(p.getPreferredTenants());
+	                dto.setPetsAllowed(p.getPetsAllowed());
+	                dto.setNonVegAllowed(p.getNonVegAllowed());
+	                dto.setLeaseDuration(p.getLeaseDuration());
+	                dto.setNoticePeriod(p.getNoticePeriod());
+	                dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
+
+	                // ================= BUILDER =================
+	                dto.setBuilderName(p.getBuilderName());
+	                dto.setReraApproved(p.getReraApproved());
+	                dto.setReraNumber(p.getReraNumber());
+
+	                // ================= METRICS =================
+	                dto.setViewsCount(p.getViewsCount());
+	                dto.setShortListCount(p.getShortListCount());
+
+	                // ================= DOCUMENTS =================
+	                List<DocumentminDto> docs =
+	                        documentsService.getminDocumentsByObject("PROPERTY", p.getId());
+
+	                dto.setDocumentList(docs != null ? docs : List.of());
+
+	                return dto;
+	            })
+	            .collect(Collectors.toList());
 	}
 
 	/** Get property by ID */
+	/** Get property by ID */
+	/** Get property by ID */
 	public Optional<PropertyDto> getPropertyById(Long id) {
-		return repository.findById(id).map(p -> mapper.map(p, PropertyDto.class));
+	    return repository.findById(id).map(p -> {
+
+	        PropertyDto dto = new PropertyDto();
+
+	        // ================= BASIC INFO =================
+	        dto.setId(p.getId());
+	        dto.setTitle(p.getTitle());
+	        dto.setAddress(p.getAddress());
+	        dto.setCity(p.getCity());
+	        dto.setState(p.getState());
+	        dto.setPropertyStatus(p.getPropertyStatus());
+	        dto.setType(p.getType());
+	        dto.setPrice(p.getPrice());
+	        dto.setBedrooms(p.getBedrooms());
+	        dto.setBathrooms(p.getBathrooms());
+	        dto.setLocation(p.getLocation());
+	        dto.setCarpetArea(p.getCarpetArea());
+	        dto.setSuperArea(p.getSuperArea());
+	        dto.setAmenities(p.getAmenities());
+	        dto.setPostedBy(p.getPostedBy());
+	        dto.setContactNumber(p.getContactNumber());
+	        dto.setConstructionStatus(p.getConstructionStatus());
+	        dto.setCurrency(p.getCurrency());
+	        dto.setReadyDate(p.getReadyDate());
+	        dto.setCategory(p.getCategory());
+	        dto.setProjectName(p.getProjectName());
+	        dto.setDescription(p.getDescription());
+	        dto.setPostedByUser(p.getPostedByUser());
+	        dto.setPostDate(p.getPostDate());
+	        dto.setRentOrSale(p.getRentOrSale());
+	        dto.setVerified(p.isVerified());
+
+	        // ================= LOCATION =================
+	        dto.setLandmark(p.getLandmark());
+	        dto.setLatitude(p.getLatitude());
+	        dto.setLongitude(p.getLongitude());
+
+	        // ================= BUILDING =================
+	        dto.setFloorNumber(p.getFloorNumber());
+	        dto.setTotalFloors(p.getTotalFloors());
+	        dto.setParkingCount(p.getParkingCount());
+	        dto.setParkingType(p.getParkingType());
+	        dto.setFacing(p.getFacing());
+	        dto.setPropertyAge(p.getPropertyAge());
+	        dto.setOwnershipType(p.getOwnershipType());
+	        dto.setFurnishing(p.getFurnishing());
+	        dto.setNegotiable(p.getNegotiable());
+	        dto.setLoanAvailable(p.getLoanAvailable());
+
+	        // ================= RENT =================
+	        dto.setMonthlyRent(p.getMonthlyRent());
+	        dto.setSecurityDeposit(p.getSecurityDeposit());
+	        dto.setBrokerage(p.getBrokerage());
+	        dto.setPreferredTenants(p.getPreferredTenants());
+	        dto.setPetsAllowed(p.getPetsAllowed());
+	        dto.setNonVegAllowed(p.getNonVegAllowed());
+	        dto.setLeaseDuration(p.getLeaseDuration());
+	        dto.setNoticePeriod(p.getNoticePeriod());
+	        dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
+
+	        // ================= BUILDER =================
+	        dto.setBuilderName(p.getBuilderName());
+	        dto.setReraApproved(p.getReraApproved());
+	        dto.setReraNumber(p.getReraNumber());
+
+	        // ================= METRICS =================
+	        dto.setViewsCount(p.getViewsCount());
+	        dto.setShortListCount(p.getShortListCount());
+
+	        // ================= DOCUMENTS (SAFE) =================
+	        List<DocumentminDto> documentDtos =
+	                documentsService.getminDocumentsByObject("PROPERTY", p.getId());
+
+	        dto.setDocumentList(
+	                documentDtos != null ? documentDtos : List.of()
+	        );
+
+	        return dto;
+	    });
 	}
 
 	/** Search properties dynamically */
-	public List<PropertyDto> search(String city, String type, String category, Double minArea, Double maxArea,
-			Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate, Long postedByUser) {
+	public List<PropertyDto> search(
+	        String city,
+	        String type,
+	        String category,
+	        Double minArea,
+	        Double maxArea,
+	        Double minPrice,
+	        Double maxPrice,
+	        String rentOrSale,
+	        LocalDateTime postDate,
+	        Long postedByUser) {
 
-		return repository
-				.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate, postedByUser)
-				.stream().map(property -> {
-					PropertyDto dto = mapper.map(property, PropertyDto.class);
+	    return repository
+	            .search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate, postedByUser)
+	            .stream()
+	            .map(p -> {
 
-					// Map documents
-					List<DocumentminDto> documentDtos = documentsService.getminDocumentsByObject("PROPERTY",
-							dto.getId());
+	                PropertyDto dto = new PropertyDto();
 
-					dto.setDocumentList(documentDtos);
-					return dto;
-				}).collect(Collectors.toList());
+	                // ================= BASIC INFO =================
+	                dto.setId(p.getId());
+	                dto.setTitle(p.getTitle());
+	                dto.setAddress(p.getAddress());
+	                dto.setCity(p.getCity());
+	                dto.setState(p.getState());
+	                dto.setPropertyStatus(p.getPropertyStatus());
+	                dto.setType(p.getType());
+	                dto.setPrice(p.getPrice());
+	                dto.setBedrooms(p.getBedrooms());
+	                dto.setBathrooms(p.getBathrooms());
+	                dto.setLocation(p.getLocation());
+	                dto.setCarpetArea(p.getCarpetArea());
+	                dto.setSuperArea(p.getSuperArea());
+	                dto.setAmenities(p.getAmenities());
+	                dto.setPostedBy(p.getPostedBy());
+	                dto.setContactNumber(p.getContactNumber());
+	                dto.setConstructionStatus(p.getConstructionStatus());
+	                dto.setCurrency(p.getCurrency());
+	                dto.setReadyDate(p.getReadyDate());
+	                dto.setCategory(p.getCategory());
+	                dto.setProjectName(p.getProjectName());
+	                dto.setDescription(p.getDescription());
+	                dto.setPostedByUser(p.getPostedByUser());
+	                dto.setPostDate(p.getPostDate());
+	                dto.setRentOrSale(p.getRentOrSale());
+	                dto.setVerified(p.isVerified());
+
+	                // ================= LOCATION =================
+	                dto.setLandmark(p.getLandmark());
+	                dto.setLatitude(p.getLatitude());
+	                dto.setLongitude(p.getLongitude());
+
+	                // ================= BUILDING =================
+	                dto.setFloorNumber(p.getFloorNumber());
+	                dto.setTotalFloors(p.getTotalFloors());
+	                dto.setParkingCount(p.getParkingCount());
+	                dto.setParkingType(p.getParkingType());
+	                dto.setFacing(p.getFacing());
+	                dto.setPropertyAge(p.getPropertyAge());
+	                dto.setOwnershipType(p.getOwnershipType());
+	                dto.setFurnishing(p.getFurnishing());
+	                dto.setNegotiable(p.getNegotiable());
+	                dto.setLoanAvailable(p.getLoanAvailable());
+
+	                // ================= RENT =================
+	                dto.setMonthlyRent(p.getMonthlyRent());
+	                dto.setSecurityDeposit(p.getSecurityDeposit());
+	                dto.setBrokerage(p.getBrokerage());
+	                dto.setPreferredTenants(p.getPreferredTenants());
+	                dto.setPetsAllowed(p.getPetsAllowed());
+	                dto.setNonVegAllowed(p.getNonVegAllowed());
+	                dto.setLeaseDuration(p.getLeaseDuration());
+	                dto.setNoticePeriod(p.getNoticePeriod());
+	                dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
+
+	                // ================= BUILDER =================
+	                dto.setBuilderName(p.getBuilderName());
+	                dto.setReraApproved(p.getReraApproved());
+	                dto.setReraNumber(p.getReraNumber());
+
+	                // ================= METRICS =================
+	                dto.setViewsCount(p.getViewsCount());
+	                dto.setShortListCount(p.getShortListCount());
+
+	                // ================= DOCUMENTS =================
+	                List<DocumentminDto> documentDtos =
+	                        documentsService.getminDocumentsByObject("PROPERTY", p.getId());
+
+	                dto.setDocumentList(
+	                        documentDtos != null ? documentDtos : List.of()
+	                );
+
+	                return dto;
+	            })
+	            .collect(Collectors.toList());
 	}
 
 	/** Update an existing property */
@@ -143,10 +384,7 @@ public class PropertyService {
 			existing.setLastUpdatedTs(LocalDateTime.now());
 			existing.setUpdatedBy(updatedProperty.getUpdatedBy());
 
-			// ❌ DO NOT update these:
-			// existing.setPostDate(...)
-			// existing.setPostedByUser(...)
-			// existing.setId(...)
+		
 
 			return repository.save(existing);
 
