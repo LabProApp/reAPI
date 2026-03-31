@@ -379,106 +379,153 @@ public class PropertyService {
 	}
 
 	/** Advanced search */
-	public List<PropertyDto> advancedSearch(String title, String address, String city, String type, String category,
-			String postedBy, String constructionStatus, String currency, String location, Double minPrice,
-			Double maxPrice, Integer minBedrooms, Integer maxBedrooms, Integer minBathrooms, Integer maxBathrooms,
-			Double minArea, Double maxArea, String amenity, String rentOrSale, LocalDateTime postDate,
-			Long postedByUser) {
+	public List<PropertyDto> advancedSearch(
+	        String title,
+	        String address,
+	        String city,
+	        String type,
+	        String category,
+	        String postedBy,
+	        String constructionStatus,
+	        String currency,
+	        String location,
+	        Double minPrice,
+	        Double maxPrice,
+	        Integer minBedrooms,
+	        Integer maxBedrooms,
+	        Integer minBathrooms,
+	        Integer maxBathrooms,
+	        Double minArea,
+	        Double maxArea,
+	        String amenity,
+	        String rentOrSale,
+	        LocalDateTime postDate,
+	        Long postedByUser) {
 
-		return repository.searchAll(title, address, city, type, category, postedBy, constructionStatus, currency,
-				location, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms, maxBathrooms, minArea, maxArea,
-				amenity, rentOrSale, postDate, postedByUser).stream().map(p -> {
+	    /// 🔥 NORMALIZE INPUT
+	    String searchLocation = (location != null && !location.trim().isEmpty())
+	            ? location.trim().toLowerCase()
+	            : null;
 
-					PropertyDto dto = new PropertyDto();
+	    String cityFilter = (city != null && !city.trim().isEmpty())
+	            ? city.trim().toLowerCase()
+	            : null;
 
-					dto.setId(p.getId());
-					dto.setTitle(p.getTitle());
-					dto.setAddress(p.getAddress());
-					dto.setCity(p.getCity());
-					dto.setState(p.getState());
-					dto.setType(p.getType());
-					dto.setCategory(p.getCategory());
+	    return repository.searchAll(
+	            title,
+	            address,
+	            cityFilter,
+	            type,
+	            category,
+	            postedBy,
+	            constructionStatus,
+	            currency,
+	            searchLocation, // 👈 pass as unified search
+	            minPrice,
+	            maxPrice,
+	            minBedrooms,
+	            maxBedrooms,
+	            minBathrooms,
+	            maxBathrooms,
+	            minArea,
+	            maxArea,
+	            amenity,
+	            rentOrSale,
+	            postDate,
+	            postedByUser
+	    ).stream().map(p -> {
 
-					dto.setPrice(p.getPrice());
-					dto.setCurrency(p.getCurrency());
+	        PropertyDto dto = new PropertyDto();
 
-					dto.setBedrooms(p.getBedrooms());
-					dto.setBathrooms(p.getBathrooms());
+	        dto.setId(p.getId());
+	        dto.setTitle(p.getTitle());
+	        dto.setAddress(p.getAddress());
+	        dto.setCity(p.getCity());
+	        dto.setState(p.getState());
+	        dto.setType(p.getType());
+	        dto.setCategory(p.getCategory());
 
-					dto.setLocation(p.getLocation());
-					dto.setCarpetArea(p.getCarpetArea());
-					dto.setSuperArea(p.getSuperArea());
+	        dto.setPrice(p.getPrice());
+	        dto.setCurrency(p.getCurrency());
 
-					dto.setAmenities(p.getAmenities());
-					dto.setAmenitiesFromList(p.getAmenitiesAsList());
-					dto.setPostedBy(p.getPostedBy());
-					dto.setContactNumber(p.getContactNumber());
+	        dto.setBedrooms(p.getBedrooms());
+	        dto.setBathrooms(p.getBathrooms());
 
-					dto.setConstructionStatus(p.getConstructionStatus());
+	        dto.setLocation(p.getLocation());
+	        dto.setCarpetArea(p.getCarpetArea());
+	        dto.setSuperArea(p.getSuperArea());
 
-					dto.setProjectName(p.getProjectName());
-					dto.setDescription(p.getDescription());
+	        dto.setAmenities(p.getAmenities());
+	        dto.setAmenitiesFromList(p.getAmenitiesAsList());
+	        dto.setPostedBy(p.getPostedBy());
+	        dto.setContactNumber(p.getContactNumber());
 
-					dto.setPostedByUser(p.getPostedByUser());
-					dto.setPostDate(p.getPostDate());
+	        dto.setConstructionStatus(p.getConstructionStatus());
 
-					dto.setRentOrSale(p.getRentOrSale());
+	        dto.setProjectName(p.getProjectName());
+	        dto.setDescription(p.getDescription());
 
-					dto.setPropertyStatus(p.getPropertyStatus());
+	        dto.setPostedByUser(p.getPostedByUser());
+	        dto.setPostDate(p.getPostDate());
 
-					dto.setVerified(p.isVerified());
+	        dto.setRentOrSale(p.getRentOrSale());
+	        dto.setPropertyStatus(p.getPropertyStatus());
+	        dto.setVerified(p.isVerified());
 
-					dto.setLandmark(p.getLandmark());
-					dto.setLatitude(p.getLatitude());
-					dto.setLongitude(p.getLongitude());
+	        dto.setLandmark(p.getLandmark());
+	        dto.setLatitude(p.getLatitude());
+	        dto.setLongitude(p.getLongitude());
 
-					dto.setFloorNumber(p.getFloorNumber());
-					dto.setTotalFloors(p.getTotalFloors());
+	        dto.setFloorNumber(p.getFloorNumber());
+	        dto.setTotalFloors(p.getTotalFloors());
 
-					dto.setParkingCount(p.getParkingCount());
-					dto.setParkingType(p.getParkingType());
+	        dto.setParkingCount(p.getParkingCount());
+	        dto.setParkingType(p.getParkingType());
 
-					dto.setFacing(p.getFacing());
-					dto.setPropertyAge(p.getPropertyAge());
+	        dto.setFacing(p.getFacing());
+	        dto.setPropertyAge(p.getPropertyAge());
 
-					dto.setOwnershipType(p.getOwnershipType());
-					dto.setFurnishing(p.getFurnishing());
+	        dto.setOwnershipType(p.getOwnershipType());
+	        dto.setFurnishing(p.getFurnishing());
 
-					dto.setNegotiable(p.getNegotiable());
-					dto.setLoanAvailable(p.getLoanAvailable());
+	        dto.setNegotiable(p.getNegotiable());
+	        dto.setLoanAvailable(p.getLoanAvailable());
 
-					dto.setMonthlyRent(p.getMonthlyRent());
-					dto.setSecurityDeposit(p.getSecurityDeposit());
-					dto.setBrokerage(p.getBrokerage());
+	        dto.setMonthlyRent(p.getMonthlyRent());
+	        dto.setSecurityDeposit(p.getSecurityDeposit());
+	        dto.setBrokerage(p.getBrokerage());
 
-					dto.setPreferredTenants(p.getPreferredTenants());
+	        dto.setPreferredTenants(p.getPreferredTenants());
 
-					dto.setPetsAllowed(p.getPetsAllowed());
-					dto.setNonVegAllowed(p.getNonVegAllowed());
+	        dto.setPetsAllowed(p.getPetsAllowed());
+	        dto.setNonVegAllowed(p.getNonVegAllowed());
 
-					dto.setLeaseDuration(p.getLeaseDuration());
-					dto.setNoticePeriod(p.getNoticePeriod());
+	        dto.setLeaseDuration(p.getLeaseDuration());
+	        dto.setNoticePeriod(p.getNoticePeriod());
 
-					dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
+	        dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
 
-					dto.setBuilderName(p.getBuilderName());
-					dto.setReraApproved(p.getReraApproved());
-					dto.setReraNumber(p.getReraNumber());
+	        dto.setBuilderName(p.getBuilderName());
+	        dto.setReraApproved(p.getReraApproved());
+	        dto.setReraNumber(p.getReraNumber());
 
-					dto.setViewsCount(p.getViewsCount());
-					dto.setShortListCount(p.getShortListCount());
+	        dto.setViewsCount(p.getViewsCount());
+	        dto.setShortListCount(p.getShortListCount());
 
-					dto.setCode(p.getCode());
-					dto.setLastUpdatedTs(p.getLastUpdatedTs());
-					dto.setCreatedTs(p.getCreatedTs());
-					dto.setCreatedBy(p.getCreatedBy());
-					dto.setUpdatedBy(p.getUpdatedBy());
-					List<DocumentminDto> documentDtos = documentsService.getminDocumentsByObject("PROPERTY", p.getId());
+	        dto.setCode(p.getCode());
+	        dto.setLastUpdatedTs(p.getLastUpdatedTs());
+	        dto.setCreatedTs(p.getCreatedTs());
+	        dto.setCreatedBy(p.getCreatedBy());
+	        dto.setUpdatedBy(p.getUpdatedBy());
 
-					dto.setDocumentList(documentDtos != null ? documentDtos : List.of());
-					return dto;
+	        List<DocumentminDto> documentDtos =
+	                documentsService.getminDocumentsByObject("PROPERTY", p.getId());
 
-				}).collect(Collectors.toList());
+	        dto.setDocumentList(documentDtos != null ? documentDtos : List.of());
+
+	        return dto;
+
+	    }).collect(Collectors.toList());
 	}
 
 	/** Get properties posted by a specific user */
