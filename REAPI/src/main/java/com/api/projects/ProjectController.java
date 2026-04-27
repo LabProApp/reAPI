@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/projects")
 @Tag(name = "Real Estate Projects", description = "APIs for listing real estate projects")
@@ -22,7 +24,6 @@ public class ProjectController {
     private ProjectService service;
 
     @GetMapping
-  
     public ResponseEntity<Page<ProjectDto>> listProjects(
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String builder,
@@ -34,27 +35,34 @@ public class ProjectController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "projectName,asc") String[] sort) {
 
-        // 🛠 FIX: Safe parsing of sort parameters
+        log.info("GET /api/projects - Listing projects [city={}, builder={}, status={}, page={}, size={}]",
+                city, builder, status, page, size);
+
         String sortField = sort[0];
         Sort.Direction direction = Sort.Direction.ASC;
-
         if (sort.length > 1) {
             direction = Sort.Direction.fromString(sort[1]);
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Page<ProjectDto> result = service.listProjects(city, builder, status, propertyType, minPrice, maxPrice, pageable);
 
-        Page<ProjectDto> result =
-                service.listProjects(city, builder, status, propertyType, minPrice, maxPrice, pageable);
-
+        log.info("GET /api/projects - Returned {} projects (page {}/{})",
+                result.getNumberOfElements(), page, result.getTotalPages());
         return ResponseEntity.ok(result);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDto> getById(@PathVariable Long id) {
+        log.info("GET /api/projects/{} - Fetching project", id);
         return service.getById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(dto -> {
+                    log.info("GET /api/projects/{} - Project fetched: {}", id, dto.getProjectName());
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("GET /api/projects/{} - Project not found", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 }

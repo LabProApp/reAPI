@@ -2,7 +2,6 @@ package com.api.prop;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -11,13 +10,7 @@ import java.util.stream.Collectors;
 import com.api.commons.BaseDto;
 import com.api.documents.DocumentminDto;
 import com.api.enums.MasterEnums;
-import com.api.userproperty.UserPropertyRelation;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -41,7 +34,6 @@ public class PropertyDto extends BaseDto {
 	@NotBlank(message = "State is required")
 	private String state;
 
-	@Enumerated(EnumType.STRING)
 	private MasterEnums.PropertyStatusEnum propertyStatus;
 
 	@NotBlank(message = "Type is required (Apartment, Villa, Plot, Office)")
@@ -137,11 +129,6 @@ public class PropertyDto extends BaseDto {
 	private Integer viewsCount;
 	private Integer shortListCount;
 	private List<DocumentminDto> documentList;
-	// ================= RELATIONS =================
-
-
-	@JsonIgnore
-	private List<UserPropertyRelation> userRelations = new ArrayList<>();
 
 	// ================= AMENITIES HELPERS =================
 
@@ -588,14 +575,6 @@ public class PropertyDto extends BaseDto {
 
 	public void setShortListCount(Integer shortListCount) {
 		this.shortListCount = shortListCount;
-	}
-
-	public List<UserPropertyRelation> getUserRelations() {
-		return userRelations;
-	}
-
-	public void setUserRelations(List<UserPropertyRelation> userRelations) {
-		this.userRelations = userRelations;
 	}
 
 	// ================= GETTERS & SETTERS =================

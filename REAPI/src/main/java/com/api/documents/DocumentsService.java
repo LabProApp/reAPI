@@ -14,7 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.api.enums.MasterEnums;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 public class DocumentsService {
@@ -32,7 +34,7 @@ public class DocumentsService {
 	// Upload multiple documents
 	public List<DocumentDto> uploadDocuments(String objectType, Long objectId, List<MultipartFile> files,
 			List<String> captions) throws IOException {
-
+		log.info("uploadDocuments - Uploading {} file(s) for objectType={}, objectId={}", files.size(), objectType, objectId);
 		List<DocumentDto> dtoList = new ArrayList<>();
 
 		for (int i = 0; i < files.size(); i++) {
@@ -40,23 +42,27 @@ public class DocumentsService {
 			String caption = (captions != null && captions.size() > i) ? captions.get(i) : null;
 			String contentType = file.getContentType();
 			String docType = DocTypeDetector.detect(contentType);
-
+			log.debug("uploadDocuments - Processing file[{}]: name={}, contentType={}, caption={}",
+					i, file.getOriginalFilename(), contentType, caption);
 			DocumentDto docdto = uploadDocument(file, docType, caption, objectType, objectId);
 			dtoList.add(docdto);
 		}
 
+		log.info("uploadDocuments - Successfully uploaded {} document(s) for objectType={}, objectId={}",
+				dtoList.size(), objectType, objectId);
 		return dtoList;
 	}
 
 	// Upload single document
 	public DocumentDto uploadDocument(MultipartFile file, String docType, String caption, String objectType,
 			Long objectId) throws IOException {
-
+		log.debug("uploadDocument - Uploading file: {}, docType={}", file.getOriginalFilename(), docType);
 		String originalFilename = file.getOriginalFilename();
 		String sanitizedFilename = (originalFilename != null) ? originalFilename.replaceAll("[^a-zA-Z0-9._-]", "")
 				: "file";
 
 		String key = s3Service.uploadFile(file, objectType.toUpperCase());
+		log.debug("uploadDocument - File uploaded to S3 with key={}", key);
 
 		Documents doc = new Documents();
 		doc.setS3key(key);
@@ -67,16 +73,19 @@ public class DocumentsService {
 		doc.setObjectId(objectId);
 
 		Documents savedDoc = documentsRepository.save(doc);
-
+		log.info("uploadDocument - Document saved with id={}, key={}", savedDoc.getId(), key);
 		return mapper.map(savedDoc, DocumentDto.class);
 	}
 
 	// Delete a document
 	public void deleteDocument(Long id) {
-		Documents doc = documentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-
-		// s3Service.deleteFile(doc.getKey());
+		log.info("deleteDocument - Deleting document id={}", id);
+		Documents doc = documentsRepository.findById(id).orElseThrow(() -> {
+			log.error("deleteDocument - Document not found for id={}", id);
+			return new RuntimeException("Document not found");
+		});
 		documentsRepository.delete(doc);
+		log.info("deleteDocument - Document id={} deleted (s3key={})", id, doc.getS3key());
 	}
 
 	// Get a single document
@@ -113,7 +122,9 @@ public class DocumentsService {
 
 	// Get all documents by objectType and objectId
 	public List<DocumentDto> getDocumentsByObject(String objectType, Long objectId) {
+		log.info("getDocumentsByObject - Fetching documents for objectType={}, objectId={}", objectType, objectId);
 		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
+		log.debug("getDocumentsByObject - Found {} documents for objectType={}, objectId={}", docs.size(), objectType, objectId);
 
 		return docs.stream().map(doc -> {
 			DocumentDto dto = mapper.map(doc, DocumentDto.class);
@@ -121,9 +132,8 @@ public class DocumentsService {
 				try {
 					dto.setDocUrl(s3Service.generatePresignedUrl(doc.getS3key()));
 				} catch (Exception e) {
-					// Optional: logging
-					System.err.println("Failed to generate presigned URL for key: " + doc.getS3key());
-					e.printStackTrace();
+					log.error("getDocumentsByObject - Failed to generate presigned URL for key={}: {}",
+							doc.getS3key(), e.getMessage());
 				}
 			}
 			return dto;
@@ -132,30 +142,26 @@ public class DocumentsService {
 
 	// Get all documents by objectType and objectId
 	public List<DocumentminDto> getminDocumentsByObject(String objectType, Long objectId) {
-
 		if (objectType == null || objectId == null) {
-			return Collections.emptyList(); // avoid null pointer
+			return Collections.emptyList();
 		}
 
-		List<Documents> docs;
-
-		docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
+		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
 
 		if (docs.isEmpty()) {
 			return Collections.emptyList();
 		}
 
+		log.debug("getminDocumentsByObject - Found {} documents for objectType={}, objectId={}", docs.size(), objectType, objectId);
 		return docs.stream().map(doc -> {
 			DocumentminDto dto = mapper.map(doc, DocumentminDto.class);
 
-			// Generate pre-signed URL if S3 key is present
 			if (doc.getS3key() != null && !doc.getS3key().isEmpty()) {
 				try {
 					dto.setDocUrl(s3Service.generatePresignedUrl(doc.getS3key()));
 				} catch (Exception e) {
-					// Optional: log error and continue
-					System.err.println("Failed to generate presigned URL for key: " + doc.getS3key());
-					e.printStackTrace();
+					log.error("getminDocumentsByObject - Failed to generate presigned URL for key={}: {}",
+							doc.getS3key(), e.getMessage());
 				}
 			}
 

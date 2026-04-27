@@ -16,7 +16,9 @@ import com.api.prop.PropertyDto;
 import com.api.userproperty.UserPropertyRelationDto;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/user")
 @Tag(name = "User APIs", description = "Operations related to User management")
@@ -30,68 +32,108 @@ public class UserController {
 
 	@PostMapping("/signup")
 	public ResponseEntity<UserDto> signup(@RequestBody UserDto userDto) {
+		log.info("POST /api/user/signup - Signup attempt for identifier={}",
+				userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile());
 		UserDto savedUser = userService.signup(userDto);
+		log.info("POST /api/user/signup - User created with id={}", savedUser.getId());
 		return ResponseEntity.ok(savedUser);
 	}
 
 	@PostMapping("/verifyOtp")
 	public ResponseEntity<String> verifyOtp(@RequestParam String identifier, @RequestParam String otp) {
-		return userService.verifyOtp(identifier, otp);
+		log.info("POST /api/user/verifyOtp - OTP verification request for identifier={}", identifier);
+		ResponseEntity<String> response = userService.verifyOtp(identifier, otp);
+		log.info("POST /api/user/verifyOtp - OTP verification result for identifier={}, status={}",
+				identifier, response.getStatusCode());
+		return response;
 	}
 
 	@PostMapping("/resend-otp")
 	public ResponseEntity<String> resendOtp(@RequestParam String identifier) {
-		return userService.resendOtp(identifier);
+		log.info("POST /api/user/resend-otp - Resend OTP request for identifier={}", identifier);
+		ResponseEntity<String> response = userService.resendOtp(identifier);
+		log.info("POST /api/user/resend-otp - Resend OTP result for identifier={}, status={}",
+				identifier, response.getStatusCode());
+		return response;
 	}
 
 	@PostMapping("/login")
 	public ResponseEntity<UserDto> login(@RequestBody UserDto userDto) {
-		return userService.login(userDto);
+		log.info("POST /api/user/login - Login attempt for identifier={}",
+				userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile());
+		ResponseEntity<UserDto> response = userService.login(userDto);
+		log.info("POST /api/user/login - Login result status={}", response.getStatusCode());
+		return response;
 	}
 
 	@PostMapping("/logout")
 	public ResponseEntity<String> logout() {
+		log.info("POST /api/user/logout - Logout request");
 		return userService.logout();
 	}
 
 	@PostMapping("/reset-password")
 	public ResponseEntity<String> resetPassword(@RequestBody UserDto userDto) {
-		return userService.resetPassword(userDto);
+		log.info("POST /api/user/reset-password - Password reset request for identifier={}",
+				userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile());
+		ResponseEntity<String> response = userService.resetPassword(userDto);
+		log.info("POST /api/user/reset-password - Password reset completed, status={}", response.getStatusCode());
+		return response;
 	}
 
 	@GetMapping("/me")
 	public ResponseEntity<UserDto> getProfile(@RequestParam String identifier) {
+		log.info("GET /api/user/me - Fetching profile for identifier={}", identifier);
 		UserDto userDto = userService.getProfile(identifier);
+		log.info("GET /api/user/me - Profile fetched for userId={}", userDto.getId());
 		return ResponseEntity.ok(userDto);
 	}
+
 	@GetMapping("/profile/{userId}")
 	public ResponseEntity<UserDto> getProfilebyUserId(@PathVariable Long userId) {
+		log.info("GET /api/user/profile/{} - Fetching profile", userId);
 		UserDto userDto = userService.getProfilebyUserId(userId);
+		log.info("GET /api/user/profile/{} - Profile fetched", userId);
 		return ResponseEntity.ok(userDto);
 	}
+
 	@PutMapping("/update")
 	public ResponseEntity<UserDto> updateProfile(@RequestBody UserDto userDto) {
+		log.info("PUT /api/user/update - Updating profile for userId={}", userDto.getId());
 		UserDto updatedUser = userService.updateProfile(userDto);
+		log.info("PUT /api/user/update - Profile updated for userId={}", updatedUser.getId());
 		return ResponseEntity.ok(updatedUser);
 	}
 
 	@PostMapping("/{userId}/favourite/{propertyId}")
 	public Long markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
-		return userService.markFavourite(userId, propertyId);
+		log.info("POST /api/user/{}/favourite/{} - Toggling favourite", userId, propertyId);
+		Long result = userService.markFavourite(userId, propertyId);
+		log.info("POST /api/user/{}/favourite/{} - Favourite toggled", userId, propertyId);
+		return result;
 	}
 
 	@PostMapping("/{userId}/interest/{propertyId}")
 	public Long markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
-		return userService.markInterested(userId, propertyId);
+		log.info("POST /api/user/{}/interest/{} - Toggling interest", userId, propertyId);
+		Long result = userService.markInterested(userId, propertyId);
+		log.info("POST /api/user/{}/interest/{} - Interest toggled", userId, propertyId);
+		return result;
 	}
 
 	@GetMapping("/{userId}/favourites")
 	public List<PropertyDto> getFavouriteProperties(@PathVariable Long userId) {
-		return userService.getFavouriteProperties(userId);
+		log.info("GET /api/user/{}/favourites - Fetching favourites", userId);
+		List<PropertyDto> favourites = userService.getFavouriteProperties(userId);
+		log.info("GET /api/user/{}/favourites - Returned {} favourites", userId, favourites.size());
+		return favourites;
 	}
 
 	@GetMapping("/{userId}/inqueries")
 	public List<PropertyDto> getInquiredProperties(@PathVariable Long userId) {
-		return userService.getInquiredProperties(userId);
+		log.info("GET /api/user/{}/inqueries - Fetching inquired properties", userId);
+		List<PropertyDto> inquired = userService.getInquiredProperties(userId);
+		log.info("GET /api/user/{}/inqueries - Returned {} inquired properties", userId, inquired.size());
+		return inquired;
 	}
 }

@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/leads")
 @CrossOrigin
@@ -28,45 +31,63 @@ public class ClientLeadController {
 
 	@PostMapping
 	public ClientLeadDTO create(@RequestBody ClientLeadDTO dto) {
-		return service.createLead(dto);
+		log.info("POST /api/leads - Creating lead for userId={}", dto.getUserId());
+		ClientLeadDTO created = service.createLead(dto);
+		log.info("POST /api/leads - Lead created with id={}", created.getId());
+		return created;
 	}
 
 	@PutMapping("/{id}")
 	public ClientLeadDTO update(@PathVariable Long id, @RequestBody ClientLeadDTO dto) {
-		return service.updateLead(id, dto);
+		log.info("PUT /api/leads/{} - Updating lead", id);
+		ClientLeadDTO updated = service.updateLead(id, dto);
+		log.info("PUT /api/leads/{} - Lead updated", id);
+		return updated;
 	}
 
 	@GetMapping("/{id}")
 	public ClientLeadDTO getById(@PathVariable Long id) {
-		return service.getById(id);
+		log.info("GET /api/leads/{} - Fetching lead", id);
+		ClientLeadDTO lead = service.getById(id);
+		log.info("GET /api/leads/{} - Lead fetched", id);
+		return lead;
 	}
 
 	@DeleteMapping("/{id}")
 	public void delete(@PathVariable Long id) {
+		log.info("DELETE /api/leads/{} - Deleting lead", id);
 		service.delete(id);
+		log.info("DELETE /api/leads/{} - Lead deleted", id);
 	}
 
 	@GetMapping("/user/{userId}")
 	public List<ClientLeadDTO> getByUser(@PathVariable Long userId) {
-		return service.getByUserId(userId);
+		log.info("GET /api/leads/user/{} - Fetching leads by user", userId);
+		List<ClientLeadDTO> leads = service.getByUserId(userId);
+		log.info("GET /api/leads/user/{} - Returned {} leads", userId, leads.size());
+		return leads;
 	}
 
 	@GetMapping("/broker/{brokerId}")
 	public List<ClientLeadDTO> getByBrokerWithFilters(
 	        @PathVariable Long brokerId,
 	        @RequestParam(required = false) List<String> status,
-	        @RequestParam(required = false) 
+	        @RequestParam(required = false)
 	        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-	        @RequestParam(required = false) 
-	        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
-	) {
-	    return service.getByBrokerWithFilters(brokerId, status, startDate, endDate);
+	        @RequestParam(required = false)
+	        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+		log.info("GET /api/leads/broker/{} - Fetching leads [status={}, startDate={}, endDate={}]",
+				brokerId, status, startDate, endDate);
+		List<ClientLeadDTO> leads = service.getByBrokerWithFilters(brokerId, status, startDate, endDate);
+		log.info("GET /api/leads/broker/{} - Returned {} leads", brokerId, leads.size());
+	    return leads;
 	}
 
 	@GetMapping("/status/{status}")
 	public List<ClientLeadDTO> getByStatus(@PathVariable String status) {
-		return service.getByStatus(status);
+		log.info("GET /api/leads/status/{} - Fetching leads by status", status);
+		List<ClientLeadDTO> leads = service.getByStatus(status);
+		log.info("GET /api/leads/status/{} - Returned {} leads", status, leads.size());
+		return leads;
 	}
-
-	
 }

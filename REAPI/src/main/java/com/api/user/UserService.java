@@ -17,7 +17,9 @@ import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userproperty.UserPropertyRelationRepository;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -38,15 +40,21 @@ public class UserService {
 
 	// ---------------- REGISTER ----------------
 	public UserDto signup(UserDto userDto) {
+		String identifier = userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile();
+		log.info("signup - Signup attempt for identifier={}", identifier);
+
 		if (userDto.getEmail() == null && userDto.getMobile() == null) {
+			log.warn("signup - Rejected: no email or mobile provided");
 			throw new IllegalArgumentException("Email or mobile required");
 		}
 
 		if (userDto.getEmail() != null && userRepository.existsByEmail(userDto.getEmail())) {
+			log.warn("signup - Rejected: email already in use [{}]", userDto.getEmail());
 			throw new IllegalArgumentException("Email already in use");
 		}
 
 		if (userDto.getMobile() != null && userRepository.existsByMobile(userDto.getMobile())) {
+			log.warn("signup - Rejected: mobile already in use [{}]", userDto.getMobile());
 			throw new IllegalArgumentException("Mobile already in use");
 		}
 
@@ -54,60 +62,71 @@ public class UserService {
 		if (user.getUserRole() == null) {
 			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
 		}
-		// user.setUserStatus(MasterEnums.UserStatusEnum.PENDING); Temporary change to
-		// create Active user
 		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
 		userRepository.save(user);
 
-		// Generate OTP
 		String otp = commService.generateOtp();
 		user.setOtp(otp);
 		user.setOtpGeneratedAt(LocalDateTime.now());
 		userRepository.save(user);
 
-		// Send OTP
 		try {
-			if (user.getMobile() != null)
+			if (user.getMobile() != null) {
+				log.debug("signup - Sending OTP via SMS to {}", user.getMobile());
 				commService.sendSMSMessage(user.getMobile(), "One Time Password is: " + otp + "\nValid for 10 minutes");
-			if (user.getEmail() != null)
+			}
+			if (user.getEmail() != null) {
+				log.debug("signup - Sending OTP via email to {}", user.getEmail());
 				commService.sendEmail(user.getEmail(), "One Time Password is: " + otp + "\nValid for 10 minutes",
 						"OTP for User SignUp");
-
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("signup - Failed to send OTP for identifier={}: {}", identifier, e.getMessage(), e);
 		}
+		log.info("signup - User registered successfully with id={}", user.getId());
 		return mapper.map(user, UserDto.class);
 	}
 
 	public ResponseEntity<String> verifyOtp(String identifier, String otp) {
+		log.info("verifyOtp - OTP verification for identifier={}", identifier);
 		Optional<User> userOptional = identifier.contains("@") ? userRepository.findByEmail(identifier)
 				: userRepository.findByMobile(identifier);
 
-		User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found"));
+		User user = userOptional.orElseThrow(() -> {
+			log.warn("verifyOtp - User not found for identifier={}", identifier);
+			return new IllegalArgumentException("User not found");
+		});
 
 		if (!otp.equals(user.getOtp())) {
+			log.warn("verifyOtp - Invalid OTP for identifier={}", identifier);
 			return ResponseEntity.badRequest().body("Invalid OTP");
 		}
 
 		if (user.getOtpGeneratedAt() == null
 				|| user.getOtpGeneratedAt().plusMinutes(10).isBefore(LocalDateTime.now())) {
+			log.warn("verifyOtp - OTP expired for identifier={}", identifier);
 			return ResponseEntity.badRequest().body("OTP expired");
 		}
 
 		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
 		user.setIsVerified(true);
 		userRepository.save(user);
-
+		log.info("verifyOtp - User verified successfully, id={}", user.getId());
 		return ResponseEntity.ok("OTP verified! User activated.");
 	}
 
 	public ResponseEntity<String> resendOtp(String identifier) {
+		log.info("resendOtp - Resend OTP request for identifier={}", identifier);
 		Optional<User> userOptional = identifier.contains("@") ? userRepository.findByEmail(identifier)
 				: userRepository.findByMobile(identifier);
 
-		User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found"));
+		User user = userOptional.orElseThrow(() -> {
+			log.warn("resendOtp - User not found for identifier={}", identifier);
+			return new IllegalArgumentException("User not found");
+		});
 
 		if (user.getOtpGeneratedAt() != null && user.getOtpGeneratedAt().plusSeconds(60).isAfter(LocalDateTime.now())) {
+			log.warn("resendOtp - Rate-limited: OTP requested too soon for identifier={}", identifier);
 			return ResponseEntity.badRequest().body("Please wait 1 min before requesting a new OTP");
 		}
 
@@ -117,45 +136,51 @@ public class UserService {
 		userRepository.save(user);
 
 		try {
-			if (identifier.contains("@"))
+			if (identifier.contains("@")) {
+				log.debug("resendOtp - Sending new OTP via SMS to {}", user.getMobile());
 				commService.sendSMSMessage(user.getMobile(), "Your OTP is: " + newOtp + "\nValid for 10 minutes");
-			else
+			} else {
+				log.debug("resendOtp - Sending new OTP via email to {}", user.getEmail());
 				commService.sendEmail(user.getEmail(), "Your OTP is: " + newOtp + "\nValid for 10 minutes",
 						"OTP for User SignUp");
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("resendOtp - Failed to send OTP for identifier={}: {}", identifier, e.getMessage(), e);
 		}
+		log.info("resendOtp - New OTP dispatched for identifier={}", identifier);
 		return ResponseEntity.ok("New OTP has been sent");
 	}
 
 	// ---------------- LOGIN ----------------
 	public ResponseEntity<UserDto> login(UserDto reqDto) {
+		String identifier = reqDto.getEmail() != null ? reqDto.getEmail() : reqDto.getMobile();
+		log.info("login - Login attempt for identifier={}", identifier);
 		User user;
 
-		// Find user by email or mobile
 		if (reqDto.getEmail() != null) {
 			user = userRepository.findByEmail(reqDto.getEmail())
-					.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+					.orElseThrow(() -> {
+						log.warn("login - User not found for email={}", reqDto.getEmail());
+						return new IllegalArgumentException("Invalid email or password");
+					});
 		} else if (reqDto.getMobile() != null) {
 			user = userRepository.findByMobile(reqDto.getMobile())
-					.orElseThrow(() -> new IllegalArgumentException("Invalid mobile or password"));
+					.orElseThrow(() -> {
+						log.warn("login - User not found for mobile={}", reqDto.getMobile());
+						return new IllegalArgumentException("Invalid mobile or password");
+					});
 		} else {
-			return ResponseEntity.badRequest().build(); // email or mobile required
+			log.warn("login - Rejected: no email or mobile provided");
+			return ResponseEntity.badRequest().build();
 		}
 
-		// Validate password
 		if (!reqDto.getPassword().equals(user.getPassword())) {
-			return ResponseEntity.status(401).build(); // invalid credentials
+			log.warn("login - Invalid password for identifier={}", identifier);
+			return ResponseEntity.status(401).build();
 		}
 
-		// Optionally generate token
-		String token = "hardcoded-token"; // replace with JWT if needed
-
-		// Create response DTO
-
+		log.info("login - Successful login for userId={}", user.getId());
 		UserDto responseDto = mapper.map(user, UserDto.class);
-
-		// Return response
 		return ResponseEntity.ok(responseDto);
 	}
 
@@ -198,19 +223,24 @@ public class UserService {
 
 	// ---------------- RESET PASSWORD ----------------
 	public ResponseEntity<String> resetPassword(UserDto userDto) {
+		String identifier = userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile();
+		log.info("resetPassword - Password reset request for identifier={}", identifier);
 		Optional<User> userOpt = null;
 		if (userDto.getEmail() != null)
 			userOpt = userRepository.findByEmail(userDto.getEmail());
-
 		else if (userDto.getMobile() != null)
 			userOpt = userRepository.findByMobile(userDto.getMobile());
 		if (userOpt == null) {
+			log.warn("resetPassword - User not found for identifier={}", identifier);
 			throw new IllegalArgumentException("User not found");
 		}
-		User user = userOpt.orElseThrow(() -> new IllegalArgumentException("User not found"));
+		User user = userOpt.orElseThrow(() -> {
+			log.warn("resetPassword - User not found for identifier={}", identifier);
+			return new IllegalArgumentException("User not found");
+		});
 		user.setPassword(userDto.getPassword());
 		userRepository.save(user);
-
+		log.info("resetPassword - Password reset successfully for userId={}", user.getId());
 		return ResponseEntity.ok("Password reset successfully!");
 	}
 

@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/banks")
 @Tag(name = "Bank APIs", description = "Bank and Interest Rate Operations")
@@ -28,55 +30,81 @@ public class BankController {
 	// 📃 List all banks
 	@GetMapping
 	public ResponseEntity<List<BankDto>> getAllBanks() {
-		return ResponseEntity.ok(bankService.getAllBanks());
+		log.info("GET /api/banks - Fetching all banks");
+		List<BankDto> banks = bankService.getAllBanks();
+		log.info("GET /api/banks - Returned {} banks", banks.size());
+		return ResponseEntity.ok(banks);
 	}
 
 	// ➕ Add a new bank
 	@PostMapping
 	public ResponseEntity<BankDto> addBank(@RequestBody BankDto dto) {
-		return ResponseEntity.ok(bankService.addBank(dto));
+		log.info("POST /api/banks - Adding bank: {}", dto.getBankName());
+		BankDto saved = bankService.addBank(dto);
+		log.info("POST /api/banks - Bank created with id={}", saved.getId());
+		return ResponseEntity.ok(saved);
 	}
 
 	// ✏️ Update an existing bank
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateBank(@PathVariable Long id, @RequestBody BankDto dto) {
+		log.info("PUT /api/banks/{} - Updating bank", id);
 		dto.setId(id);
-		return bankService.updateBank(dto);
+		ResponseEntity<?> response = bankService.updateBank(dto);
+		log.info("PUT /api/banks/{} - Update completed, status={}", id, response.getStatusCode());
+		return response;
 	}
 
 	// ⚖️ Compare banks by interest rate
 	@GetMapping("/compare")
 	public ResponseEntity<List<BankDto>> compareBanks() {
-		return ResponseEntity.ok(bankService.getAllBanks().stream()
-				.sorted((a, b) -> Double.compare(a.getInterestRate(), b.getInterestRate())).toList());
+		log.info("GET /api/banks/compare - Comparing banks by interest rate");
+		List<BankDto> sorted = bankService.getAllBanks().stream()
+				.sorted((a, b) -> Double.compare(a.getInterestRate(), b.getInterestRate())).toList();
+		log.info("GET /api/banks/compare - Returned {} banks sorted by rate", sorted.size());
+		return ResponseEntity.ok(sorted);
 	}
 
-	
+
 
 	// ➕ Add interest rates for a bank
 	@PostMapping("/{bankId}/interest-rates")
 	public ResponseEntity<InterestRatesDto> addInterestRate(@PathVariable Long bankId,
 			@RequestBody InterestRatesDto dto) {
+		log.info("POST /api/banks/{}/interest-rates - Adding interest rate range [{}-{}]",
+				bankId, dto.getMinCibil(), dto.getMaxCibil());
 		dto.setBankId(bankId);
-		return ResponseEntity.ok(bankService.addInterestRates(dto));
+		InterestRatesDto saved = bankService.addInterestRates(dto);
+		log.info("POST /api/banks/{}/interest-rates - Interest rate added with id={}", bankId, saved.getId());
+		return ResponseEntity.ok(saved);
 	}
 
 	// ✏️ Update interest rate
 	@PutMapping("/{bankId}/interest-rates")
 	public ResponseEntity<?> updateInterestRates(@PathVariable Long bankId, @RequestBody InterestRatesDto dto) {
+		log.info("PUT /api/banks/{}/interest-rates - Updating interest rate id={}", bankId, dto.getId());
 		dto.setBankId(bankId);
-		return bankService.updateInterestRates(dto);
+		ResponseEntity<?> response = bankService.updateInterestRates(dto);
+		log.info("PUT /api/banks/{}/interest-rates - Update completed, status={}", bankId, response.getStatusCode());
+		return response;
 	}
 
 	// 📃 List interest rates for a bank
 	@GetMapping("/{bankId}/interest-rates")
 	public ResponseEntity<List<InterestRatesDto>> getInterestRatesByBank(@PathVariable Long bankId) {
-		return ResponseEntity.ok(bankService.getInterestRatesByBank(bankId));
+		log.info("GET /api/banks/{}/interest-rates - Fetching interest rates", bankId);
+		List<InterestRatesDto> rates = bankService.getInterestRatesByBank(bankId);
+		log.info("GET /api/banks/{}/interest-rates - Returned {} rates", bankId, rates.size());
+		return ResponseEntity.ok(rates);
 	}
+
 	// 📃 Get all banks with their interest rates
 	@GetMapping("/with-interest-rates")
 	public ResponseEntity<List<BankDto>> getAllBanksWithInterestRates() {
-	    return ResponseEntity.ok(bankService.getAllBanksWithInterestRates());
+		log.info("GET /api/banks/with-interest-rates - Fetching all banks with interest rates");
+		List<BankDto> banks = bankService.getAllBanksWithInterestRates();
+		log.info("GET /api/banks/with-interest-rates - Returned {} banks", banks.size());
+	    return ResponseEntity.ok(banks);
 	}
 
 
@@ -87,7 +115,10 @@ public class BankController {
 			@RequestParam(required = false) Double minIncome, @RequestParam(required = false) String city,
 			@RequestParam(required = false) String state, @RequestParam(required = false) String bank,
 			@RequestParam(required = false) String postalcode) {
-		return ResponseEntity
-				.ok(bankService.advancedFilter(maxRate, minCibil, maxTenure, minIncome, city, state, bank, postalcode));
+		log.info("GET /api/banks/filter - Filtering banks [maxRate={}, minCibil={}, city={}, state={}]",
+				maxRate, minCibil, city, state);
+		List<BankDto> results = bankService.advancedFilter(maxRate, minCibil, maxTenure, minIncome, city, state, bank, postalcode);
+		log.info("GET /api/banks/filter - Filter returned {} results", results.size());
+		return ResponseEntity.ok(results);
 	}
 }

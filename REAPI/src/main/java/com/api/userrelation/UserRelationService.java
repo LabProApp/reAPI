@@ -11,7 +11,9 @@ import com.api.user.User;
 import com.api.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -20,20 +22,26 @@ public class UserRelationService {
 	@Autowired
 	private UserRelationRepository userRelationRepository;
 	@Autowired
-	private UserRepository userRepository; // assuming you have a UserRepository
+	private UserRepository userRepository;
 
-	/**
-	 * Create or update a relation between two users
-	 */
 	public UserRelation createRelation(UserRelation userRelation) {
+		Long userId = userRelation.getUser().getId();
+		Long relatedUserId = userRelation.getRelatedUser().getId();
+		log.info("createRelation - Creating relation [userId={}, relatedUserId={}, type={}]",
+				userId, relatedUserId, userRelation.getRelationType());
 
-		User user = userRepository.findById(userRelation.getUser().getId())
-				.orElseThrow(() -> new RuntimeException("User not found: " + userRelation.getUser().getId()));
-		User relatedUser = userRepository.findById(userRelation.getRelatedUser().getId()).orElseThrow(
-				() -> new RuntimeException("Related user not found: " + userRelation.getRelatedUser().getId()));
+		User user = userRepository.findById(userId).orElseThrow(() -> {
+			log.error("createRelation - User not found id={}", userId);
+			return new RuntimeException("User not found: " + userId);
+		});
+		User relatedUser = userRepository.findById(relatedUserId).orElseThrow(() -> {
+			log.error("createRelation - Related user not found id={}", relatedUserId);
+			return new RuntimeException("Related user not found: " + relatedUserId);
+		});
 
 		Optional<UserRelation> existing = userRelationRepository.findByUserAndRelatedUser(user, relatedUser);
 		if (existing.isPresent()) {
+			log.info("createRelation - Updating existing relation id={}", existing.get().getId());
 			UserRelation relation = existing.get();
 			relation.setRelationType(userRelation.getRelationType());
 			relation.setComments(userRelation.getComments());
@@ -46,47 +54,54 @@ public class UserRelationService {
 		relation.setRelationType(userRelation.getRelationType());
 		relation.setComments(userRelation.getComments());
 
-		return userRelationRepository.save(relation);
+		UserRelation saved = userRelationRepository.save(relation);
+		log.info("createRelation - Relation created with id={}", saved.getId());
+		return saved;
 	}
 
-	/**
-	 * Get all relations
-	 */
 	public List<UserRelation> getAllRelations() {
-		return userRelationRepository.findAll();
+		log.info("getAllRelations - Fetching all relations");
+		List<UserRelation> relations = userRelationRepository.findAll();
+		log.info("getAllRelations - Returned {} relations", relations.size());
+		return relations;
 	}
 
-	/**
-	 * Get all relations by user
-	 */
 	public List<UserRelation> getRelationsByUser(Long userId) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("User not found: " + userId));
-		return userRelationRepository.findByUser(user);
+		log.info("getRelationsByUser - Fetching relations for userId={}", userId);
+		User user = userRepository.findById(userId).orElseThrow(() -> {
+			log.error("getRelationsByUser - User not found id={}", userId);
+			return new RuntimeException("User not found: " + userId);
+		});
+		List<UserRelation> relations = userRelationRepository.findByUser(user);
+		log.info("getRelationsByUser - Returned {} relations for userId={}", relations.size(), userId);
+		return relations;
 	}
 
-	/**
-	 * Get all relations where the given user is related to someone
-	 */
 	public List<UserRelation> getRelationsByRelatedUser(Long relatedUserId) {
-		User relatedUser = userRepository.findById(relatedUserId)
-				.orElseThrow(() -> new RuntimeException("User not found: " + relatedUserId));
-		return userRelationRepository.findByRelatedUser(relatedUser);
+		log.info("getRelationsByRelatedUser - Fetching relations for relatedUserId={}", relatedUserId);
+		User relatedUser = userRepository.findById(relatedUserId).orElseThrow(() -> {
+			log.error("getRelationsByRelatedUser - User not found id={}", relatedUserId);
+			return new RuntimeException("User not found: " + relatedUserId);
+		});
+		List<UserRelation> relations = userRelationRepository.findByRelatedUser(relatedUser);
+		log.info("getRelationsByRelatedUser - Returned {} relations for relatedUserId={}", relations.size(), relatedUserId);
+		return relations;
 	}
 
-	/**
-	 * Get relations by type
-	 */
 	public List<UserRelation> getUserRelationsByType(Long userId, String relationType) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("User not found: " + userId));
-		return userRelationRepository.findByUserAndRelationType(user, relationType);
+		log.info("getUserRelationsByType - Fetching relations for userId={}, type={}", userId, relationType);
+		User user = userRepository.findById(userId).orElseThrow(() -> {
+			log.error("getUserRelationsByType - User not found id={}", userId);
+			return new RuntimeException("User not found: " + userId);
+		});
+		List<UserRelation> relations = userRelationRepository.findByUserAndRelationType(user, relationType);
+		log.info("getUserRelationsByType - Returned {} relations for userId={}, type={}", relations.size(), userId, relationType);
+		return relations;
 	}
 
-	/**
-	 * Delete relation by ID
-	 */
 	public void deleteRelation(Long id) {
+		log.info("deleteRelation - Deleting relation id={}", id);
 		userRelationRepository.deleteById(id);
+		log.info("deleteRelation - Relation id={} deleted", id);
 	}
 }

@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import com.api.commons.ResourceNotFoundException;
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class PropertyService {
 
@@ -29,16 +31,17 @@ public class PropertyService {
 
 	/** Add a new property */
 	public PropertyDto addProperty(PropertyDto propertyDto) {
+		log.info("addProperty - Adding property: title={}, city={}, type={}",
+				propertyDto.getTitle(), propertyDto.getCity(), propertyDto.getType());
 		Property property = mapper.map(propertyDto, Property.class);
-
 		Property saved = repository.save(property);
+		log.info("addProperty - Property saved with id={}", saved.getId());
 		return mapper.map(saved, PropertyDto.class);
 	}
 
 	/** Get all properties */
-	/** Get all properties */
 	public List<PropertyDto> getAllProperties() {
-
+		log.info("getAllProperties - Fetching all properties");
 		return repository.findAll().stream().map(p -> {
 
 			PropertyDto dto = new PropertyDto();
@@ -118,9 +121,8 @@ public class PropertyService {
 	}
 
 	/** Get property by ID */
-	/** Get property by ID */
-	/** Get property by ID */
 	public Optional<PropertyDto> getPropertyById(Long id) {
+		log.info("getPropertyById - Fetching property id={}", id);
 		return repository.findById(id).map(p -> {
 
 			PropertyDto dto = new PropertyDto();
@@ -202,7 +204,8 @@ public class PropertyService {
 	/** Search properties dynamically */
 	public List<PropertyDto> search(String city, String type, String category, Double minArea, Double maxArea,
 			Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate, Long postedByUser) {
-
+		log.info("search - Searching properties [city={}, type={}, category={}, rentOrSale={}, price={}-{}]",
+				city, type, category, rentOrSale, minPrice, maxPrice);
 		return repository
 				.search(city, type, category, minArea, maxArea, minPrice, maxPrice, rentOrSale, postDate, postedByUser)
 				.stream().map(p -> {
@@ -285,6 +288,7 @@ public class PropertyService {
 
 	/** Update an existing property */
 	public PropertyDto updateProperty(Long id, PropertyDto updatedDto) {
+		log.info("updateProperty - Updating property id={}", id);
 		Property updatedProperty = mapper.map(updatedDto, Property.class);
 
 		Property saved = repository.findById(id).map(existing -> {
@@ -365,17 +369,24 @@ public class PropertyService {
 
 			return repository.save(existing);
 
-		}).orElseThrow(() -> new ResourceNotFoundException("Property not found with id " + id));
+		}).orElseThrow(() -> {
+			log.error("updateProperty - Property not found for id={}", id);
+			return new ResourceNotFoundException("Property not found with id " + id);
+		});
 
+		log.info("updateProperty - Property id={} updated successfully", id);
 		return mapper.map(saved, PropertyDto.class);
 	}
 
 	/** Delete a property */
 	public void deleteProperty(Long id) {
+		log.info("deleteProperty - Deleting property id={}", id);
 		if (!repository.existsById(id)) {
+			log.error("deleteProperty - Property not found for id={}", id);
 			throw new ResourceNotFoundException("Property not found with id " + id);
 		}
 		repository.deleteById(id);
+		log.info("deleteProperty - Property id={} deleted", id);
 	}
 
 	/** Advanced search */

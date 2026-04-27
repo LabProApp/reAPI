@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.api.enums.MasterEnums;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 @Transactional
 public class InquiryService {
@@ -22,15 +23,11 @@ public class InquiryService {
 		this.mapper = mapper;
 	}
 
-	/* =========================
-	 * CREATE INQUIRY
-	 * ========================= */
 	public InquiryDto create(InquiryDto dto) {
-
+		log.info("create - Creating new inquiry");
 		Inquiry entity = mapper.map(dto, Inquiry.class);
 
-		// SYSTEM-CONTROLLED FIELDS
-		entity.setId(null); // safety
+		entity.setId(null);
 		entity.setInquiryStatus(MasterEnums.InquiryStatus.NEW);
 		entity.setAssignedAgentId(null);
 		entity.setAssignedAgentName(null);
@@ -39,38 +36,36 @@ public class InquiryService {
 		entity.setApprovedInterestRate(null);
 
 		Inquiry saved = repository.save(entity);
+		log.info("create - Inquiry created with id={}", saved.getId());
 		return mapper.map(saved, InquiryDto.class);
 	}
 
-	/* =========================
-	 * GET BY ID
-	 * ========================= */
 	public InquiryDto getById(Long id) {
-		Inquiry entity = repository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + id));
-
+		log.info("getById - Fetching inquiry id={}", id);
+		Inquiry entity = repository.findById(id).orElseThrow(() -> {
+			log.error("getById - Inquiry not found for id={}", id);
+			return new RuntimeException("Inquiry not found with id: " + id);
+		});
 		return mapper.map(entity, InquiryDto.class);
 	}
 
-	/* =========================
-	 * GET ALL
-	 * ========================= */
 	public List<InquiryDto> getAll() {
-		return repository.findAll()
+		log.info("getAll - Fetching all inquiries");
+		List<InquiryDto> inquiries = repository.findAll()
 				.stream()
 				.map(e -> mapper.map(e, InquiryDto.class))
 				.collect(Collectors.toList());
+		log.info("getAll - Returned {} inquiries", inquiries.size());
+		return inquiries;
 	}
 
-	/* =========================
-	 * UPDATE (ADMIN / OPS ONLY)
-	 * ========================= */
 	public InquiryDto update(Long id, InquiryDto dto) {
+		log.info("update - Updating inquiry id={}, new status={}", id, dto.getInquiryStatus());
+		Inquiry entity = repository.findById(id).orElseThrow(() -> {
+			log.error("update - Inquiry not found for id={}", id);
+			return new RuntimeException("Inquiry not found with id: " + id);
+		});
 
-		Inquiry entity = repository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + id));
-
-		// SAFE UPDATES ONLY
 		entity.setComments(dto.getComments());
 		entity.setPreferredBank(dto.getPreferredBank());
 		entity.setInquiryStatus(dto.getInquiryStatus());
@@ -82,16 +77,17 @@ public class InquiryService {
 		entity.setExpectedPurchaseDate(dto.getExpectedPurchaseDate());
 
 		Inquiry updated = repository.save(entity);
+		log.info("update - Inquiry id={} updated successfully", id);
 		return mapper.map(updated, InquiryDto.class);
 	}
 
-	/* =========================
-	 * DELETE
-	 * ========================= */
 	public void delete(Long id) {
+		log.info("delete - Deleting inquiry id={}", id);
 		if (!repository.existsById(id)) {
+			log.error("delete - Inquiry not found for id={}", id);
 			throw new RuntimeException("Inquiry not found with id: " + id);
 		}
 		repository.deleteById(id);
+		log.info("delete - Inquiry id={} deleted", id);
 	}
 }

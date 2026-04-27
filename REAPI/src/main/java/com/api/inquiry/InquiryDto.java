@@ -2,7 +2,7 @@ package com.api.inquiry;
 
 import java.time.LocalDate;
 
-import com.api.commons.BaseEntity;
+import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 
 import jakarta.validation.constraints.Email;
@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public class InquiryDto extends BaseEntity {
+public class InquiryDto extends BaseDto {
 
 	/*
 	 * ========================= IDENTIFIERS (SYSTEM) =========================

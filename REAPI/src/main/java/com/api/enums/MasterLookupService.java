@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class MasterLookupService {
 
@@ -21,47 +23,42 @@ public class MasterLookupService {
 		this.mapper = mapper;
 	}
 
-	// Generic master lookup
-	// Generic master lookup
 	public List<MasterLookupDto> getMasterValues(String type, String status) {
-
+		log.info("getMasterValues - Fetching master values [type={}, status={}]", type, status);
 		List<MasterLookup> entities = repository.findByTypeIgnoreCaseAndStatusIgnoreCase(type, status);
-
+		log.info("getMasterValues - Returned {} values for type={}", entities.size(), type);
 		return entities.stream().map(e -> new MasterLookupDto(e.getId(), e.getValue(), e.getType())).toList();
 	}
 
 	public List<MasterLookupDto> getChildByMaster(Long parentId, String status, String type) {
-
+		log.info("getChildByMaster - Fetching child values [parentId={}, type={}, status={}]", parentId, type, status);
 		List<MasterLookup> entities = repository.findByParentIdAndStatusAndType(parentId, status, type);
-
+		log.info("getChildByMaster - Returned {} child values for parentId={}", entities.size(), parentId);
 		return entities.stream().map(e -> new MasterLookupDto(e.getId(), e.getValue(), e.getType())).toList();
 	}
 
-	/**
-	 * Get values of a specific enum by name
-	 */
 	public List<String> getEnumByName(String enumName) {
-
+		log.info("getEnumByName - Fetching enum: {}", enumName);
 		for (Class<?> clazz : MasterEnums.class.getDeclaredClasses()) {
 			if (clazz.isEnum() && clazz.getSimpleName().equalsIgnoreCase(enumName)) {
-				return getEnumValues((Class<? extends Enum<?>>) clazz);
+				List<String> values = getEnumValues((Class<? extends Enum<?>>) clazz);
+				log.info("getEnumByName - Returned {} values for enum={}", values.size(), enumName);
+				return values;
 			}
 		}
+		log.warn("getEnumByName - Enum not found: {}", enumName);
 		throw new IllegalArgumentException("Enum not found: " + enumName);
 	}
 
-	/**
-	 * Get all enums
-	 */
 	public Map<String, List<String>> getAllEnums() {
-
+		log.info("getAllEnums - Fetching all enums");
 		Map<String, List<String>> result = new LinkedHashMap<>();
-
 		for (Class<?> clazz : MasterEnums.class.getDeclaredClasses()) {
 			if (clazz.isEnum()) {
 				result.put(clazz.getSimpleName(), getEnumValues((Class<? extends Enum<?>>) clazz));
 			}
 		}
+		log.info("getAllEnums - Returned {} enum groups", result.size());
 		return result;
 	}
 

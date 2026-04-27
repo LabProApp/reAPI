@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/tools")
 @Tag(name = "Tools APIs", description = "Operations related to Tools like Home Loan Calculator")
@@ -19,23 +21,22 @@ public class ToolsController {
 
     @Autowired
     private ToolService toolService;
-    
 
-
-    /**
-     * Calculate home vendor details. JSON body required.
-     * Example: { "principal": 5000000, "annualInterestRate": 7.5, "tenureYears": 20, "includeSchedule": true }
-     */
     @PostMapping("/homeloancalculator")
     public ResponseEntity<calcLoanResponse> calculate(@Valid @RequestBody calcLoanRequest request) {
-       calcLoanResponse response = toolService.calculate(request);
+        log.info("POST /api/tools/homeloancalculator - Calculating loan [principal={}, rate={}, tenure={}yrs]",
+                request.getPrincipal(), request.getAnnualInterestRate(), request.getTenureYears());
+        calcLoanResponse response = toolService.calculate(request);
+        log.info("POST /api/tools/homeloancalculator - Calculation complete [emi={}]", response.getMonthlyEmi());
         return ResponseEntity.ok(response);
     }
-    
-  
 
     @PostMapping("/calculateAffordability")
     public calcLoanResponse calculateAffordability(@RequestBody calcLoanRequest request) {
-        return toolService.calculateAffordability(request);
+        log.info("POST /api/tools/calculateAffordability - Calculating affordability [principal={}, rate={}]",
+                request.getPrincipal(), request.getAnnualInterestRate());
+        calcLoanResponse response = toolService.calculateAffordability(request);
+        log.info("POST /api/tools/calculateAffordability - Affordability calculation complete");
+        return response;
     }
 }

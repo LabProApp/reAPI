@@ -12,9 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.user.User;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/user-relations")
 @Tag(name = "User Relation APIs", description = "Operations related to Maintain Relations between Agents & Clients")
@@ -26,37 +30,56 @@ public class UserRelationController {
 
 	// 🔹 Create or update relation
 	@PostMapping("/create")
-	public ResponseEntity<UserRelation> createRelation(@RequestBody UserRelation userRelation) {
-
+	public ResponseEntity<UserRelation> createRelation(@RequestBody UserRelationDto dto) {
+		log.info("POST /api/user-relations/create - Creating relation type={}", dto.getRelationType());
+		User userStub = new User();
+		userStub.setId(dto.getUser().getId());
+		User relatedUserStub = new User();
+		relatedUserStub.setId(dto.getRelatedUser().getId());
+		UserRelation userRelation = new UserRelation();
+		userRelation.setUser(userStub);
+		userRelation.setRelatedUser(relatedUserStub);
+		userRelation.setRelationType(dto.getRelationType());
+		userRelation.setComments(dto.getComments());
 		UserRelation relation = userRelationService.createRelation(userRelation);
+		log.info("POST /api/user-relations/create - Relation created with id={}", relation.getId());
 		return ResponseEntity.ok(relation);
 	}
 
 	// 🔹 Get all relations
 	@GetMapping("/all")
 	public ResponseEntity<List<UserRelation>> getAllRelations() {
-		return ResponseEntity.ok(userRelationService.getAllRelations());
+		log.info("GET /api/user-relations/all - Fetching all relations");
+		List<UserRelation> relations = userRelationService.getAllRelations();
+		log.info("GET /api/user-relations/all - Returned {} relations", relations.size());
+		return ResponseEntity.ok(relations);
 	}
 
 	// 🔹 Get relations by user ID
 	@GetMapping("/user/{userId}")
 	public ResponseEntity<List<UserRelation>> getRelationsByUser(@PathVariable Long userId) {
-		return ResponseEntity.ok(userRelationService.getRelationsByUser(userId));
+		log.info("GET /api/user-relations/user/{} - Fetching relations for user", userId);
+		List<UserRelation> relations = userRelationService.getRelationsByUser(userId);
+		log.info("GET /api/user-relations/user/{} - Returned {} relations", userId, relations.size());
+		return ResponseEntity.ok(relations);
 	}
-
-	
 
 	// 🔹 Get relations by type (CLIENT_OF, DEALER_OF, etc.)
 	@GetMapping("/user/{userId}/relation/{relationType}")
 	public ResponseEntity<List<UserRelation>> getUserRelationsByType(@PathVariable Long userId,
 			@PathVariable String relationType) {
-		return ResponseEntity.ok(userRelationService.getUserRelationsByType(userId,relationType));
+		log.info("GET /api/user-relations/user/{}/relation/{} - Fetching relations by type", userId, relationType);
+		List<UserRelation> relations = userRelationService.getUserRelationsByType(userId, relationType);
+		log.info("GET /api/user-relations/user/{}/relation/{} - Returned {} relations", userId, relationType, relations.size());
+		return ResponseEntity.ok(relations);
 	}
 
 	// 🔹 Delete a relation by ID
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteRelation(@PathVariable Long id) {
+		log.info("DELETE /api/user-relations/{} - Deleting relation", id);
 		userRelationService.deleteRelation(id);
+		log.info("DELETE /api/user-relations/{} - Relation deleted", id);
 		return ResponseEntity.noContent().build();
 	}
 }

@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class BankService {
 
@@ -33,6 +35,7 @@ public class BankService {
 	// 🧾 Get all banks
 	// 🧾 Get all banks with logos and documents
 	public List<BankDto> getAllBanks() {
+		log.info("Fetching all banks");
 		return bankRepository.findAll().stream().map(bank -> {
 			// Convert entity to DTO
 			BankDto dto = toDto(bank);
@@ -56,13 +59,10 @@ public class BankService {
 
 	// ➕ Add a new loan representative
 	public BankDto addBank(BankDto bankDto) {
-		// 🔥 Map DTO → Entity
+		log.info("Adding bank: {}", bankDto.getBankName());
 		Bank entity = toEntity(bankDto);
-
-		// 🔥 Save entity
 		Bank saved = bankRepository.save(entity);
-
-		// 🔥 Map Entity → DTO
+		log.info("Bank saved with id={}", saved.getId());
 		return toDto(saved);
 	}
 
@@ -205,21 +205,32 @@ public class BankService {
 	}
 
 	public InterestRatesDto addInterestRates(InterestRatesDto dto) {
+		log.info("Adding interest rate for bankId={}, CIBIL range [{}-{}]",
+				dto.getBankId(), dto.getMinCibil(), dto.getMaxCibil());
 
 		if (dto.getMinCibil() == null || dto.getMaxCibil() == null) {
+			log.warn("addInterestRates - Rejected: Min/Max CIBIL is null for bankId={}", dto.getBankId());
 			throw new IllegalArgumentException("Min and Max CIBIL cannot be null");
 		}
 
 		if (dto.getMinCibil() > dto.getMaxCibil()) {
+			log.warn("addInterestRates - Rejected: minCibil {} > maxCibil {} for bankId={}",
+					dto.getMinCibil(), dto.getMaxCibil(), dto.getBankId());
 			throw new IllegalArgumentException("Min CIBIL cannot be greater than Max CIBIL");
 		}
 
-		Bank bank = bankRepository.findById(dto.getBankId()).orElseThrow(() -> new RuntimeException("Bank not found"));
+		Bank bank = bankRepository.findById(dto.getBankId())
+				.orElseThrow(() -> {
+					log.error("addInterestRates - Bank not found for id={}", dto.getBankId());
+					return new RuntimeException("Bank not found");
+				});
 
 		boolean overlapExists = interestRatesRepository.existsOverlappingRange(dto.getBankId(), dto.getMinCibil(),
 				dto.getMaxCibil());
 
 		if (overlapExists) {
+			log.warn("addInterestRates - CIBIL range overlap detected for bankId={}, range [{}-{}]",
+					dto.getBankId(), dto.getMinCibil(), dto.getMaxCibil());
 			throw new RuntimeException("CIBIL range overlaps with an existing interest rate range");
 		}
 
@@ -231,20 +242,25 @@ public class BankService {
 
 		rate = interestRatesRepository.save(rate);
 		dto.setId(rate.getId());
-
+		log.info("Interest rate saved with id={} for bankId={}", rate.getId(), dto.getBankId());
 		return dto;
 	}
 
 	// ✏️ UPDATE
 	public ResponseEntity<?> updateInterestRates(InterestRatesDto dto) {
+		log.info("Updating interest rate id={}", dto.getId());
 		InterestRates rate = interestRatesRepository.findById(dto.getId())
-				.orElseThrow(() -> new RuntimeException("CIBIL rate not found"));
+				.orElseThrow(() -> {
+					log.error("updateInterestRates - Rate not found for id={}", dto.getId());
+					return new RuntimeException("CIBIL rate not found");
+				});
 
 		rate.setMinCibil(dto.getMinCibil());
 		rate.setMaxCibil(dto.getMaxCibil());
 		rate.setInterestRate(dto.getInterestRate());
 
 		interestRatesRepository.save(rate);
+		log.info("Interest rate id={} updated successfully", dto.getId());
 		return ResponseEntity.ok("CIBIL Rate updated successfully");
 	}
 
@@ -310,17 +326,22 @@ public class BankService {
 
 	// ✏️ Update loan representative
 	public ResponseEntity<?> updateBank(BankDto requestDto) {
+		log.info("Updating bank id={}", requestDto.getId());
 
 		if (requestDto.getId() == null) {
+			log.warn("updateBank - Rejected: Bank ID is null");
 			return ResponseEntity.badRequest().body("Bank ID is required for update");
 		}
 
 		Bank existing = bankRepository.findById(requestDto.getId())
-				.orElseThrow(() -> new RuntimeException("Bank not found"));
-		// 🔥 ModelMapper updates ONLY non-null fields because skipNullEnabled = true
+				.orElseThrow(() -> {
+					log.error("updateBank - Bank not found for id={}", requestDto.getId());
+					return new RuntimeException("Bank not found");
+				});
 
 		existing = toEntity(requestDto);
 		Bank updated = bankRepository.save(existing);
+		log.info("Bank id={} updated successfully", requestDto.getId());
 		BankDto responseDto = toDto(updated);
 
 		return ResponseEntity.ok(responseDto);
@@ -329,6 +350,7 @@ public class BankService {
 	// 🔎 Advanced filtering
 	public List<BankDto> advancedFilter(Double maxRate, Integer minCibil, Integer maxTenure, Double minIncome,
 			String city, String state, String bank, String postalCode) {
+		log.info("Advanced bank filter [maxRate={}, minCibil={}, city={}, state={}]", maxRate, minCibil, city, state);
 
 		Specification<Bank> spec = Specification.where(BankSpecifications.hasMaxRate(maxRate))
 				.and(BankSpecifications.hasMinCibil(minCibil)).and(BankSpecifications.hasMaxTenure(maxTenure))
@@ -336,9 +358,9 @@ public class BankService {
 				.and(BankSpecifications.hasState(state)).and(BankSpecifications.hasBank(bank))
 				.and(BankSpecifications.hasPostalCode(postalCode));
 
-		return bankRepository.findAll(spec).stream().map(this::toDto) // ✅ use toDto()
-				.toList();
-
+		List<BankDto> results = bankRepository.findAll(spec).stream().map(this::toDto).toList();
+		log.info("Advanced bank filter returned {} results", results.size());
+		return results;
 	}
 
 }
