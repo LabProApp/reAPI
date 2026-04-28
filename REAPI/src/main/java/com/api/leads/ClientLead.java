@@ -132,6 +132,21 @@ public class ClientLead extends BaseEntity {
 	private LocalDateTime nextFollowUpDate;
 	private LocalDate expectedPurchaseDate;
 
+	// ─── External Contact Details ─────────────────────────────────────────────
+	// (bank or legal service provider, filled when routing the lead)
+
+	@Column(length = 100)
+	private String bankContactEmail;
+
+	@Column(length = 15)
+	private String bankContactMobile;
+
+	@Column(length = 100)
+	private String serviceProviderEmail;
+
+	@Column(length = 15)
+	private String serviceProviderMobile;
+
 	// ─── Approval Details (admin fills after loan processing) ─────────────────
 
 	@Column(length = 100)
@@ -263,6 +278,18 @@ public class ClientLead extends BaseEntity {
 
 	public LocalDate getExpectedPurchaseDate() { return expectedPurchaseDate; }
 	public void setExpectedPurchaseDate(LocalDate expectedPurchaseDate) { this.expectedPurchaseDate = expectedPurchaseDate; }
+
+	public String getBankContactEmail() { return bankContactEmail; }
+	public void setBankContactEmail(String bankContactEmail) { this.bankContactEmail = bankContactEmail; }
+
+	public String getBankContactMobile() { return bankContactMobile; }
+	public void setBankContactMobile(String bankContactMobile) { this.bankContactMobile = bankContactMobile; }
+
+	public String getServiceProviderEmail() { return serviceProviderEmail; }
+	public void setServiceProviderEmail(String serviceProviderEmail) { this.serviceProviderEmail = serviceProviderEmail; }
+
+	public String getServiceProviderMobile() { return serviceProviderMobile; }
+	public void setServiceProviderMobile(String serviceProviderMobile) { this.serviceProviderMobile = serviceProviderMobile; }
 
 	public String getApprovedBank() { return approvedBank; }
 	public void setApprovedBank(String approvedBank) { this.approvedBank = approvedBank; }

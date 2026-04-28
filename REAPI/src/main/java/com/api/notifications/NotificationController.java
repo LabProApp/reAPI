@@ -67,19 +67,15 @@ public class NotificationController {
 
     @PostMapping("/lead/{id}/inquiry")
     public ResponseEntity<String> retriggerLeadInquiry(@PathVariable Long id) {
-        log.info("POST /api/notifications/lead/{}/inquiry - Re-triggering inquiry notification", id);
+        log.info("POST /api/notifications/lead/{}/inquiry - Re-triggering lead notification", id);
         ClientLead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Lead not found: " + id));
         String[] brokerContact = resolveContact(lead.getBrokerId());
         String[] ownerContact = resolveContact(lead.getPropertyOwnerId());
-        notificationService.notifyPropertyInquiry(
-                lead.getId(),
-                lead.getClientName(), lead.getMobile(), lead.getEmail(),
-                lead.getPropertyTitle(), lead.getPropertyCity(), lead.getPropertyPrice(),
+        notificationService.notifyLeadCreated(lead,
                 brokerContact[0], brokerContact[1],
-                ownerContact[0], ownerContact[1],
-                lead.getBudget(), lead.getMessage(), false);
-        return ResponseEntity.ok("Inquiry notification re-triggered for lead #" + id);
+                ownerContact[0], ownerContact[1], false);
+        return ResponseEntity.ok("Lead notification re-triggered for lead #" + id);
     }
 
     @PostMapping("/lead/{id}/status")

@@ -1,9 +1,14 @@
 package com.api.notifications;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.api.enums.MasterEnums;
+import com.api.leads.ClientLead;
 import com.api.prop.PropertyDto;
 import com.api.prop.SharePropertyRequest;
 import com.api.user.User;
@@ -13,6 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class NotificationService {
+
+    private static final Set<MasterEnums.InquiryType> LOAN_TYPES = EnumSet.of(
+            MasterEnums.InquiryType.HOME_LOAN,
+            MasterEnums.InquiryType.LAP,
+            MasterEnums.InquiryType.BALANCE_TRANSFER,
+            MasterEnums.InquiryType.LOAN_TRANSFER);
+
+    private static final Set<MasterEnums.InquiryType> LEGAL_TYPES = EnumSet.of(
+            MasterEnums.InquiryType.PROPERTY_REGISTRATION,
+            MasterEnums.InquiryType.RENT_AGREEMENT,
+            MasterEnums.InquiryType.DOCUMENT_SERVICES);
 
     @Value("${app.admin.email:}")
     private String adminEmail;
@@ -28,7 +44,7 @@ public class NotificationService {
         this.whatsAppService = whatsAppService;
     }
 
-    // ─── Property Shared ─────────────────────────────────────────────────────
+    // ─── Property Share ──────────────────────────────────────────────────────
 
     @Async
     public void notifyPropertyShared(PropertyDto property, SharePropertyRequest request) {
@@ -36,7 +52,7 @@ public class NotificationService {
         String toEmail = request.getToEmail();
         String toMobile = request.getToMobile();
 
-        log.info("notifyPropertyShared - Sharing propertyId={} from='{}' to email={}, mobile={}",
+        log.info("notifyPropertyShared - propertyId={} from='{}' to email={}, mobile={}",
             property.getId(), senderName, toEmail, toMobile);
 
         if (hasValue(toMobile)) {
@@ -45,16 +61,11 @@ public class NotificationService {
                 property.getCity(), property.getPrice(), property.getRentOrSale(),
                 property.getBedrooms(), property.getType(), property.getContactNumber());
             commService.sendSMSMessage(toMobile, smsBody);
-
             if (request.isSendWhatsApp()) {
-                try {
-                    whatsAppService.sendMessage("+91" + toMobile, smsBody);
-                } catch (Exception e) {
-                    log.error("notifyPropertyShared - WhatsApp failed for mobile={}: {}", toMobile, e.getMessage());
-                }
+                try { whatsAppService.sendMessage("+91" + toMobile, smsBody); }
+                catch (Exception e) { log.error("notifyPropertyShared - WhatsApp failed mobile={}: {}", toMobile, e.getMessage()); }
             }
         }
-
         if (hasValue(toEmail)) {
             commService.sendEmail(toEmail,
                 NotificationTemplates.propertyShareEmailBody(
@@ -67,55 +78,106 @@ public class NotificationService {
         }
     }
 
-    // ─── Property Inquiry Created ─────────────────────────────────────────────
+    // ─── Lead Created (routes by lead type) ──────────────────────────────────
 
     /**
-     * Fired when a customer submits an inquiry (ClientLead) for a property.
-     * Notifies the broker (SMS + optional WhatsApp + email), the property owner
-     * (SMS/email if different from broker), and sends the customer a confirmation.
+     * Dispatches creation notifications to all relevant parties based on leadType:
+     *  - Property leads  → broker, owner, customer confirmation
+     *  - Loan leads      → broker, bank, customer confirmation
+     *  - Legal leads     → broker, service provider, customer confirmation
      */
     @Async
-    public void notifyPropertyInquiry(
-            Long leadId,
-            String customerName, String customerMobile, String customerEmail,
-            String propTitle, String propCity, Double propPrice,
-            String brokerEmail, String brokerMobile,
-            String ownerEmail, String ownerMobile,
-            Double budget, String message, boolean sendWhatsApp) {
+    public void notifyLeadCreated(ClientLead lead, String brokerEmail, String brokerMobile,
+            String ownerEmail, String ownerMobile, boolean sendWhatsApp) {
 
-        log.info("notifyPropertyInquiry - leadId={}, property='{}', customer='{}'", leadId, propTitle, customerName);
-        String sms = NotificationTemplates.propertyInquirySms(customerName, customerMobile, propTitle, propCity, leadId);
-        String emailBody = NotificationTemplates.propertyInquiryEmailBody(customerName, customerMobile, customerEmail, propTitle, propCity, propPrice, message, leadId);
-        String emailSubject = NotificationTemplates.propertyInquiryEmailSubject(customerName, propTitle);
+        log.info("notifyLeadCreated - leadId={}, leadType={}, customer='{}'",
+                lead.getId(), lead.getLeadType(), lead.getClientName());
 
-        // Notify broker
-        if (hasValue(brokerMobile)) {
-            commService.sendSMSMessage(brokerMobile, sms);
-            if (sendWhatsApp) {
-                try { whatsAppService.sendMessage("+91" + brokerMobile, sms); }
-                catch (Exception e) { log.error("notifyPropertyInquiry - WhatsApp to broker failed: {}", e.getMessage()); }
-            }
+        if (isLoanLead(lead.getLeadType())) {
+            notifyLoanLead(lead, brokerEmail, brokerMobile, sendWhatsApp);
+        } else if (isLegalLead(lead.getLeadType())) {
+            notifyLegalLead(lead, brokerEmail, brokerMobile, sendWhatsApp);
+        } else {
+            notifyPropertyLead(lead, brokerEmail, brokerMobile, ownerEmail, ownerMobile, sendWhatsApp);
         }
-        if (hasValue(brokerEmail)) commService.sendEmail(brokerEmail, emailBody, emailSubject);
+    }
 
-        // Notify owner if different contact from broker
-        if (hasValue(ownerMobile) && !ownerMobile.equals(brokerMobile)) {
+    private void notifyPropertyLead(ClientLead lead, String brokerEmail, String brokerMobile,
+            String ownerEmail, String ownerMobile, boolean sendWhatsApp) {
+
+        String sms = NotificationTemplates.brokerLeadSms(
+                lead.getClientName(), lead.getMobile(), lead.getPropertyTitle(), lead.getPropertyCity(), lead.getId());
+        String emailBody = NotificationTemplates.brokerLeadEmailBody(
+                lead.getClientName(), lead.getMobile(), lead.getEmail(),
+                lead.getPropertyTitle(), lead.getPropertyCity(), lead.getPropertyPrice(), lead.getMessage(), lead.getId());
+        String emailSubject = NotificationTemplates.brokerLeadEmailSubject(lead.getClientName(), lead.getPropertyTitle());
+
+        sendToRecipient("broker", brokerMobile, brokerEmail, sms, emailBody, emailSubject, sendWhatsApp);
+
+        // Notify owner only if different from broker
+        if (hasValue(ownerMobile) && !ownerMobile.equals(brokerMobile))
             commService.sendSMSMessage(ownerMobile, sms);
-        }
-        if (hasValue(ownerEmail) && !ownerEmail.equals(brokerEmail)) {
+        if (hasValue(ownerEmail) && !ownerEmail.equals(brokerEmail))
             commService.sendEmail(ownerEmail, emailBody, emailSubject);
-        }
 
-        // Confirmation to customer
-        if (hasValue(customerMobile)) {
-            commService.sendSMSMessage(customerMobile,
-                    NotificationTemplates.propertyInquiryConfirmationSms(customerName, propTitle, propCity));
-        }
-        if (hasValue(customerEmail)) {
-            commService.sendEmail(customerEmail,
-                    NotificationTemplates.propertyInquiryConfirmationEmailBody(customerName, propTitle, propCity, propPrice),
-                    NotificationTemplates.propertyInquiryConfirmationEmailSubject(propTitle));
-        }
+        // Customer confirmation
+        if (hasValue(lead.getMobile()))
+            commService.sendSMSMessage(lead.getMobile(),
+                    NotificationTemplates.customerConfirmationSms(lead.getClientName(), lead.getPropertyTitle(), lead.getPropertyCity()));
+        if (hasValue(lead.getEmail()))
+            commService.sendEmail(lead.getEmail(),
+                    NotificationTemplates.customerConfirmationEmailBody(lead.getClientName(), lead.getPropertyTitle(), lead.getPropertyCity(), lead.getPropertyPrice()),
+                    NotificationTemplates.customerConfirmationEmailSubject(lead.getPropertyTitle()));
+    }
+
+    private void notifyLoanLead(ClientLead lead, String brokerEmail, String brokerMobile, boolean sendWhatsApp) {
+        String loanTypeName = lead.getLoanType() != null ? lead.getLoanType().name() : "HOME_LOAN";
+
+        // Alert broker
+        String brokerSms = NotificationTemplates.bankLeadSms(
+                lead.getClientName(), lead.getMobile(), lead.getRequiredLoanAmount(), loanTypeName, lead.getId());
+        String brokerEmailBody = NotificationTemplates.bankLeadEmailBody(
+                lead.getClientName(), lead.getMobile(), lead.getEmail(),
+                lead.getRequiredLoanAmount(), lead.getLoanTenureYears(), loanTypeName, lead.getPreferredBank(), lead.getId());
+        String brokerEmailSubject = NotificationTemplates.bankLeadEmailSubject(lead.getClientName(), lead.getId());
+        sendToRecipient("broker", brokerMobile, brokerEmail, brokerSms, brokerEmailBody, brokerEmailSubject, sendWhatsApp);
+
+        // Alert bank contact if provided
+        sendToRecipient("bank", lead.getBankContactMobile(), lead.getBankContactEmail(),
+                brokerSms, brokerEmailBody, brokerEmailSubject, false);
+
+        // Customer confirmation
+        if (hasValue(lead.getMobile()))
+            commService.sendSMSMessage(lead.getMobile(),
+                    NotificationTemplates.customerLoanConfirmationSms(lead.getClientName(), loanTypeName));
+        if (hasValue(lead.getEmail()))
+            commService.sendEmail(lead.getEmail(),
+                    NotificationTemplates.customerLoanConfirmationEmailBody(lead.getClientName(), loanTypeName, lead.getRequiredLoanAmount()),
+                    NotificationTemplates.customerLoanConfirmationEmailSubject(loanTypeName));
+    }
+
+    private void notifyLegalLead(ClientLead lead, String brokerEmail, String brokerMobile, boolean sendWhatsApp) {
+        // Alert broker
+        String brokerSms = NotificationTemplates.legalLeadSms(
+                lead.getClientName(), lead.getMobile(), lead.getDocumentServicesRequired(), lead.getPropertyCity(), lead.getId());
+        String brokerEmailBody = NotificationTemplates.legalLeadEmailBody(
+                lead.getClientName(), lead.getMobile(), lead.getEmail(),
+                lead.getDocumentServicesRequired(), lead.getSpecifications(), lead.getPropertyCity(), lead.getId());
+        String brokerEmailSubject = NotificationTemplates.legalLeadEmailSubject(lead.getClientName(), lead.getId());
+        sendToRecipient("broker", brokerMobile, brokerEmail, brokerSms, brokerEmailBody, brokerEmailSubject, sendWhatsApp);
+
+        // Alert service provider if provided
+        sendToRecipient("serviceProvider", lead.getServiceProviderMobile(), lead.getServiceProviderEmail(),
+                brokerSms, brokerEmailBody, brokerEmailSubject, false);
+
+        // Customer confirmation
+        if (hasValue(lead.getMobile()))
+            commService.sendSMSMessage(lead.getMobile(),
+                    NotificationTemplates.customerLegalConfirmationSms(lead.getClientName(), lead.getDocumentServicesRequired()));
+        if (hasValue(lead.getEmail()))
+            commService.sendEmail(lead.getEmail(),
+                    NotificationTemplates.customerLegalConfirmationEmailBody(lead.getClientName(), lead.getDocumentServicesRequired(), lead.getPropertyCity()),
+                    NotificationTemplates.customerLegalConfirmationEmailSubject(lead.getDocumentServicesRequired()));
     }
 
     // ─── Lead Status Updated ──────────────────────────────────────────────────
@@ -126,31 +188,49 @@ public class NotificationService {
             String propTitle, String propCity, String status, String remark) {
 
         log.info("notifyLeadStatusUpdated - customer='{}', property='{}', status={}", customerName, propTitle, status);
-        if (hasValue(customerMobile)) {
+        if (hasValue(customerMobile))
             commService.sendSMSMessage(customerMobile,
                     NotificationTemplates.leadStatusUpdateSms(customerName, propTitle, status));
-        }
-        if (hasValue(customerEmail)) {
+        if (hasValue(customerEmail))
             commService.sendEmail(customerEmail,
                     NotificationTemplates.leadStatusUpdateEmailBody(customerName, propTitle, propCity, status, remark),
                     NotificationTemplates.leadStatusUpdateEmailSubject(propTitle, status));
-        }
     }
 
     // ─── Welcome ─────────────────────────────────────────────────────────────
 
     @Async
     public void notifyWelcome(User user) {
-        log.info("notifyWelcome - Sending welcome notifications to userId={}", user.getId());
-        if (hasValue(user.getMobile())) {
+        log.info("notifyWelcome - userId={}", user.getId());
+        if (hasValue(user.getMobile()))
             commService.sendSMSMessage(user.getMobile(),
                 NotificationTemplates.welcomeSms(user.getName()));
-        }
-        if (hasValue(user.getEmail())) {
+        if (hasValue(user.getEmail()))
             commService.sendEmail(user.getEmail(),
                 NotificationTemplates.welcomeEmailBody(user.getName()),
                 NotificationTemplates.welcomeEmailSubject());
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private void sendToRecipient(String role, String mobile, String email,
+            String sms, String emailBody, String emailSubject, boolean sendWhatsApp) {
+        if (hasValue(mobile)) {
+            commService.sendSMSMessage(mobile, sms);
+            if (sendWhatsApp) {
+                try { whatsAppService.sendMessage("+91" + mobile, sms); }
+                catch (Exception e) { log.error("notifyLeadCreated - WhatsApp failed for {}: {}", role, e.getMessage()); }
+            }
         }
+        if (hasValue(email)) commService.sendEmail(email, emailBody, emailSubject);
+    }
+
+    private boolean isLoanLead(MasterEnums.InquiryType type) {
+        return type != null && LOAN_TYPES.contains(type);
+    }
+
+    private boolean isLegalLead(MasterEnums.InquiryType type) {
+        return type != null && LEGAL_TYPES.contains(type);
     }
 
     private boolean hasValue(String s) {

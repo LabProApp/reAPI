@@ -76,13 +76,10 @@ public class ClientLeadService {
 		// Fire notifications async
 		String[] brokerContact = resolveContact(saved.getBrokerId());
 		String[] ownerContact = resolveContact(saved.getPropertyOwnerId());
-		notificationService.notifyPropertyInquiry(
-				saved.getId(),
-				saved.getClientName(), saved.getMobile(), saved.getEmail(),
-				saved.getPropertyTitle(), saved.getPropertyCity(), saved.getPropertyPrice(),
+		notificationService.notifyLeadCreated(saved,
 				brokerContact[0], brokerContact[1],
 				ownerContact[0], ownerContact[1],
-				saved.getBudget(), saved.getMessage(), dto.isSendWhatsApp());
+				dto.isSendWhatsApp());
 
 		return mapper.map(saved, ClientLeadDTO.class);
 	}

@@ -81,6 +81,13 @@ public class ClientLeadDTO extends BaseDto {
 	private LocalDateTime nextFollowUpDate;
 	private LocalDate expectedPurchaseDate;
 
+	// ─── External Contact Details ─────────────────────────────────────────────
+
+	private String bankContactEmail;
+	private String bankContactMobile;
+	private String serviceProviderEmail;
+	private String serviceProviderMobile;
+
 	// ─── Approval Details ─────────────────────────────────────────────────────
 
 	private String approvedBank;
@@ -209,6 +216,18 @@ public class ClientLeadDTO extends BaseDto {
 
 	public LocalDate getExpectedPurchaseDate() { return expectedPurchaseDate; }
 	public void setExpectedPurchaseDate(LocalDate expectedPurchaseDate) { this.expectedPurchaseDate = expectedPurchaseDate; }
+
+	public String getBankContactEmail() { return bankContactEmail; }
+	public void setBankContactEmail(String bankContactEmail) { this.bankContactEmail = bankContactEmail; }
+
+	public String getBankContactMobile() { return bankContactMobile; }
+	public void setBankContactMobile(String bankContactMobile) { this.bankContactMobile = bankContactMobile; }
+
+	public String getServiceProviderEmail() { return serviceProviderEmail; }
+	public void setServiceProviderEmail(String serviceProviderEmail) { this.serviceProviderEmail = serviceProviderEmail; }
+
+	public String getServiceProviderMobile() { return serviceProviderMobile; }
+	public void setServiceProviderMobile(String serviceProviderMobile) { this.serviceProviderMobile = serviceProviderMobile; }
 
 	public String getApprovedBank() { return approvedBank; }
 	public void setApprovedBank(String approvedBank) { this.approvedBank = approvedBank; }

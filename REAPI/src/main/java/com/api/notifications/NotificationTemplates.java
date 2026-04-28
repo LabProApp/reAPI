@@ -30,42 +30,110 @@ public class NotificationTemplates {
                 senderName, title, bedroomPart, type, location, city, state, price, rentOrSale, areaPart, statusPart, contactPart, descPart, APP);
     }
 
-    // ─── Property Inquiry (customer → broker/owner) ──────────────────────────
+    // ─── Lead Created — Broker / Owner (Property leads) ─────────────────────
 
-    public static String propertyInquirySms(String customerName, String mobile, String propTitle, String city, Long leadId) {
-        return String.format("[%s] New inquiry #%d: %s (%s) interested in '%s', %s. Reply to connect.", APP, leadId, customerName, mobile, propTitle, city != null ? city : "N/A");
+    public static String brokerLeadSms(String customerName, String mobile, String propTitle, String city, Long leadId) {
+        return String.format("[%s] New lead #%d: %s (%s) interested in '%s', %s. Log in to follow up.", APP, leadId, customerName, mobile, propTitle, city != null ? city : "N/A");
     }
 
-    public static String propertyInquiryEmailSubject(String customerName, String propTitle) {
-        return String.format("New Inquiry – %s is interested in '%s'", customerName, propTitle);
+    public static String brokerLeadEmailSubject(String customerName, String propTitle) {
+        return String.format("[%s] New Inquiry – %s is interested in '%s'", APP, customerName, propTitle);
     }
 
-    public static String propertyInquiryEmailBody(String customerName, String mobile, String email, String propTitle,
+    public static String brokerLeadEmailBody(String customerName, String mobile, String email, String propTitle,
             String city, Double price, String message, Long leadId) {
-        String emailLine = email != null && !email.isBlank() ? " | Email: " + email : "";
-        String priceLine = price != null ? String.format(" | Price: ₹%,.0f", price) : "";
-        String msgLine = message != null && !message.isBlank() ? "\n\nCustomer message: \"" + message + "\"" : "";
-        return String.format("You have a new inquiry (Lead #%d):\n\nCustomer: %s | Mobile: %s%s\nProperty: %s | City: %s%s%s\n\nLog in to follow up. - %s Team",
-                leadId, customerName, mobile, emailLine, propTitle, city != null ? city : "N/A", priceLine, msgLine, APP);
+        String emailLine = email != null && !email.isBlank() ? " | " + email : "";
+        String priceLine = price != null ? String.format(" | ₹%,.0f", price) : "";
+        String msgLine = message != null && !message.isBlank() ? "\nMessage: \"" + message + "\"" : "";
+        return String.format("[%s] Lead #%d\nCustomer: %s | %s%s\nProperty: %s, %s%s%s\n\nLog in to respond. - %s Team",
+                APP, leadId, customerName, mobile, emailLine, propTitle, city != null ? city : "N/A", priceLine, msgLine, APP);
     }
 
-    // ─── Property Inquiry Confirmation (sent to customer) ────────────────────
+    // ─── Lead Created — Bank (Loan leads) ───────────────────────────────────
 
-    public static String propertyInquiryConfirmationSms(String name, String propTitle, String city) {
+    public static String bankLeadSms(String customerName, String mobile, Double loanAmount, String loanType, Long leadId) {
+        String amt = loanAmount != null ? String.format(" | ₹%,.0f", loanAmount) : "";
+        return String.format("[%s] Loan enquiry #%d: %s (%s) needs %s loan%s. - %s", APP, leadId, customerName, mobile, loanType != null ? loanType : "home", amt, APP);
+    }
+
+    public static String bankLeadEmailSubject(String customerName, Long leadId) {
+        return String.format("[%s] Loan Enquiry #%d – %s", APP, leadId, customerName);
+    }
+
+    public static String bankLeadEmailBody(String customerName, String mobile, String email, Double loanAmount,
+            Integer tenureYears, String loanType, String preferredBank, Long leadId) {
+        String emailLine = email != null && !email.isBlank() ? " | " + email : "";
+        String amt = loanAmount != null ? String.format("₹%,.0f", loanAmount) : "N/A";
+        String tenure = tenureYears != null ? tenureYears + " yrs" : "N/A";
+        return String.format("[%s] Loan Enquiry #%d\nApplicant: %s | %s%s\nLoan: %s | Amount: %s | Tenure: %s | Preferred Bank: %s\n\n- %s Team",
+                APP, leadId, customerName, mobile, emailLine,
+                loanType != null ? loanType : "HOME_LOAN", amt, tenure,
+                preferredBank != null && !preferredBank.isBlank() ? preferredBank : "Any", APP);
+    }
+
+    // ─── Lead Created — Legal / Service Provider (Legal leads) ──────────────
+
+    public static String legalLeadSms(String customerName, String mobile, String services, String city, Long leadId) {
+        return String.format("[%s] Legal enquiry #%d: %s (%s) needs '%s' in %s. - %s", APP, leadId, customerName, mobile, services != null ? services : "services", city != null ? city : "N/A", APP);
+    }
+
+    public static String legalLeadEmailSubject(String customerName, Long leadId) {
+        return String.format("[%s] Legal Enquiry #%d – %s", APP, leadId, customerName);
+    }
+
+    public static String legalLeadEmailBody(String customerName, String mobile, String email, String services,
+            String specifications, String city, Long leadId) {
+        String emailLine = email != null && !email.isBlank() ? " | " + email : "";
+        String specLine = specifications != null && !specifications.isBlank() ? "\nDetails: " + specifications : "";
+        return String.format("[%s] Legal Enquiry #%d\nClient: %s | %s%s\nServices: %s | City: %s%s\n\n- %s Team",
+                APP, leadId, customerName, mobile, emailLine,
+                services != null ? services : "N/A", city != null ? city : "N/A", specLine, APP);
+    }
+
+    // ─── Customer Confirmation ────────────────────────────────────────────────
+
+    public static String customerConfirmationSms(String name, String propTitle, String city) {
         return String.format("Hi %s, your inquiry for '%s' in %s is sent! The broker will contact you within 24 hrs. - %s", name, propTitle, city != null ? city : "N/A", APP);
     }
 
-    public static String propertyInquiryConfirmationEmailSubject(String propTitle) {
-        return String.format("Inquiry Sent – '%s' | %s", propTitle, APP);
+    public static String customerLoanConfirmationSms(String name, String loanType) {
+        return String.format("Hi %s, your %s loan enquiry is received! Our team will contact you shortly. - %s", name, loanType != null ? loanType : "loan", APP);
     }
 
-    public static String propertyInquiryConfirmationEmailBody(String name, String propTitle, String city, Double price) {
-        String priceLine = price != null ? String.format(" | Price: ₹%,.0f", price) : "";
-        return String.format("Hi %s,\n\nYour inquiry for '%s' in %s%s has been sent to the broker.\nThey will reach you within 24 hours.\n\n- %s Team",
+    public static String customerLegalConfirmationSms(String name, String services) {
+        return String.format("Hi %s, your enquiry for '%s' is received! Our team will contact you shortly. - %s", name, services != null ? services : "legal services", APP);
+    }
+
+    public static String customerConfirmationEmailSubject(String propTitle) {
+        return String.format("Enquiry Confirmed – '%s' | %s", propTitle, APP);
+    }
+
+    public static String customerConfirmationEmailBody(String name, String propTitle, String city, Double price) {
+        String priceLine = price != null ? String.format(" | ₹%,.0f", price) : "";
+        return String.format("Hi %s,\n\nYour enquiry for '%s' in %s%s has been sent. The broker will reach you within 24 hrs.\n\n- %s Team",
                 name, propTitle, city != null ? city : "N/A", priceLine, APP);
     }
 
-    // ─── Lead Status Update (broker updates lead status) ─────────────────────
+    public static String customerLoanConfirmationEmailSubject(String loanType) {
+        return String.format("Loan Enquiry Received – %s | %s", loanType != null ? loanType : "Home Loan", APP);
+    }
+
+    public static String customerLoanConfirmationEmailBody(String name, String loanType, Double loanAmount) {
+        String amt = loanAmount != null ? String.format(" of ₹%,.0f", loanAmount) : "";
+        return String.format("Hi %s,\n\nYour %s enquiry%s is received. Our team will contact you shortly to discuss next steps.\n\n- %s Team",
+                name, loanType != null ? loanType : "loan", amt, APP);
+    }
+
+    public static String customerLegalConfirmationEmailSubject(String services) {
+        return String.format("Enquiry Received – %s | %s", services != null ? services : "Legal Services", APP);
+    }
+
+    public static String customerLegalConfirmationEmailBody(String name, String services, String city) {
+        return String.format("Hi %s,\n\nYour enquiry for '%s' in %s is received. Our team will contact you shortly.\n\n- %s Team",
+                name, services != null ? services : "legal services", city != null ? city : "N/A", APP);
+    }
+
+    // ─── Lead Status Update (sent to customer) ───────────────────────────────
 
     public static String leadStatusUpdateSms(String customerName, String propTitle, String status) {
         return String.format("Hi %s, your inquiry for '%s' has been updated to: %s. - %s", customerName, propTitle, status, APP);
@@ -76,7 +144,7 @@ public class NotificationTemplates {
     }
 
     public static String leadStatusUpdateEmailBody(String customerName, String propTitle, String city, String status, String remark) {
-        String remarkLine = remark != null && !remark.isBlank() ? "\nBroker note: " + remark : "";
+        String remarkLine = remark != null && !remark.isBlank() ? "\nNote: " + remark : "";
         return String.format("Hi %s,\n\nYour inquiry for '%s' in %s has been updated.\nStatus: %s%s\n\n- %s Team",
                 customerName, propTitle, city != null ? city : "N/A", status, remarkLine, APP);
     }
