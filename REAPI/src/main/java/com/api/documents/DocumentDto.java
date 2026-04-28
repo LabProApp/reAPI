@@ -1,5 +1,7 @@
 package com.api.documents;
 
+import java.time.LocalDateTime;
+
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
 
@@ -25,6 +27,10 @@ public class DocumentDto extends BaseDto {
 	private String rejectionReason;
 
 	private String comments;
+
+	private Long uploadedBy;
+	private Long reviewedBy;
+	private LocalDateTime reviewedTs;
 
 	public Long getId() {
 		return id;
@@ -121,5 +127,14 @@ public class DocumentDto extends BaseDto {
 	public void setComments(String comments) {
 		this.comments = comments;
 	}
+
+	public Long getUploadedBy() { return uploadedBy; }
+	public void setUploadedBy(Long uploadedBy) { this.uploadedBy = uploadedBy; }
+
+	public Long getReviewedBy() { return reviewedBy; }
+	public void setReviewedBy(Long reviewedBy) { this.reviewedBy = reviewedBy; }
+
+	public LocalDateTime getReviewedTs() { return reviewedTs; }
+	public void setReviewedTs(LocalDateTime reviewedTs) { this.reviewedTs = reviewedTs; }
 
 }

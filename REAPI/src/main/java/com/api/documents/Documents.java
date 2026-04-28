@@ -1,5 +1,7 @@
 package com.api.documents;
 
+import java.time.LocalDateTime;
+
 import com.api.commons.BaseEntity;
 import com.api.enums.MasterEnums;
 
@@ -57,6 +59,18 @@ public class Documents extends BaseEntity {
 	// Optional:comments
 	@Column(length = 500)
 	private String comments;
+
+	// User who uploaded the document
+	@Column(name = "uploaded_by")
+	private Long uploadedBy;
+
+	// Admin/agent who reviewed (verified/rejected) the document
+	@Column(name = "reviewed_by")
+	private Long reviewedBy;
+
+	@Column(name = "reviewed_ts")
+	private LocalDateTime reviewedTs;
+
 	/* Getters & Setters */
 
 	public Long getId() {
@@ -146,5 +160,14 @@ public class Documents extends BaseEntity {
 	public void setS3key(String s3key) {
 		this.s3key = s3key;
 	}
+
+	public Long getUploadedBy() { return uploadedBy; }
+	public void setUploadedBy(Long uploadedBy) { this.uploadedBy = uploadedBy; }
+
+	public Long getReviewedBy() { return reviewedBy; }
+	public void setReviewedBy(Long reviewedBy) { this.reviewedBy = reviewedBy; }
+
+	public LocalDateTime getReviewedTs() { return reviewedTs; }
+	public void setReviewedTs(LocalDateTime reviewedTs) { this.reviewedTs = reviewedTs; }
 
 }

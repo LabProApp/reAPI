@@ -33,36 +33,20 @@ public class DocumentsController {
 		this.documentsService = documentsService;
 	}
 
-	// Upload documents
+	// ─── Generic upload (any objectType) ─────────────────────────────────────
+
 	@PostMapping("/uploadDocuments/{objectType}/{objectId}")
-	public ResponseEntity<List<DocumentDto>> uploadDocuments(@PathVariable String objectType,
-			@PathVariable Long objectId, @RequestParam("files") List<MultipartFile> files,
-			@RequestParam(value = "captions", required = false) List<String> captions) throws IOException {
-		log.info("POST /api/documents/uploadDocuments/{}/{} - Uploading {} file(s)",
-				objectType, objectId, files.size());
-		List<DocumentDto> uploadedDocs = documentsService.uploadDocuments(objectType, objectId, files, captions);
-		log.info("POST /api/documents/uploadDocuments/{}/{} - Successfully uploaded {} document(s)",
-				objectType, objectId, uploadedDocs.size());
-		return ResponseEntity.ok(uploadedDocs);
-	}
-
-	// Get documents by object
-	@GetMapping("/{objectType}/{objectId}")
-	public ResponseEntity<List<DocumentDto>> getDocuments(@PathVariable String objectType,
-			@PathVariable Long objectId) {
-		log.info("GET /api/documents/{}/{} - Fetching documents", objectType, objectId);
-		List<DocumentDto> dtos = documentsService.getDocumentsByObject(objectType, objectId);
-		log.info("GET /api/documents/{}/{} - Returned {} documents", objectType, objectId, dtos.size());
-		return ResponseEntity.ok(dtos);
-	}
-
-	// Delete a document
-	@DeleteMapping("/{id}")
-	public ResponseEntity<String> delete(@PathVariable Long id) {
-		log.info("DELETE /api/documents/{} - Deleting document", id);
-		documentsService.deleteDocument(id);
-		log.info("DELETE /api/documents/{} - Document deleted", id);
-		return ResponseEntity.ok("Deleted successfully");
+	public ResponseEntity<List<DocumentDto>> uploadDocuments(
+			@PathVariable String objectType,
+			@PathVariable Long objectId,
+			@RequestParam("files") List<MultipartFile> files,
+			@RequestParam(value = "titles", required = false) List<String> titles,
+			@RequestParam(value = "captions", required = false) List<String> captions,
+			@RequestParam(value = "uploadedBy", required = false) Long uploadedBy) throws IOException {
+		log.info("POST /api/documents/uploadDocuments/{}/{} - Uploading {} file(s)", objectType, objectId, files.size());
+		List<DocumentDto> docs = documentsService.uploadDocuments(objectType, objectId, files, titles, captions, uploadedBy);
+		log.info("POST /api/documents/uploadDocuments/{}/{} - Uploaded {} document(s)", objectType, objectId, docs.size());
+		return ResponseEntity.ok(docs);
 	}
 
 	// ─── Loan application document upload ────────────────────────────────────
@@ -72,9 +56,10 @@ public class DocumentsController {
 			@PathVariable Long objectId,
 			@RequestParam("files") List<MultipartFile> files,
 			@RequestParam(value = "titles", required = false) List<String> titles,
-			@RequestParam(value = "captions", required = false) List<String> captions) throws IOException {
+			@RequestParam(value = "captions", required = false) List<String> captions,
+			@RequestParam(value = "uploadedBy", required = false) Long uploadedBy) throws IOException {
 		log.info("POST /api/documents/upload/loan/{} - Uploading {} loan document(s)", objectId, files.size());
-		List<DocumentDto> docs = documentsService.uploadLoanDocuments(objectId, files, titles, captions);
+		List<DocumentDto> docs = documentsService.uploadDocuments("LOAN_DOCUMENT", objectId, files, titles, captions, uploadedBy);
 		log.info("POST /api/documents/upload/loan/{} - Uploaded {} document(s)", objectId, docs.size());
 		return ResponseEntity.ok(docs);
 	}
@@ -86,14 +71,25 @@ public class DocumentsController {
 			@PathVariable Long objectId,
 			@RequestParam("files") List<MultipartFile> files,
 			@RequestParam(value = "titles", required = false) List<String> titles,
-			@RequestParam(value = "captions", required = false) List<String> captions) throws IOException {
+			@RequestParam(value = "captions", required = false) List<String> captions,
+			@RequestParam(value = "uploadedBy", required = false) Long uploadedBy) throws IOException {
 		log.info("POST /api/documents/upload/legal/{} - Uploading {} legal document(s)", objectId, files.size());
-		List<DocumentDto> docs = documentsService.uploadLegalDocuments(objectId, files, titles, captions);
+		List<DocumentDto> docs = documentsService.uploadDocuments("LEGAL_DOCUMENT", objectId, files, titles, captions, uploadedBy);
 		log.info("POST /api/documents/upload/legal/{} - Uploaded {} document(s)", objectId, docs.size());
 		return ResponseEntity.ok(docs);
 	}
 
-	// ─── Fetch loan / legal documents ────────────────────────────────────────
+	// ─── Fetch documents ──────────────────────────────────────────────────────
+
+	@GetMapping("/{objectType}/{objectId}")
+	public ResponseEntity<List<DocumentDto>> getDocuments(
+			@PathVariable String objectType,
+			@PathVariable Long objectId) {
+		log.info("GET /api/documents/{}/{} - Fetching documents", objectType, objectId);
+		List<DocumentDto> dtos = documentsService.getDocumentsByObject(objectType, objectId);
+		log.info("GET /api/documents/{}/{} - Returned {} documents", objectType, objectId, dtos.size());
+		return ResponseEntity.ok(dtos);
+	}
 
 	@GetMapping("/loan/{objectId}")
 	public ResponseEntity<List<DocumentDto>> getLoanDocuments(@PathVariable Long objectId) {
@@ -111,20 +107,30 @@ public class DocumentsController {
 		return ResponseEntity.ok(docs);
 	}
 
+	// ─── Delete ───────────────────────────────────────────────────────────────
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<String> delete(@PathVariable Long id) {
+		log.info("DELETE /api/documents/{} - Deleting document", id);
+		documentsService.deleteDocument(id);
+		log.info("DELETE /api/documents/{} - Document deleted", id);
+		return ResponseEntity.ok("Deleted successfully");
+	}
+
 	// ─── Admin: verify / reject a document ───────────────────────────────────
 
 	@PutMapping("/{id}/status")
 	public ResponseEntity<DocumentDto> updateStatus(
 			@PathVariable Long id,
 			@RequestBody DocumentStatusRequest req) {
-		log.info("PUT /api/documents/{}/status - Updating status to {}", id, req.getStatus());
-		DocumentDto updated = documentsService.updateDocumentStatus(id, req.getStatus(),
-				req.getRejectionReason(), req.getComments());
-		log.info("PUT /api/documents/{}/status - Status updated to {}", id, updated.getDocumentStatus());
+		log.info("PUT /api/documents/{}/status - status={}, reviewedBy={}", id, req.getStatus(), req.getReviewedBy());
+		DocumentDto updated = documentsService.updateDocumentStatus(
+				id, req.getStatus(), req.getRejectionReason(), req.getComments(), req.getReviewedBy());
+		log.info("PUT /api/documents/{}/status - Updated to {}", id, updated.getDocumentStatus());
 		return ResponseEntity.ok(updated);
 	}
 
-	// ─── Admin: all pending (NOT_VERIFIED) documents ─────────────────────────
+	// ─── Admin: pending (NOT_VERIFIED) documents ──────────────────────────────
 
 	@GetMapping("/pending")
 	public ResponseEntity<List<DocumentDto>> getPendingDocuments() {
@@ -152,6 +158,7 @@ public class DocumentsController {
 		private MasterEnums.DocumentStatus status;
 		private String rejectionReason;
 		private String comments;
+		private Long reviewedBy;
 
 		public MasterEnums.DocumentStatus getStatus() { return status; }
 		public void setStatus(MasterEnums.DocumentStatus status) { this.status = status; }
@@ -159,5 +166,7 @@ public class DocumentsController {
 		public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 		public String getComments() { return comments; }
 		public void setComments(String comments) { this.comments = comments; }
+		public Long getReviewedBy() { return reviewedBy; }
+		public void setReviewedBy(Long reviewedBy) { this.reviewedBy = reviewedBy; }
 	}
 }
