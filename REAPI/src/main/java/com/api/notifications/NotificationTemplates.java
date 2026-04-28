@@ -4,54 +4,6 @@ public class NotificationTemplates {
 
     private static final String APP = "KeyBricks";
 
-    // ─── Inquiry Confirmed ───────────────────────────────────────────────────
-
-    public static String inquiryConfirmationSms(String name, String type, Long id) {
-        return String.format("Hi %s, your %s inquiry INQ-%d is confirmed. We'll contact you within 24 hrs. - %s", name, type, id, APP);
-    }
-
-    public static String inquiryConfirmationEmailSubject(String type, Long id) {
-        return String.format("Inquiry Confirmed – INQ-%d | %s", id, type);
-    }
-
-    public static String inquiryConfirmationEmailBody(String name, String type, Long id, String city, Double budget, Double loanAmount) {
-        String budgetLine = budget != null ? String.format(", Budget: ₹%,.0f", budget) : "";
-        String loanLine = loanAmount != null ? String.format(", Loan: ₹%,.0f", loanAmount) : "";
-        String cityLine = city != null && !city.isBlank() ? ", City: " + city : "";
-        return String.format("Hi %s,\n\nYour %s inquiry (INQ-%d) is confirmed%s%s%s.\nOur team will reach out within 24 hours.\n\n- %s Team", name, type, id, cityLine, budgetLine, loanLine, APP);
-    }
-
-    // ─── Admin Alert ─────────────────────────────────────────────────────────
-
-    public static String inquiryAdminAlertSms(String name, String mobile, String type, String city, Long id) {
-        return String.format("[%s] New INQ-%d: %s (%s), Type: %s, City: %s", APP, id, name, mobile, type, city != null ? city : "N/A");
-    }
-
-    public static String inquiryAdminAlertEmailSubject(String name, Long id) {
-        return String.format("[New Inquiry] INQ-%d | %s", id, name);
-    }
-
-    public static String inquiryAdminAlertEmailBody(String name, String mobile, String email, String type, String city, Double budget, Long id) {
-        String budgetLine = budget != null ? String.format(" | Budget: ₹%,.0f", budget) : "";
-        String emailLine = email != null && !email.isBlank() ? " | Email: " + email : "";
-        return String.format("New inquiry received:\nRef: INQ-%d | Name: %s | Mobile: %s%s\nType: %s | City: %s%s\n\nLog in to assign.", id, name, mobile, emailLine, type, city != null ? city : "N/A", budgetLine);
-    }
-
-    // ─── Inquiry Status Update ───────────────────────────────────────────────
-
-    public static String inquiryStatusSms(String name, Long id, String status) {
-        return String.format("Hi %s, your inquiry INQ-%d status is now %s. - %s", name, id, status, APP);
-    }
-
-    public static String inquiryStatusEmailSubject(Long id) {
-        return String.format("Inquiry Update – INQ-%d", id);
-    }
-
-    public static String inquiryStatusEmailBody(String name, Long id, String status, String agentName) {
-        String agentLine = agentName != null && !agentName.isBlank() ? " Agent: " + agentName + "." : "";
-        return String.format("Hi %s,\n\nYour inquiry INQ-%d has been updated: Status → %s.%s\n\n- %s Team", name, id, status, agentLine, APP);
-    }
-
     // ─── Property Share ──────────────────────────────────────────────────────
 
     public static String propertyShareSms(String senderName, String title, String location, String city,

@@ -1,7 +1,7 @@
 package com.api.notifications;
 
-import com.api.inquiry.Inquiry;
-import com.api.inquiry.InquiryRepository;
+import com.api.leads.ClientLead;
+import com.api.leads.ClientLeadRepository;
 import com.api.user.User;
 import com.api.user.UserRepository;
 
@@ -27,16 +27,16 @@ public class NotificationController {
     private final CommService commService;
     private final WhatsAppService whatsAppService;
     private final NotificationService notificationService;
-    private final InquiryRepository inquiryRepository;
+    private final ClientLeadRepository leadRepository;
     private final UserRepository userRepository;
 
     public NotificationController(CommService commService, WhatsAppService whatsAppService,
-            NotificationService notificationService, InquiryRepository inquiryRepository,
+            NotificationService notificationService, ClientLeadRepository leadRepository,
             UserRepository userRepository) {
         this.commService = commService;
         this.whatsAppService = whatsAppService;
         this.notificationService = notificationService;
-        this.inquiryRepository = inquiryRepository;
+        this.leadRepository = leadRepository;
         this.userRepository = userRepository;
     }
 
@@ -44,54 +44,77 @@ public class NotificationController {
 
     @PostMapping("/sms")
     public ResponseEntity<String> sendSms(@Valid @RequestBody SmsRequest req) {
-        log.info("POST /api/notifications/sms - Sending SMS to mobile={}", req.getMobile());
+        log.info("POST /api/notifications/sms - mobile={}", req.getMobile());
         commService.sendSMSMessage(req.getMobile(), req.getMessage());
         return ResponseEntity.ok("SMS dispatched to " + req.getMobile());
     }
 
     @PostMapping("/email")
     public ResponseEntity<String> sendEmail(@Valid @RequestBody EmailRequest req) {
-        log.info("POST /api/notifications/email - Sending email to={}", req.getEmail());
+        log.info("POST /api/notifications/email - to={}", req.getEmail());
         commService.sendEmail(req.getEmail(), req.getBody(), req.getSubject());
         return ResponseEntity.ok("Email dispatched to " + req.getEmail());
     }
 
     @PostMapping("/whatsapp")
     public ResponseEntity<String> sendWhatsApp(@Valid @RequestBody WhatsAppRequest req) {
-        log.info("POST /api/notifications/whatsapp - Sending WhatsApp to mobile={}", req.getMobile());
+        log.info("POST /api/notifications/whatsapp - mobile={}", req.getMobile());
         whatsAppService.sendMessage("+91" + req.getMobile(), req.getMessage());
         return ResponseEntity.ok("WhatsApp dispatched to " + req.getMobile());
     }
 
-    // ─── Inquiry template triggers ────────────────────────────────────────────
+    // ─── Lead notification re-triggers ───────────────────────────────────────
 
-    @PostMapping("/inquiry/{id}/created")
-    public ResponseEntity<String> notifyInquiryCreated(@PathVariable Long id) {
-        log.info("POST /api/notifications/inquiry/{}/created - Re-triggering inquiry created notification", id);
-        Inquiry inquiry = inquiryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inquiry not found: " + id));
-        notificationService.notifyInquiryCreated(inquiry);
-        return ResponseEntity.ok("Inquiry created notification dispatched for INQ-" + id);
+    @PostMapping("/lead/{id}/inquiry")
+    public ResponseEntity<String> retriggerLeadInquiry(@PathVariable Long id) {
+        log.info("POST /api/notifications/lead/{}/inquiry - Re-triggering inquiry notification", id);
+        ClientLead lead = leadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lead not found: " + id));
+        String[] brokerContact = resolveContact(lead.getBrokerId());
+        String[] ownerContact = resolveContact(lead.getPropertyOwnerId());
+        notificationService.notifyPropertyInquiry(
+                lead.getId(),
+                lead.getClientName(), lead.getMobile(), lead.getEmail(),
+                lead.getPropertyTitle(), lead.getPropertyCity(), lead.getPropertyPrice(),
+                brokerContact[0], brokerContact[1],
+                ownerContact[0], ownerContact[1],
+                lead.getBudget(), lead.getMessage(), false);
+        return ResponseEntity.ok("Inquiry notification re-triggered for lead #" + id);
     }
 
-    @PostMapping("/inquiry/{id}/status")
-    public ResponseEntity<String> notifyInquiryStatus(@PathVariable Long id) {
-        log.info("POST /api/notifications/inquiry/{}/status - Re-triggering inquiry status notification", id);
-        Inquiry inquiry = inquiryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inquiry not found: " + id));
-        notificationService.notifyInquiryStatusUpdated(inquiry);
-        return ResponseEntity.ok("Inquiry status notification dispatched for INQ-" + id);
+    @PostMapping("/lead/{id}/status")
+    public ResponseEntity<String> retriggerLeadStatus(@PathVariable Long id) {
+        log.info("POST /api/notifications/lead/{}/status - Re-triggering status notification", id);
+        ClientLead lead = leadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lead not found: " + id));
+        notificationService.notifyLeadStatusUpdated(
+                lead.getClientName(), lead.getMobile(), lead.getEmail(),
+                lead.getPropertyTitle(), lead.getPropertyCity(),
+                lead.getStatus() != null ? lead.getStatus().name() : "UPDATED",
+                lead.getRemark());
+        return ResponseEntity.ok("Status notification re-triggered for lead #" + id);
     }
 
-    // ─── User template triggers ───────────────────────────────────────────────
+    // ─── User notification triggers ───────────────────────────────────────────
 
     @PostMapping("/user/{id}/welcome")
     public ResponseEntity<String> notifyWelcome(@PathVariable Long id) {
-        log.info("POST /api/notifications/user/{}/welcome - Re-triggering welcome notification", id);
+        log.info("POST /api/notifications/user/{}/welcome", id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
         notificationService.notifyWelcome(user);
         return ResponseEntity.ok("Welcome notification dispatched for userId=" + id);
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private String[] resolveContact(Long userId) {
+        if (userId == null) return new String[]{"", ""};
+        return userRepository.findById(userId)
+                .map(u -> new String[]{
+                        u.getEmail() != null ? u.getEmail() : "",
+                        u.getMobile() != null ? u.getMobile() : ""})
+                .orElse(new String[]{"", ""});
     }
 
     // ─── Request DTOs ─────────────────────────────────────────────────────────

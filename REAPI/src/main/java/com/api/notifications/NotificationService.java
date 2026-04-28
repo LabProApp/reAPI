@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.api.inquiry.Inquiry;
 import com.api.prop.PropertyDto;
 import com.api.prop.SharePropertyRequest;
 import com.api.user.User;
@@ -27,64 +26,6 @@ public class NotificationService {
     public NotificationService(CommService commService, WhatsAppService whatsAppService) {
         this.commService = commService;
         this.whatsAppService = whatsAppService;
-    }
-
-    // ─── Inquiry Created ──────────────────────────────────────────────────────
-
-    @Async
-    public void notifyInquiryCreated(Inquiry inquiry) {
-        String name = inquiry.getApplicantName();
-        String mobile = inquiry.getMobileNumber();
-        String email = inquiry.getEmail();
-        String type = inquiry.getInquiryType() != null ? inquiry.getInquiryType().name() : "General";
-        String city = inquiry.getPropertyCity();
-        Double budget = inquiry.getBudget();
-        Long id = inquiry.getId();
-
-        log.info("notifyInquiryCreated - Dispatching notifications for inquiryId={}", id);
-
-        if (hasValue(mobile)) {
-            commService.sendSMSMessage(mobile,
-                NotificationTemplates.inquiryConfirmationSms(name, type, id));
-        }
-        if (hasValue(email)) {
-            commService.sendEmail(email,
-                NotificationTemplates.inquiryConfirmationEmailBody(name, type, id, city, budget, inquiry.getRequiredLoanAmount()),
-                NotificationTemplates.inquiryConfirmationEmailSubject(type, id));
-        }
-
-        if (hasValue(adminEmail)) {
-            commService.sendEmail(adminEmail,
-                NotificationTemplates.inquiryAdminAlertEmailBody(name, mobile, email, type, city, budget, id),
-                NotificationTemplates.inquiryAdminAlertEmailSubject(name, id));
-        }
-        if (hasValue(adminMobile)) {
-            commService.sendSMSMessage(adminMobile,
-                NotificationTemplates.inquiryAdminAlertSms(name, mobile, type, city, id));
-        }
-    }
-
-    // ─── Inquiry Status Updated ───────────────────────────────────────────────
-
-    @Async
-    public void notifyInquiryStatusUpdated(Inquiry inquiry) {
-        String name = inquiry.getApplicantName();
-        String mobile = inquiry.getMobileNumber();
-        String email = inquiry.getEmail();
-        String status = inquiry.getInquiryStatus() != null ? inquiry.getInquiryStatus().name() : "UPDATED";
-        Long id = inquiry.getId();
-
-        log.info("notifyInquiryStatusUpdated - Dispatching status notifications for inquiryId={}", id);
-
-        if (hasValue(mobile)) {
-            commService.sendSMSMessage(mobile,
-                NotificationTemplates.inquiryStatusSms(name, id, status));
-        }
-        if (hasValue(email)) {
-            commService.sendEmail(email,
-                NotificationTemplates.inquiryStatusEmailBody(name, id, status, inquiry.getAssignedAgentName()),
-                NotificationTemplates.inquiryStatusEmailSubject(id));
-        }
     }
 
     // ─── Property Shared ─────────────────────────────────────────────────────
