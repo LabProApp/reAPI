@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.api.enums.MasterEnums;
+import com.api.notifications.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,10 +18,13 @@ public class InquiryService {
 
 	private final InquiryRepository repository;
 	private final ModelMapper mapper;
+	private final NotificationService notificationService;
 
-	public InquiryService(InquiryRepository repository, ModelMapper mapper) {
+	public InquiryService(InquiryRepository repository, ModelMapper mapper,
+			NotificationService notificationService) {
 		this.repository = repository;
 		this.mapper = mapper;
+		this.notificationService = notificationService;
 	}
 
 	public InquiryDto create(InquiryDto dto) {
@@ -37,6 +41,7 @@ public class InquiryService {
 
 		Inquiry saved = repository.save(entity);
 		log.info("create - Inquiry created with id={}", saved.getId());
+		notificationService.notifyInquiryCreated(saved);
 		return mapper.map(saved, InquiryDto.class);
 	}
 
@@ -78,6 +83,7 @@ public class InquiryService {
 
 		Inquiry updated = repository.save(entity);
 		log.info("update - Inquiry id={} updated successfully", id);
+		notificationService.notifyInquiryStatusUpdated(updated);
 		return mapper.map(updated, InquiryDto.class);
 	}
 

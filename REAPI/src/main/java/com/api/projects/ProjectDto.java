@@ -21,6 +21,10 @@ public class ProjectDto extends BaseDto{
 
     private String propertyType;
 
+    private Double landArea;
+    private Integer totalTowers;
+    private Integer totalUnits;
+
     private Double rating;
     private LocalDate possessionDate;
 	public Long getId() {
@@ -88,6 +92,24 @@ public class ProjectDto extends BaseDto{
 	}
 	public void setPropertyType(String propertyType) {
 		this.propertyType = propertyType;
+	}
+	public Double getLandArea() {
+		return landArea;
+	}
+	public void setLandArea(Double landArea) {
+		this.landArea = landArea;
+	}
+	public Integer getTotalTowers() {
+		return totalTowers;
+	}
+	public void setTotalTowers(Integer totalTowers) {
+		this.totalTowers = totalTowers;
+	}
+	public Integer getTotalUnits() {
+		return totalUnits;
+	}
+	public void setTotalUnits(Integer totalUnits) {
+		this.totalUnits = totalUnits;
 	}
 	public Double getRating() {
 		return rating;

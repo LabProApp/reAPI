@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.api.enums.MasterEnums;
 import com.api.notifications.CommService;
+import com.api.notifications.NotificationService;
 import com.api.prop.Property;
 import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
@@ -27,14 +28,17 @@ public class UserService {
 	private final PropertyRepository propertyRepository;
 	private final UserPropertyRelationRepository propertyRelationRepository;
 	private final CommService commService;
+	private final NotificationService notificationService;
 	private final ModelMapper mapper;
 
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
-			UserPropertyRelationRepository propertyRelationRepository, CommService commService, ModelMapper mapper) {
+			UserPropertyRelationRepository propertyRelationRepository, CommService commService,
+			NotificationService notificationService, ModelMapper mapper) {
 		this.userRepository = userRepository;
 		this.propertyRepository = propertyRepository;
 		this.propertyRelationRepository = propertyRelationRepository;
 		this.commService = commService;
+		this.notificationService = notificationService;
 		this.mapper = mapper;
 	}
 
@@ -111,6 +115,7 @@ public class UserService {
 		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
 		user.setIsVerified(true);
 		userRepository.save(user);
+		notificationService.notifyWelcome(user);
 		log.info("verifyOtp - User verified successfully, id={}", user.getId());
 		return ResponseEntity.ok("OTP verified! User activated.");
 	}

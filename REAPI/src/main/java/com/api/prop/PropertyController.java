@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.commons.ResourceNotFoundException;
-import com.api.documents.DocumentsService;
+import com.api.notifications.NotificationService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,6 +29,9 @@ public class PropertyController {
 
 	@Autowired
 	private PropertyService service;
+
+	@Autowired
+	private NotificationService notificationService;
 
 
 	@PostMapping("/add")
@@ -102,6 +105,18 @@ public class PropertyController {
 				maxBathrooms, minArea, maxArea, amenity, rentOrSale, postDate, postedByUser);
 		log.info("GET /api/property/advancedsearch - Returned {} results", results.size());
 		return ResponseEntity.ok(results);
+	}
+
+	@PostMapping("/{id}/share")
+	public ResponseEntity<Void> shareProperty(@PathVariable Long id,
+			@Valid @RequestBody SharePropertyRequest request) {
+		log.info("POST /api/property/{}/share - Sharing with to={}", id,
+				request.getToEmail() != null ? request.getToEmail() : request.getToMobile());
+		PropertyDto property = service.getPropertyById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
+		notificationService.notifyPropertyShared(property, request);
+		log.info("POST /api/property/{}/share - Share notification dispatched", id);
+		return ResponseEntity.ok().build();
 	}
 
 }

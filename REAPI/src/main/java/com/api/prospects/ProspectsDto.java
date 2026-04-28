@@ -18,6 +18,7 @@ public class ProspectsDto extends BaseDto{
 	private MasterEnums.InquiryStatus status = MasterEnums.InquiryStatus.NEW; // Default to NEW
 	private String documentServicesRequired; // e.g., "Contract Drafting"
 	private String propertyType; // e.g., "Apartment, Villa"
+	private Double budget;
 	private Double minBudget;
 	private Double maxBudget;
 	private String specifications; // e.g., "3 BHK, 2 Bathrooms, Garden"
@@ -117,6 +118,14 @@ public class ProspectsDto extends BaseDto{
 
 	public void setPropertyType(String propertyType) {
 		this.propertyType = propertyType;
+	}
+
+	public Double getBudget() {
+		return budget;
+	}
+
+	public void setBudget(Double budget) {
+		this.budget = budget;
 	}
 
 	public Double getMinBudget() {

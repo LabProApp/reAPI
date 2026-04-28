@@ -1,8 +1,8 @@
 package com.api.banks;
 
-import com.api.commons.BaseEntity;
+import com.api.commons.BaseDto;
 
-public class InterestRatesDto extends BaseEntity {
+public class InterestRatesDto extends BaseDto {
 
 	private Long id;
 	private Integer minCibil;

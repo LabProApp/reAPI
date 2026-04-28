@@ -33,6 +33,7 @@ public class ProspectsController {
 		prospect.setStatus(dto.getStatus());
 		prospect.setDocumentServicesRequired(dto.getDocumentServicesRequired());
 		prospect.setPropertyType(dto.getPropertyType());
+		prospect.setBudget(dto.getBudget());
 		prospect.setMinBudget(dto.getMinBudget());
 		prospect.setMaxBudget(dto.getMaxBudget());
 		prospect.setSpecifications(dto.getSpecifications());
