@@ -9,10 +9,11 @@ public class DocumentDto extends BaseDto {
 	private String docUrl;
 	private String s3key;
 	private String filename;
+	private String title;
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	private String docType;
 
-	// Generic category: USER, PROPERTY, etc.
+	// Generic category: USER, PROPERTY, LOAN_DOCUMENT, LEGAL_DOCUMENT, etc.
 	private String objectType;
 
 	// Generic ID pointing to any table
@@ -87,6 +88,14 @@ public class DocumentDto extends BaseDto {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public MasterEnums.DocumentStatus getDocumentStatus() {

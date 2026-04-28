@@ -7,9 +7,10 @@ public class DocumentminDto {
 	private Long id;
 	private String docUrl;
 	private String s3key;
+	private String title;
 	// IMAGE, VIDEO, PDF, DOC, etc.
 	private String docType;
-	// Generic category: USER, PROPERTY, etc.
+	// Generic category: USER, PROPERTY, LOAN_DOCUMENT, LEGAL_DOCUMENT, etc.
 	private String objectType;
 	// Generic ID pointing to any table
 	private Long objectId;
@@ -32,6 +33,14 @@ public class DocumentminDto {
 
 	public void setDocUrl(String docUrl) {
 		this.docUrl = docUrl;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getDocType() {

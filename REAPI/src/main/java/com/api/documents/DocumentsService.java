@@ -140,6 +140,93 @@ public class DocumentsService {
 		}).collect(Collectors.toList());
 	}
 
+	// ─── Loan document upload ────────────────────────────────────────────────
+
+	public List<DocumentDto> uploadLoanDocuments(Long objectId, List<MultipartFile> files,
+			List<String> titles, List<String> captions) throws IOException {
+		log.info("uploadLoanDocuments - Uploading {} file(s) for objectId={}", files.size(), objectId);
+		return uploadDocumentsTyped("LOAN_DOCUMENT", objectId, files, titles, captions);
+	}
+
+	// ─── Legal document upload ────────────────────────────────────────────────
+
+	public List<DocumentDto> uploadLegalDocuments(Long objectId, List<MultipartFile> files,
+			List<String> titles, List<String> captions) throws IOException {
+		log.info("uploadLegalDocuments - Uploading {} file(s) for objectId={}", files.size(), objectId);
+		return uploadDocumentsTyped("LEGAL_DOCUMENT", objectId, files, titles, captions);
+	}
+
+	private List<DocumentDto> uploadDocumentsTyped(String objectType, Long objectId,
+			List<MultipartFile> files, List<String> titles, List<String> captions) throws IOException {
+		List<DocumentDto> result = new ArrayList<>();
+		for (int i = 0; i < files.size(); i++) {
+			MultipartFile file = files.get(i);
+			String title = (titles != null && titles.size() > i) ? titles.get(i) : null;
+			String caption = (captions != null && captions.size() > i) ? captions.get(i) : null;
+			String docType = DocTypeDetector.detect(file.getContentType());
+			log.debug("uploadDocumentsTyped - file[{}]: name={}, title={}, objectType={}", i, file.getOriginalFilename(), title, objectType);
+
+			String sanitizedFilename = file.getOriginalFilename() != null
+					? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "") : "file";
+			String key = s3Service.uploadFile(file, objectType);
+
+			Documents doc = new Documents();
+			doc.setS3key(key);
+			doc.setFilename(sanitizedFilename);
+			doc.setTitle(title);
+			doc.setDocType(docType);
+			doc.setCaption(caption);
+			doc.setObjectType(objectType);
+			doc.setObjectId(objectId);
+			doc.setDocumentStatus(MasterEnums.DocumentStatus.NOT_VERIFIED);
+
+			Documents saved = documentsRepository.save(doc);
+			log.info("uploadDocumentsTyped - Saved doc id={}, title={}, key={}", saved.getId(), title, key);
+			result.add(mapper.map(saved, DocumentDto.class));
+		}
+		return result;
+	}
+
+	// ─── Status update ────────────────────────────────────────────────────────
+
+	// ─── Fetch by status ─────────────────────────────────────────────────────
+
+	public List<DocumentDto> getPendingDocuments() {
+		log.info("getPendingDocuments - Fetching all NOT_VERIFIED documents");
+		List<Documents> docs = documentsRepository.findByDocumentStatus(MasterEnums.DocumentStatus.NOT_VERIFIED);
+		log.info("getPendingDocuments - Found {} NOT_VERIFIED documents", docs.size());
+		return docs.stream().map(doc -> {
+			DocumentDto dto = mapper.map(doc, DocumentDto.class);
+			if (doc.getS3key() != null && !doc.getS3key().isBlank()) {
+				try {
+					dto.setDocUrl(s3Service.generatePresignedUrl(doc.getS3key()));
+				} catch (Exception e) {
+					log.error("getPendingDocuments - Failed to generate presigned URL for key={}: {}", doc.getS3key(), e.getMessage());
+				}
+			}
+			return dto;
+		}).collect(Collectors.toList());
+	}
+
+	public List<DocumentDto> getDocumentsByObjectAndStatus(String objectType, Long objectId,
+			MasterEnums.DocumentStatus status) {
+		log.info("getDocumentsByObjectAndStatus - objectType={}, objectId={}, status={}", objectType, objectId, status);
+		List<Documents> docs = documentsRepository
+				.findByObjectTypeIgnoreCaseAndObjectIdAndDocumentStatus(objectType, objectId, status);
+		log.info("getDocumentsByObjectAndStatus - Found {} documents", docs.size());
+		return docs.stream().map(doc -> {
+			DocumentDto dto = mapper.map(doc, DocumentDto.class);
+			if (doc.getS3key() != null && !doc.getS3key().isBlank()) {
+				try {
+					dto.setDocUrl(s3Service.generatePresignedUrl(doc.getS3key()));
+				} catch (Exception e) {
+					log.error("getDocumentsByObjectAndStatus - Presigned URL failed for key={}: {}", doc.getS3key(), e.getMessage());
+				}
+			}
+			return dto;
+		}).collect(Collectors.toList());
+	}
+
 	// Get all documents by objectType and objectId
 	public List<DocumentminDto> getminDocumentsByObject(String objectType, Long objectId) {
 		if (objectType == null || objectId == null) {

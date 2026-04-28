@@ -30,6 +30,10 @@ public class Documents extends BaseEntity {
 	@Column(nullable = false, length = 256)
 	private String filename;
 
+	// Formal document name e.g. "Aadhaar Card", "PAN Card", "Title Deed"
+	@Column(length = 150)
+	private String title;
+
 	@Column(nullable = false, length = 20)
 	private String docType;
 
@@ -69,6 +73,14 @@ public class Documents extends BaseEntity {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getDocType() {

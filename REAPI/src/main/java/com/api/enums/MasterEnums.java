@@ -35,7 +35,7 @@ public final class MasterEnums implements BaseEnum {
 	@Getter
 
 	public enum DocumentStatus {
-		PENDING, VERIFIED, REOPEN, CANCELLED, DELETED, REJECTED;
+		NOT_VERIFIED, PENDING, VERIFIED, REOPEN, CANCELLED, DELETED, REJECTED;
 
 	}
 
