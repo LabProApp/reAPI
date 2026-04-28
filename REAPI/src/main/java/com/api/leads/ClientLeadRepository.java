@@ -19,9 +19,13 @@ public interface ClientLeadRepository extends JpaRepository<ClientLead, Long> {
 
 	List<ClientLead> findByPropertyOwnerId(Long propertyOwnerId);
 
+	List<ClientLead> findByLeadType(MasterEnums.InquiryType leadType);
+
 	List<ClientLead> findByStatus(MasterEnums.LeadStatus status);
 
 	List<ClientLead> findByBrokerIdAndStatusIn(Long brokerId, List<MasterEnums.LeadStatus> status);
+
+	List<ClientLead> findByBrokerIdAndLeadType(Long brokerId, MasterEnums.InquiryType leadType);
 
 	List<ClientLead> findByBrokerIdAndInquiryDateBetween(Long brokerId, LocalDateTime start, LocalDateTime end);
 

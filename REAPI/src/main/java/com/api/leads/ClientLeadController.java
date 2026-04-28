@@ -18,13 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.api.enums.MasterEnums;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/leads")
-@Tag(name = "Client Leads APIs", description = "Customer-property engagement and broker CRM")
+@Tag(name = "Client Leads APIs", description = "Unified lead management — property, rental, loan, and legal service leads")
 public class ClientLeadController {
 
 	private final ClientLeadService service;
@@ -33,61 +34,70 @@ public class ClientLeadController {
 		this.service = service;
 	}
 
-	// ─── Create inquiry (customer → property) ────────────────────────────────
+	// ─── Create a new lead ────────────────────────────────────────────────────
 
 	@PostMapping
-	public ResponseEntity<ClientLeadDTO> create(@RequestBody ClientLeadDTO dto) {
-		log.info("POST /api/leads - userId={}, propertyId={}", dto.getUserId(), dto.getPropertyId());
+	public ResponseEntity<ClientLeadDTO> create(@Valid @RequestBody ClientLeadDTO dto) {
+		log.info("POST /api/leads - leadType={}, userId={}, propertyId={}", dto.getLeadType(), dto.getUserId(), dto.getPropertyId());
 		ClientLeadDTO created = service.createLead(dto);
-		log.info("POST /api/leads - Lead created id={}", created.getId());
+		log.info("POST /api/leads - Created id={}", created.getId());
 		return ResponseEntity.ok(created);
 	}
 
-	// ─── Update full lead (broker CRM update) ────────────────────────────────
+	// ─── Full update (broker CRM) ─────────────────────────────────────────────
 
 	@PutMapping("/{id}")
 	public ResponseEntity<ClientLeadDTO> update(@PathVariable Long id, @RequestBody ClientLeadDTO dto) {
-		log.info("PUT /api/leads/{} - Updating lead", id);
-		ClientLeadDTO updated = service.updateLead(id, dto);
-		log.info("PUT /api/leads/{} - Lead updated", id);
-		return ResponseEntity.ok(updated);
+		log.info("PUT /api/leads/{}", id);
+		return ResponseEntity.ok(service.updateLead(id, dto));
 	}
 
-	// ─── Update status only ───────────────────────────────────────────────────
+	// ─── Status transition ────────────────────────────────────────────────────
 
 	@PutMapping("/{id}/status")
 	public ResponseEntity<ClientLeadDTO> updateStatus(
-			@PathVariable Long id,
-			@RequestBody LeadStatusRequest req) {
-		log.info("PUT /api/leads/{}/status - status={}", id, req.getStatus());
-		ClientLeadDTO updated = service.updateStatus(id, req.getStatus(), req.getRemark());
-		log.info("PUT /api/leads/{}/status - Updated to {}", id, updated.getStatus());
-		return ResponseEntity.ok(updated);
+			@PathVariable Long id, @RequestBody LeadStatusRequest req) {
+		log.info("PUT /api/leads/{}/status - {}", id, req.getStatus());
+		return ResponseEntity.ok(service.updateStatus(id, req.getStatus(), req.getRemark()));
 	}
 
-	// ─── Schedule follow-up ───────────────────────────────────────────────────
+	// ─── Assign agent ─────────────────────────────────────────────────────────
+
+	@PutMapping("/{id}/assign")
+	public ResponseEntity<ClientLeadDTO> assignAgent(
+			@PathVariable Long id, @RequestBody AgentAssignRequest req) {
+		log.info("PUT /api/leads/{}/assign - agentId={}", id, req.getAgentId());
+		return ResponseEntity.ok(service.assignAgent(id, req.getAgentId(), req.getAgentName()));
+	}
+
+	// ─── Record loan approval ─────────────────────────────────────────────────
+
+	@PutMapping("/{id}/approval")
+	public ResponseEntity<ClientLeadDTO> updateApproval(
+			@PathVariable Long id, @RequestBody ApprovalRequest req) {
+		log.info("PUT /api/leads/{}/approval - bank={}", id, req.getApprovedBank());
+		return ResponseEntity.ok(service.updateApproval(
+				id, req.getApprovedBank(), req.getApprovedLoanAmount(), req.getApprovedInterestRate()));
+	}
+
+	// ─── Follow-up scheduling ─────────────────────────────────────────────────
 
 	@PutMapping("/{id}/followup")
 	public ResponseEntity<ClientLeadDTO> scheduleFollowUp(
-			@PathVariable Long id,
-			@RequestBody FollowUpRequest req) {
-		log.info("PUT /api/leads/{}/followup - followUpDate={}", id, req.getFollowUpDate());
-		ClientLeadDTO updated = service.scheduleFollowUp(id, req.getFollowUpDate(), req.getRemark());
-		log.info("PUT /api/leads/{}/followup - Follow-up scheduled", id);
-		return ResponseEntity.ok(updated);
+			@PathVariable Long id, @RequestBody FollowUpRequest req) {
+		log.info("PUT /api/leads/{}/followup - date={}", id, req.getFollowUpDate());
+		return ResponseEntity.ok(service.scheduleFollowUp(id, req.getFollowUpDate(), req.getRemark()));
 	}
 
 	// ─── Fetch by ID ─────────────────────────────────────────────────────────
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ClientLeadDTO> getById(@PathVariable Long id) {
-		log.info("GET /api/leads/{}", id);
 		return ResponseEntity.ok(service.getById(id));
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		log.info("DELETE /api/leads/{}", id);
 		service.delete(id);
 		return ResponseEntity.noContent().build();
 	}
@@ -96,54 +106,48 @@ public class ClientLeadController {
 
 	@GetMapping("/user/{userId}")
 	public ResponseEntity<List<ClientLeadDTO>> getByUser(@PathVariable Long userId) {
-		log.info("GET /api/leads/user/{}", userId);
-		List<ClientLeadDTO> leads = service.getByUserId(userId);
-		log.info("GET /api/leads/user/{} - Returned {} leads", userId, leads.size());
-		return ResponseEntity.ok(leads);
+		return ResponseEntity.ok(service.getByUserId(userId));
 	}
 
 	// ─── Fetch by property ────────────────────────────────────────────────────
 
 	@GetMapping("/property/{propertyId}")
 	public ResponseEntity<List<ClientLeadDTO>> getByProperty(@PathVariable Long propertyId) {
-		log.info("GET /api/leads/property/{}", propertyId);
-		List<ClientLeadDTO> leads = service.getByPropertyId(propertyId);
-		log.info("GET /api/leads/property/{} - Returned {} leads", propertyId, leads.size());
-		return ResponseEntity.ok(leads);
+		return ResponseEntity.ok(service.getByPropertyId(propertyId));
 	}
 
 	// ─── Fetch by owner (all inquiries across owner's properties) ────────────
 
 	@GetMapping("/owner/{ownerId}")
 	public ResponseEntity<List<ClientLeadDTO>> getByOwner(@PathVariable Long ownerId) {
-		log.info("GET /api/leads/owner/{}", ownerId);
-		List<ClientLeadDTO> leads = service.getByPropertyOwnerId(ownerId);
-		log.info("GET /api/leads/owner/{} - Returned {} leads", ownerId, leads.size());
-		return ResponseEntity.ok(leads);
+		return ResponseEntity.ok(service.getByPropertyOwnerId(ownerId));
 	}
 
-	// ─── Broker CRM view with filters ────────────────────────────────────────
+	// ─── Fetch by lead type ───────────────────────────────────────────────────
+
+	@GetMapping("/type/{leadType}")
+	public ResponseEntity<List<ClientLeadDTO>> getByLeadType(@PathVariable MasterEnums.InquiryType leadType) {
+		log.info("GET /api/leads/type/{}", leadType);
+		return ResponseEntity.ok(service.getByLeadType(leadType));
+	}
+
+	// ─── Fetch by status ─────────────────────────────────────────────────────
+
+	@GetMapping("/status/{status}")
+	public ResponseEntity<List<ClientLeadDTO>> getByStatus(@PathVariable MasterEnums.LeadStatus status) {
+		return ResponseEntity.ok(service.getByStatus(status));
+	}
+
+	// ─── Broker CRM view ─────────────────────────────────────────────────────
 
 	@GetMapping("/broker/{brokerId}")
-	public ResponseEntity<List<ClientLeadDTO>> getByBrokerWithFilters(
+	public ResponseEntity<List<ClientLeadDTO>> getByBroker(
 			@PathVariable Long brokerId,
 			@RequestParam(required = false) List<MasterEnums.LeadStatus> status,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 		log.info("GET /api/leads/broker/{} [status={}, start={}, end={}]", brokerId, status, startDate, endDate);
-		List<ClientLeadDTO> leads = service.getByBrokerWithFilters(brokerId, status, startDate, endDate);
-		log.info("GET /api/leads/broker/{} - Returned {} leads", brokerId, leads.size());
-		return ResponseEntity.ok(leads);
-	}
-
-	// ─── Admin: all leads by status ───────────────────────────────────────────
-
-	@GetMapping("/status/{status}")
-	public ResponseEntity<List<ClientLeadDTO>> getByStatus(@PathVariable MasterEnums.LeadStatus status) {
-		log.info("GET /api/leads/status/{}", status);
-		List<ClientLeadDTO> leads = service.getByStatus(status);
-		log.info("GET /api/leads/status/{} - Returned {} leads", status, leads.size());
-		return ResponseEntity.ok(leads);
+		return ResponseEntity.ok(service.getByBrokerWithFilters(brokerId, status, startDate, endDate));
 	}
 
 	// ─── Request bodies ───────────────────────────────────────────────────────
@@ -157,6 +161,30 @@ public class ClientLeadController {
 		public void setStatus(MasterEnums.LeadStatus status) { this.status = status; }
 		public String getRemark() { return remark; }
 		public void setRemark(String remark) { this.remark = remark; }
+	}
+
+	public static class AgentAssignRequest {
+		@NotNull(message = "agentId is required")
+		private Long agentId;
+		private String agentName;
+
+		public Long getAgentId() { return agentId; }
+		public void setAgentId(Long agentId) { this.agentId = agentId; }
+		public String getAgentName() { return agentName; }
+		public void setAgentName(String agentName) { this.agentName = agentName; }
+	}
+
+	public static class ApprovalRequest {
+		private String approvedBank;
+		private Double approvedLoanAmount;
+		private Double approvedInterestRate;
+
+		public String getApprovedBank() { return approvedBank; }
+		public void setApprovedBank(String approvedBank) { this.approvedBank = approvedBank; }
+		public Double getApprovedLoanAmount() { return approvedLoanAmount; }
+		public void setApprovedLoanAmount(Double approvedLoanAmount) { this.approvedLoanAmount = approvedLoanAmount; }
+		public Double getApprovedInterestRate() { return approvedInterestRate; }
+		public void setApprovedInterestRate(Double approvedInterestRate) { this.approvedInterestRate = approvedInterestRate; }
 	}
 
 	public static class FollowUpRequest {
