@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.api.enums.MasterEnums;
+
 @Repository
 public interface ClientLeadRepository extends JpaRepository<ClientLead, Long> {
 
@@ -13,15 +15,18 @@ public interface ClientLeadRepository extends JpaRepository<ClientLead, Long> {
 
 	List<ClientLead> findByBrokerId(Long brokerId);
 
-	List<ClientLead> findByStatus(String status);
+	List<ClientLead> findByPropertyId(Long propertyId);
 
-	List<ClientLead> findByContacted(Boolean contacted);
+	List<ClientLead> findByPropertyOwnerId(Long propertyOwnerId);
 
-	List<ClientLead> findByBrokerIdAndStatusIn(Long brokerId, List<String> status);
+	List<ClientLead> findByStatus(MasterEnums.LeadStatus status);
+
+	List<ClientLead> findByBrokerIdAndStatusIn(Long brokerId, List<MasterEnums.LeadStatus> status);
 
 	List<ClientLead> findByBrokerIdAndInquiryDateBetween(Long brokerId, LocalDateTime start, LocalDateTime end);
 
-	List<ClientLead> findByBrokerIdAndStatusInAndInquiryDateBetween(Long brokerId, List<String> status,
+	List<ClientLead> findByBrokerIdAndStatusInAndInquiryDateBetween(Long brokerId, List<MasterEnums.LeadStatus> status,
 			LocalDateTime start, LocalDateTime end);
-    boolean existsByUserIdAndPropertyId(Long userId, Long propertyId);
+
+	boolean existsByUserIdAndPropertyId(Long userId, Long propertyId);
 }

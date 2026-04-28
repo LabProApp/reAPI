@@ -3,9 +3,12 @@ package com.api.leads;
 import java.time.LocalDateTime;
 
 import com.api.commons.BaseEntity;
+import com.api.enums.MasterEnums;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,201 +24,113 @@ public class ClientLead extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// 🔗 Relations
-	private Long brokerId; // user who showed interest
+	// Relations
+	private Long brokerId;
+	private Long userId;
+	private Long propertyId;
+	private Long propertyOwnerId; // postedByUser from Property
 
-	private Long userId; // user who showed interest
-	private Long propertyId; // property they are interested in
-
-	// 🧑 Client Info
+	// Client Info (auto-populated from User if userId is provided)
 	private String clientName;
 	private String mobile;
 	private String email;
 
-	// 🏠 Property Snapshot
+	// Property Snapshot (auto-populated from Property if propertyId is provided)
 	private String propertyTitle;
 	private String propertyCity;
 	private Double propertyPrice;
+	private String propertyType;
 
-	// 🎯 Client Preference
-	private String preferredPropertyType; // Apartment, Plot, Villa
+	// Customer's message/inquiry text
+	@Column(length = 1000)
+	private String message;
+
+	// Client Preference
+	private String preferredPropertyType;
 	private Double preferredBudget;
 
-	// 📅 Dates
+	// Dates
 	private LocalDateTime inquiryDate;
 	private LocalDateTime contactedDate;
 	private LocalDateTime nextFollowUpDate;
 
-	// 📊 Status
-	private Boolean contacted;
-	private String status; // NEW, CONTACTED, VISIT_PLANNED, CLOSED, DROPPED
+	// Status
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private MasterEnums.LeadStatus status = MasterEnums.LeadStatus.NEW;
 
-	// 📝 Notes
+	// Notes
 	@Column(length = 5000)
 	private String remark;
 
-	// 🔍 Lead Source
+	// Lead Source
 	private String leadSource; // APP, WEBSITE, WHATSAPP, CALL, WALK_IN
 
 	@PrePersist
 	protected void onCreate() {
-
 		inquiryDate = LocalDateTime.now();
-		status = "NEW";
-		contacted = false;
 	}
 
-	public Long getId() {
-		return id;
-	}
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+	public Long getBrokerId() { return brokerId; }
+	public void setBrokerId(Long brokerId) { this.brokerId = brokerId; }
 
-	public Long getBrokerId() {
-		return brokerId;
-	}
+	public Long getUserId() { return userId; }
+	public void setUserId(Long userId) { this.userId = userId; }
 
-	public void setBrokerId(Long brokerId) {
-		this.brokerId = brokerId;
-	}
+	public Long getPropertyId() { return propertyId; }
+	public void setPropertyId(Long propertyId) { this.propertyId = propertyId; }
 
-	public Long getUserId() {
-		return userId;
-	}
+	public Long getPropertyOwnerId() { return propertyOwnerId; }
+	public void setPropertyOwnerId(Long propertyOwnerId) { this.propertyOwnerId = propertyOwnerId; }
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
+	public String getClientName() { return clientName; }
+	public void setClientName(String clientName) { this.clientName = clientName; }
 
-	public Long getPropertyId() {
-		return propertyId;
-	}
+	public String getMobile() { return mobile; }
+	public void setMobile(String mobile) { this.mobile = mobile; }
 
-	public void setPropertyId(Long propertyId) {
-		this.propertyId = propertyId;
-	}
+	public String getEmail() { return email; }
+	public void setEmail(String email) { this.email = email; }
 
-	public String getClientName() {
-		return clientName;
-	}
+	public String getPropertyTitle() { return propertyTitle; }
+	public void setPropertyTitle(String propertyTitle) { this.propertyTitle = propertyTitle; }
 
-	public void setClientName(String clientName) {
-		this.clientName = clientName;
-	}
+	public String getPropertyCity() { return propertyCity; }
+	public void setPropertyCity(String propertyCity) { this.propertyCity = propertyCity; }
 
-	public String getMobile() {
-		return mobile;
-	}
+	public Double getPropertyPrice() { return propertyPrice; }
+	public void setPropertyPrice(Double propertyPrice) { this.propertyPrice = propertyPrice; }
 
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
-	}
+	public String getPropertyType() { return propertyType; }
+	public void setPropertyType(String propertyType) { this.propertyType = propertyType; }
 
-	public String getEmail() {
-		return email;
-	}
+	public String getMessage() { return message; }
+	public void setMessage(String message) { this.message = message; }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+	public String getPreferredPropertyType() { return preferredPropertyType; }
+	public void setPreferredPropertyType(String preferredPropertyType) { this.preferredPropertyType = preferredPropertyType; }
 
-	public String getPropertyTitle() {
-		return propertyTitle;
-	}
+	public Double getPreferredBudget() { return preferredBudget; }
+	public void setPreferredBudget(Double preferredBudget) { this.preferredBudget = preferredBudget; }
 
-	public void setPropertyTitle(String propertyTitle) {
-		this.propertyTitle = propertyTitle;
-	}
+	public LocalDateTime getInquiryDate() { return inquiryDate; }
+	public void setInquiryDate(LocalDateTime inquiryDate) { this.inquiryDate = inquiryDate; }
 
-	public String getPropertyCity() {
-		return propertyCity;
-	}
+	public LocalDateTime getContactedDate() { return contactedDate; }
+	public void setContactedDate(LocalDateTime contactedDate) { this.contactedDate = contactedDate; }
 
-	public void setPropertyCity(String propertyCity) {
-		this.propertyCity = propertyCity;
-	}
+	public LocalDateTime getNextFollowUpDate() { return nextFollowUpDate; }
+	public void setNextFollowUpDate(LocalDateTime nextFollowUpDate) { this.nextFollowUpDate = nextFollowUpDate; }
 
-	public Double getPropertyPrice() {
-		return propertyPrice;
-	}
+	public MasterEnums.LeadStatus getStatus() { return status; }
+	public void setStatus(MasterEnums.LeadStatus status) { this.status = status; }
 
-	public void setPropertyPrice(Double propertyPrice) {
-		this.propertyPrice = propertyPrice;
-	}
+	public String getRemark() { return remark; }
+	public void setRemark(String remark) { this.remark = remark; }
 
-	public String getPreferredPropertyType() {
-		return preferredPropertyType;
-	}
-
-	public void setPreferredPropertyType(String preferredPropertyType) {
-		this.preferredPropertyType = preferredPropertyType;
-	}
-
-	public Double getPreferredBudget() {
-		return preferredBudget;
-	}
-
-	public void setPreferredBudget(Double preferredBudget) {
-		this.preferredBudget = preferredBudget;
-	}
-
-	public LocalDateTime getInquiryDate() {
-		return inquiryDate;
-	}
-
-	public void setInquiryDate(LocalDateTime inquiryDate) {
-		this.inquiryDate = inquiryDate;
-	}
-
-	public LocalDateTime getContactedDate() {
-		return contactedDate;
-	}
-
-	public void setContactedDate(LocalDateTime contactedDate) {
-		this.contactedDate = contactedDate;
-	}
-
-	public LocalDateTime getNextFollowUpDate() {
-		return nextFollowUpDate;
-	}
-
-	public void setNextFollowUpDate(LocalDateTime nextFollowUpDate) {
-		this.nextFollowUpDate = nextFollowUpDate;
-	}
-
-	public Boolean getContacted() {
-		return contacted;
-	}
-
-	public void setContacted(Boolean contacted) {
-		this.contacted = contacted;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public String getRemark() {
-		return remark;
-	}
-
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-
-	public String getLeadSource() {
-		return leadSource;
-	}
-
-	public void setLeadSource(String leadSource) {
-		this.leadSource = leadSource;
-	}
-
-	// getters & setters
+	public String getLeadSource() { return leadSource; }
+	public void setLeadSource(String leadSource) { this.leadSource = leadSource; }
 }

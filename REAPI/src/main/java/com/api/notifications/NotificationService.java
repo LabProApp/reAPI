@@ -126,6 +126,76 @@ public class NotificationService {
         }
     }
 
+    // ─── Property Inquiry Created ─────────────────────────────────────────────
+
+    /**
+     * Fired when a customer submits an inquiry (ClientLead) for a property.
+     * Notifies the broker (SMS + optional WhatsApp + email), the property owner
+     * (SMS/email if different from broker), and sends the customer a confirmation.
+     */
+    @Async
+    public void notifyPropertyInquiry(
+            Long leadId,
+            String customerName, String customerMobile, String customerEmail,
+            String propTitle, String propCity, Double propPrice,
+            String brokerEmail, String brokerMobile,
+            String ownerEmail, String ownerMobile,
+            Double budget, String message, boolean sendWhatsApp) {
+
+        log.info("notifyPropertyInquiry - leadId={}, property='{}', customer='{}'", leadId, propTitle, customerName);
+        String sms = NotificationTemplates.propertyInquirySms(customerName, customerMobile, propTitle, propCity, leadId);
+        String emailBody = NotificationTemplates.propertyInquiryEmailBody(customerName, customerMobile, customerEmail, propTitle, propCity, propPrice, message, leadId);
+        String emailSubject = NotificationTemplates.propertyInquiryEmailSubject(customerName, propTitle);
+
+        // Notify broker
+        if (hasValue(brokerMobile)) {
+            commService.sendSMSMessage(brokerMobile, sms);
+            if (sendWhatsApp) {
+                try { whatsAppService.sendMessage("+91" + brokerMobile, sms); }
+                catch (Exception e) { log.error("notifyPropertyInquiry - WhatsApp to broker failed: {}", e.getMessage()); }
+            }
+        }
+        if (hasValue(brokerEmail)) commService.sendEmail(brokerEmail, emailBody, emailSubject);
+
+        // Notify owner if different contact from broker
+        if (hasValue(ownerMobile) && !ownerMobile.equals(brokerMobile)) {
+            commService.sendSMSMessage(ownerMobile, sms);
+        }
+        if (hasValue(ownerEmail) && !ownerEmail.equals(brokerEmail)) {
+            commService.sendEmail(ownerEmail, emailBody, emailSubject);
+        }
+
+        // Confirmation to customer
+        if (hasValue(customerMobile)) {
+            commService.sendSMSMessage(customerMobile,
+                    NotificationTemplates.propertyInquiryConfirmationSms(customerName, propTitle, propCity));
+        }
+        if (hasValue(customerEmail)) {
+            commService.sendEmail(customerEmail,
+                    NotificationTemplates.propertyInquiryConfirmationEmailBody(customerName, propTitle, propCity, propPrice),
+                    NotificationTemplates.propertyInquiryConfirmationEmailSubject(propTitle));
+        }
+    }
+
+    // ─── Lead Status Updated ──────────────────────────────────────────────────
+
+    @Async
+    public void notifyLeadStatusUpdated(
+            String customerName, String customerMobile, String customerEmail,
+            String propTitle, String propCity, String status, String remark) {
+
+        log.info("notifyLeadStatusUpdated - customer='{}', property='{}', status={}", customerName, propTitle, status);
+        if (hasValue(customerMobile)) {
+            commService.sendSMSMessage(customerMobile,
+                    NotificationTemplates.leadStatusUpdateSms(customerName, propTitle, status));
+        }
+        if (hasValue(customerEmail)) {
+            commService.sendEmail(customerEmail,
+                    NotificationTemplates.leadStatusUpdateEmailBody(customerName, propTitle, propCity, status, remark),
+                    NotificationTemplates.leadStatusUpdateEmailSubject(propTitle, status));
+        }
+    }
+
     // ─── Welcome ─────────────────────────────────────────────────────────────
 
     @Async

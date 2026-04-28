@@ -42,7 +42,11 @@ public final class MasterEnums implements BaseEnum {
 	@Getter
 	public enum InquiryStatus {
 		NEW, CLOSED, INPROGRESS;
+	}
 
+	@Getter
+	public enum LeadStatus {
+		NEW, CONTACTED, VISIT_PLANNED, VISIT_DONE, NEGOTIATING, CLOSED_WON, CLOSED_LOST, DROPPED;
 	}
 
 	private MasterEnums() {
