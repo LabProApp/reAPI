@@ -201,11 +201,6 @@ public class PropertyService {
 		return results.stream().map(p -> {
 			PropertyDto dto = toDto(p);
 			dto.setAmenitiesFromList(p.getAmenitiesAsList());
-			dto.setCode(p.getCode());
-			dto.setLastUpdatedTs(p.getLastUpdatedTs());
-			dto.setCreatedTs(p.getCreatedTs());
-			dto.setCreatedBy(p.getCreatedBy());
-			dto.setUpdatedBy(p.getUpdatedBy());
 			dto.setDocumentList(docsMap.getOrDefault(p.getId(), List.of()));
 			return dto;
 		}).collect(Collectors.toList());
@@ -266,6 +261,12 @@ public class PropertyService {
 		dto.setAmenities(p.getAmenities());
 		dto.setViewsCount(p.getViewsCount());
 		dto.setShortListCount(p.getShortListCount());
+		// audit / base fields
+		dto.setCode(p.getCode());
+		dto.setCreatedTs(p.getCreatedTs());
+		dto.setLastUpdatedTs(p.getLastUpdatedTs());
+		dto.setCreatedBy(p.getCreatedBy());
+		dto.setUpdatedBy(p.getUpdatedBy());
 		return dto;
 	}
 }
