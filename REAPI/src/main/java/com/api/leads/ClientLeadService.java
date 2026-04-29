@@ -155,6 +155,13 @@ public class ClientLeadService {
 		return toDto(repository.findByPropertyId(propertyId));
 	}
 
+	public List<ClientLeadSummaryDTO> getLeadSummariesByPropertyId(Long propertyId) {
+		log.info("getLeadSummariesByPropertyId - propertyId={}", propertyId);
+		return repository.findByPropertyId(propertyId).stream()
+				.map(this::toSummary)
+				.collect(Collectors.toList());
+	}
+
 	public List<ClientLeadDTO> getByPropertyOwnerId(Long ownerId) {
 		return toDto(repository.findByPropertyOwnerId(ownerId));
 	}
@@ -202,6 +209,60 @@ public class ClientLeadService {
 
 	private List<ClientLeadDTO> toDto(List<ClientLead> leads) {
 		return leads.stream().map(e -> mapper.map(e, ClientLeadDTO.class)).collect(Collectors.toList());
+	}
+
+	private ClientLeadSummaryDTO toSummary(ClientLead lead) {
+		ClientLeadSummaryDTO dto = new ClientLeadSummaryDTO();
+		dto.setId(lead.getId());
+		dto.setLeadType(lead.getLeadType());
+		dto.setStatus(lead.getStatus());
+		dto.setLeadSource(lead.getLeadSource());
+		dto.setClientName(lead.getClientName());
+		dto.setMobile(lead.getMobile());
+		dto.setEmail(lead.getEmail());
+		dto.setProfession(lead.getProfession());
+		dto.setMonthlyIncome(lead.getMonthlyIncome());
+		dto.setPropertyId(lead.getPropertyId());
+		dto.setPropertyOwnerId(lead.getPropertyOwnerId());
+		dto.setBrokerId(lead.getBrokerId());
+		dto.setAssignedAgentName(lead.getAssignedAgentName());
+		dto.setPropertyTitle(lead.getPropertyTitle());
+		dto.setPropertyCity(lead.getPropertyCity());
+		dto.setPropertyState(lead.getPropertyState());
+		dto.setPropertyLocality(lead.getPropertyLocality());
+		dto.setPropertyType(lead.getPropertyType());
+		dto.setPropertyPrice(lead.getPropertyPrice());
+		dto.setBudget(lead.getBudget());
+		dto.setMinBudget(lead.getMinBudget());
+		dto.setMaxBudget(lead.getMaxBudget());
+		dto.setRequiredLoanAmount(lead.getRequiredLoanAmount());
+		dto.setLoanTenureYears(lead.getLoanTenureYears());
+		dto.setLoanType(lead.getLoanType());
+		dto.setPreferredBank(lead.getPreferredBank());
+		dto.setDocumentServicesRequired(lead.getDocumentServicesRequired());
+		dto.setSpecifications(lead.getSpecifications());
+		dto.setMessage(lead.getMessage());
+		dto.setRemark(lead.getRemark());
+		dto.setInquiryDate(lead.getInquiryDate());
+		dto.setContactedDate(lead.getContactedDate());
+		dto.setNextFollowUpDate(lead.getNextFollowUpDate());
+		dto.setExpectedPurchaseDate(lead.getExpectedPurchaseDate());
+
+		// Resolve owner details
+		if (lead.getPropertyOwnerId() != null) {
+			userRepository.findById(lead.getPropertyOwnerId()).ifPresent(u -> {
+				dto.setOwnerName(u.getName());
+				dto.setOwnerMobile(u.getMobile());
+				dto.setOwnerEmail(u.getEmail());
+			});
+		}
+
+		// Resolve broker name
+		if (lead.getBrokerId() != null) {
+			userRepository.findById(lead.getBrokerId()).ifPresent(u -> dto.setBrokerName(u.getName()));
+		}
+
+		return dto;
 	}
 
 	private String[] resolveContact(Long userId) {

@@ -116,6 +116,12 @@ public class ClientLeadController {
 		return ResponseEntity.ok(service.getByPropertyId(propertyId));
 	}
 
+	@GetMapping("/property/{propertyId}/summary")
+	public ResponseEntity<List<ClientLeadSummaryDTO>> getPropertyLeadSummary(@PathVariable Long propertyId) {
+		log.info("GET /api/leads/property/{}/summary", propertyId);
+		return ResponseEntity.ok(service.getLeadSummariesByPropertyId(propertyId));
+	}
+
 	// ─── Fetch by owner (all inquiries across owner's properties) ────────────
 
 	@GetMapping("/owner/{ownerId}")
