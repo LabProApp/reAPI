@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import com.api.notifications.NotificationService;
 import com.api.prop.Property;
 import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
+import com.api.security.JwtUtil;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userproperty.UserPropertyRelationRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -30,16 +32,21 @@ public class UserService {
 	private final CommService commService;
 	private final NotificationService notificationService;
 	private final ModelMapper mapper;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtUtil jwtUtil;
 
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
 			UserPropertyRelationRepository propertyRelationRepository, CommService commService,
-			NotificationService notificationService, ModelMapper mapper) {
+			NotificationService notificationService, ModelMapper mapper,
+			PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
 		this.userRepository = userRepository;
 		this.propertyRepository = propertyRepository;
 		this.propertyRelationRepository = propertyRelationRepository;
 		this.commService = commService;
 		this.notificationService = notificationService;
 		this.mapper = mapper;
+		this.passwordEncoder = passwordEncoder;
+		this.jwtUtil = jwtUtil;
 	}
 
 	// ---------------- REGISTER ----------------
@@ -67,6 +74,9 @@ public class UserService {
 			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
 		}
 		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
+		if (user.getPassword() != null) {
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
+		}
 		userRepository.save(user);
 
 		String otp = commService.generateOtp();
@@ -157,7 +167,7 @@ public class UserService {
 	}
 
 	// ---------------- LOGIN ----------------
-	public ResponseEntity<UserDto> login(UserDto reqDto) {
+	public ResponseEntity<LoginResponse> login(UserDto reqDto) {
 		String identifier = reqDto.getEmail() != null ? reqDto.getEmail() : reqDto.getMobile();
 		log.info("login - Login attempt for identifier={}", identifier);
 		User user;
@@ -179,14 +189,16 @@ public class UserService {
 			return ResponseEntity.badRequest().build();
 		}
 
-		if (!reqDto.getPassword().equals(user.getPassword())) {
+		if (!passwordEncoder.matches(reqDto.getPassword(), user.getPassword())) {
 			log.warn("login - Invalid password for identifier={}", identifier);
 			return ResponseEntity.status(401).build();
 		}
 
-		log.info("login - Successful login for userId={}", user.getId());
+		String role = user.getUserRole() != null ? user.getUserRole().name() : "CLIENT";
+		String token = jwtUtil.generateToken(user.getId(), identifier, role);
 		UserDto responseDto = mapper.map(user, UserDto.class);
-		return ResponseEntity.ok(responseDto);
+		log.info("login - Successful login for userId={}", user.getId());
+		return ResponseEntity.ok(new LoginResponse(token, responseDto));
 	}
 
 	// ---------------- PROFILE ----------------
@@ -243,7 +255,7 @@ public class UserService {
 			log.warn("resetPassword - User not found for identifier={}", identifier);
 			return new IllegalArgumentException("User not found");
 		});
-		user.setPassword(userDto.getPassword());
+		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 		userRepository.save(user);
 		log.info("resetPassword - Password reset successfully for userId={}", user.getId());
 		return ResponseEntity.ok("Password reset successfully!");

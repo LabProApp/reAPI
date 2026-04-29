@@ -58,10 +58,10 @@ public class UserController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<UserDto> login(@RequestBody UserDto userDto) {
+	public ResponseEntity<LoginResponse> login(@RequestBody UserDto userDto) {
 		log.info("POST /api/user/login - Login attempt for identifier={}",
 				userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile());
-		ResponseEntity<UserDto> response = userService.login(userDto);
+		ResponseEntity<LoginResponse> response = userService.login(userDto);
 		log.info("POST /api/user/login - Login result status={}", response.getStatusCode());
 		return response;
 	}

@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 public class UserDto extends BaseDto {
 
@@ -14,7 +17,9 @@ public class UserDto extends BaseDto {
 	private String address;
 	private String mobile;
 
+	@JsonIgnore
 	private String otp;
+	@JsonIgnore
 	private LocalDateTime otpGeneratedAt;
 	private Boolean isVerified = false;
 	private MasterEnums.UserStatusEnum userStatus;
@@ -48,10 +53,12 @@ public class UserDto extends BaseDto {
 		this.email = email;
 	}
 
+	@JsonIgnore
 	public String getPassword() {
 		return password;
 	}
 
+	@JsonProperty(access = Access.WRITE_ONLY)
 	public void setPassword(String password) {
 		this.password = password;
 	}

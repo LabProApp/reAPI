@@ -20,6 +20,7 @@ public final class MasterEnums implements BaseEnum {
 	public enum InquiryType {
 		HOME_LOAN, 
 		PROPERTY_REGISTRATION,
+		PROPERTY_INQUIRY,
 	    RENT_AGREEMENT,
 	    LAP, 
 	    BALANCE_TRANSFER,
