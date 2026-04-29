@@ -33,9 +33,9 @@ public class UserRelationController {
 	public ResponseEntity<UserRelation> createRelation(@RequestBody UserRelationDto dto) {
 		log.info("POST /api/user-relations/create - Creating relation type={}", dto.getRelationType());
 		User userStub = new User();
-		userStub.setId(dto.getUser().getId());
+		userStub.setId(dto.getUserId());
 		User relatedUserStub = new User();
-		relatedUserStub.setId(dto.getRelatedUser().getId());
+		relatedUserStub.setId(dto.getRelatedUserId());
 		UserRelation userRelation = new UserRelation();
 		userRelation.setUser(userStub);
 		userRelation.setRelatedUser(relatedUserStub);

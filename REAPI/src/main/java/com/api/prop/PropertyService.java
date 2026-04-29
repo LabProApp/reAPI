@@ -200,7 +200,6 @@ public class PropertyService {
 
 		return results.stream().map(p -> {
 			PropertyDto dto = toDto(p);
-			dto.setAmenitiesFromList(p.getAmenitiesAsList());
 			dto.setDocumentList(docsMap.getOrDefault(p.getId(), List.of()));
 			return dto;
 		}).collect(Collectors.toList());

@@ -2,15 +2,14 @@ package com.api.userrelation;
 
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
-import com.api.user.User;
 
 public class UserRelationDto extends BaseDto {
 
 	private Long id;
 
-	private User user;
+	private Long userId;
 
-	private User relatedUser;
+	private Long relatedUserId;
 
 	private MasterEnums.RelationTypeEnum relationType;
 
@@ -28,20 +27,20 @@ public class UserRelationDto extends BaseDto {
 		this.id = id;
 	}
 
-	public User getUser() {
-		return user;
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
-	public User getRelatedUser() {
-		return relatedUser;
+	public Long getRelatedUserId() {
+		return relatedUserId;
 	}
 
-	public void setRelatedUser(User relatedUser) {
-		this.relatedUser = relatedUser;
+	public void setRelatedUserId(Long relatedUserId) {
+		this.relatedUserId = relatedUserId;
 	}
 
 	public MasterEnums.RelationTypeEnum getRelationType() {
