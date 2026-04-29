@@ -27,7 +27,7 @@ public class ToolsController {
         log.info("POST /api/tools/homeloancalculator - Calculating loan [principal={}, rate={}, tenure={}yrs]",
                 request.getPrincipal(), request.getAnnualInterestRate(), request.getTenureYears());
         calcLoanResponse response = toolService.calculate(request);
-        log.info("POST /api/tools/homeloancalculator - Calculation complete [emi={}]", response.getMonthlyEmi());
+        log.info("POST /api/tools/homeloancalculator - Calculation complete [emi={}]", response.getMonthlyPayment());
         return ResponseEntity.ok(response);
     }
 
