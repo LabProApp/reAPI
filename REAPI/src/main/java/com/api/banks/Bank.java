@@ -152,7 +152,7 @@ public class Bank extends BaseEntity {
 	@Column(name = "details")
 	private String details;
 
-	@OneToMany(mappedBy = "bank", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "bank", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<InterestRates> interestRates;
 

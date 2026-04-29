@@ -31,28 +31,18 @@ public class BankService {
 		this.mapper = mapper;
 	}
 
-	// 🧾 Get all loans
-	// 🧾 Get all banks
-	// 🧾 Get all banks with logos and documents
 	public List<BankDto> getAllBanks() {
 		log.info("Fetching all banks");
-		return bankRepository.findAll().stream().map(bank -> {
-			// Convert entity to DTO
+		List<Bank> banks = bankRepository.findAll();
+		List<Long> ids = banks.stream().map(Bank::getId).collect(Collectors.toList());
+		Map<Long, List<DocumentminDto>> docsMap = documentsService.getminDocumentsByObjectIds("BANK", ids);
+		return banks.stream().map(bank -> {
 			BankDto dto = toDto(bank);
-			// Set bank logo URL
-			if (bank.getBankLogoUrl() != null && !bank.getBankLogoUrl().isEmpty()) {
-
-				List<DocumentminDto> documentDtos = documentsService.getminDocumentsByObject("BANK", dto.getId());
-				for (DocumentminDto documentminDto : documentDtos) {
-					if (documentminDto.getCaption().equalsIgnoreCase("LOGO"))
-
-						dto.setBankLogoUrl(documentminDto.getDocUrl());
-				}
-
-			} else {
-				dto.setBankLogoUrl(null); // or default placeholder
-			}
-
+			List<DocumentminDto> bankDocs = docsMap.getOrDefault(bank.getId(), List.of());
+			bankDocs.stream()
+					.filter(d -> d.getCaption() != null && d.getCaption().equalsIgnoreCase("LOGO"))
+					.findFirst()
+					.ifPresent(logo -> dto.setBankLogoUrl(logo.getDocUrl()));
 			return dto;
 		}).collect(Collectors.toList());
 	}
@@ -339,7 +329,41 @@ public class BankService {
 					return new RuntimeException("Bank not found");
 				});
 
-		existing = toEntity(requestDto);
+		existing.setBankName(requestDto.getBankName());
+		existing.setContactName(requestDto.getContactName());
+		existing.setContactNumber(requestDto.getContactNumber());
+		existing.setEmail(requestDto.getEmail());
+		existing.setBranchName(requestDto.getBranchName());
+		existing.setLocationAddress(requestDto.getLocationAddress());
+		existing.setStreet(requestDto.getStreet());
+		existing.setCity(requestDto.getCity());
+		existing.setState(requestDto.getState());
+		existing.setPostalCode(requestDto.getPostalCode());
+		existing.setCountry(requestDto.getCountry());
+		existing.setWebsiteUrl(requestDto.getWebsiteUrl());
+		existing.setInterestRate(requestDto.getInterestRate());
+		existing.setInterestType(requestDto.getInterestType());
+		existing.setProcessingFee(requestDto.getProcessingFee());
+		existing.setTenureYears(requestDto.getTenureYears());
+		existing.setMaxLoanAmount(requestDto.getMaxLoanAmount());
+		existing.setMinLoanAmount(requestDto.getMinLoanAmount());
+		existing.setMinCibilScore(requestDto.getMinCibilScore());
+		existing.setMinimumIncome(requestDto.getMinimumIncome());
+		existing.setEmploymentType(requestDto.getEmploymentType());
+		existing.setMinimumAge(requestDto.getMinimumAge());
+		existing.setMaximumAge(requestDto.getMaximumAge());
+		existing.setNationalityRequirement(requestDto.getNationalityRequirement());
+		existing.setPrepaymentAllowed(requestDto.isPrepaymentAllowed());
+		existing.setPartPaymentAllowed(requestDto.isPartPaymentAllowed());
+		existing.setBalanceTransferAvailable(requestDto.isBalanceTransferAvailable());
+		existing.setInsuranceBundled(requestDto.isInsuranceBundled());
+		existing.setSpecialOffers(requestDto.getSpecialOffers());
+		existing.setRequiredDocuments(requestDto.getRequiredDocuments());
+		existing.setDetails(requestDto.getDetails());
+		if (requestDto.getBankLogoUrl() != null) {
+			existing.setBankLogoUrl(requestDto.getBankLogoUrl());
+		}
+
 		Bank updated = bankRepository.save(existing);
 		log.info("Bank id={} updated successfully", requestDto.getId());
 		BankDto responseDto = toDto(updated);

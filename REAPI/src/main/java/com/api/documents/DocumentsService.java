@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,16 @@ public class DocumentsService {
 
 	private static final Set<String> CUSTOMER_UPLOAD_TYPES = Set.of("LOAN_DOCUMENT", "LEGAL_DOCUMENT");
 
+	private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
+			"image/jpeg", "image/png", "image/gif", "image/webp",
+			"application/pdf",
+			"application/msword",
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"application/vnd.ms-excel",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	);
+	private static final long MAX_FILE_SIZE_BYTES = 10L * 1024 * 1024; // 10 MB
+
 	private final DocumentRepository documentsRepository;
 	private final S3Service s3Service;
 	private final ModelMapper mapper;
@@ -42,6 +53,19 @@ public class DocumentsService {
 	public List<DocumentDto> uploadDocuments(String objectType, Long objectId, List<MultipartFile> files,
 			List<String> titles, List<String> captions, Long uploadedBy) throws IOException {
 		log.info("uploadDocuments - Uploading {} file(s) for objectType={}, objectId={}", files.size(), objectType, objectId);
+
+		for (MultipartFile file : files) {
+			if (file.getSize() > MAX_FILE_SIZE_BYTES) {
+				throw new IllegalArgumentException(
+						"File '" + file.getOriginalFilename() + "' exceeds maximum allowed size of 10MB");
+			}
+			String contentType = file.getContentType();
+			if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType.toLowerCase())) {
+				throw new IllegalArgumentException(
+						"File type not allowed: '" + contentType + "'. Allowed types: PDF, Word, Excel, JPEG, PNG, GIF, WebP");
+			}
+		}
+
 		boolean requiresVerification = CUSTOMER_UPLOAD_TYPES.contains(objectType.toUpperCase());
 		List<DocumentDto> dtoList = new ArrayList<>();
 
@@ -124,6 +148,22 @@ public class DocumentsService {
 			enrichWithPresignedUrl(doc, dto);
 			return dto;
 		}).collect(Collectors.toList());
+	}
+
+	// Get minimal documents for a batch of objectIds in a single query
+	public Map<Long, List<DocumentminDto>> getminDocumentsByObjectIds(String objectType, List<Long> objectIds) {
+		if (objectType == null || objectIds == null || objectIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectIdIn(objectType, objectIds);
+		return docs.stream().collect(Collectors.groupingBy(
+			Documents::getObjectId,
+			Collectors.mapping(doc -> {
+				DocumentminDto dto = mapper.map(doc, DocumentminDto.class);
+				enrichWithPresignedUrl(doc, dto);
+				return dto;
+			}, Collectors.toList())
+		));
 	}
 
 	// ─── Status update ────────────────────────────────────────────────────────

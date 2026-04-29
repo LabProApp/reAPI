@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.api.enums.MasterEnums;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -122,7 +123,7 @@ public class DocumentsController {
 	@PutMapping("/{id}/status")
 	public ResponseEntity<DocumentDto> updateStatus(
 			@PathVariable Long id,
-			@RequestBody DocumentStatusRequest req) {
+			@Valid @RequestBody DocumentStatusRequest req) {
 		log.info("PUT /api/documents/{}/status - status={}, reviewedBy={}", id, req.getStatus(), req.getReviewedBy());
 		DocumentDto updated = documentsService.updateDocumentStatus(
 				id, req.getStatus(), req.getRejectionReason(), req.getComments(), req.getReviewedBy());

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +40,7 @@ public class BankController {
 
 	// ➕ Add a new bank
 	@PostMapping
-	public ResponseEntity<BankDto> addBank(@RequestBody BankDto dto) {
+	public ResponseEntity<BankDto> addBank(@Valid @RequestBody BankDto dto) {
 		log.info("POST /api/banks - Adding bank: {}", dto.getBankName());
 		BankDto saved = bankService.addBank(dto);
 		log.info("POST /api/banks - Bank created with id={}", saved.getId());
@@ -47,7 +49,7 @@ public class BankController {
 
 	// ✏️ Update an existing bank
 	@PutMapping("/{id}")
-	public ResponseEntity<?> updateBank(@PathVariable Long id, @RequestBody BankDto dto) {
+	public ResponseEntity<?> updateBank(@PathVariable Long id, @Valid @RequestBody BankDto dto) {
 		log.info("PUT /api/banks/{} - Updating bank", id);
 		dto.setId(id);
 		ResponseEntity<?> response = bankService.updateBank(dto);
@@ -70,7 +72,7 @@ public class BankController {
 	// ➕ Add interest rates for a bank
 	@PostMapping("/{bankId}/interest-rates")
 	public ResponseEntity<InterestRatesDto> addInterestRate(@PathVariable Long bankId,
-			@RequestBody InterestRatesDto dto) {
+			@Valid @RequestBody InterestRatesDto dto) {
 		log.info("POST /api/banks/{}/interest-rates - Adding interest rate range [{}-{}]",
 				bankId, dto.getMinCibil(), dto.getMaxCibil());
 		dto.setBankId(bankId);
@@ -81,7 +83,7 @@ public class BankController {
 
 	// ✏️ Update interest rate
 	@PutMapping("/{bankId}/interest-rates")
-	public ResponseEntity<?> updateInterestRates(@PathVariable Long bankId, @RequestBody InterestRatesDto dto) {
+	public ResponseEntity<?> updateInterestRates(@PathVariable Long bankId, @Valid @RequestBody InterestRatesDto dto) {
 		log.info("PUT /api/banks/{}/interest-rates - Updating interest rate id={}", bankId, dto.getId());
 		dto.setBankId(bankId);
 		ResponseEntity<?> response = bankService.updateInterestRates(dto);

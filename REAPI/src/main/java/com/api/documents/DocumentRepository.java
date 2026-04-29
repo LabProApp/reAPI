@@ -14,6 +14,8 @@ public interface DocumentRepository extends JpaRepository<Documents, Long> {
 
 	List<Documents> findByObjectTypeIgnoreCaseAndObjectId(String objectType, Long objectId);
 
+	List<Documents> findByObjectTypeIgnoreCaseAndObjectIdIn(String objectType, List<Long> objectIds);
+
 	List<Documents> findByObjectTypeIgnoreCaseAndObjectIdAndDocumentStatus(
 			String objectType, Long objectId, MasterEnums.DocumentStatus documentStatus);
 

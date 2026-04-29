@@ -4,14 +4,22 @@ import java.util.Date;
 import java.util.List;
 
 import com.api.commons.BaseDto;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 
 public class BankDto extends BaseDto {
 
 	private Long id;
 
 	// Bank / Representative Details
+	@NotBlank(message = "Bank name is required")
 	private String bankName;
+	@NotBlank(message = "Contact name is required")
 	private String contactName;
+	@NotBlank(message = "Contact number is required")
 	private String contactNumber;
 	private String email;
 	private String branchName;
@@ -26,19 +34,39 @@ public class BankDto extends BaseDto {
 	private String websiteUrl;
 
 	// Loan Details
+	@PositiveOrZero(message = "Interest rate cannot be negative")
 	private double interestRate;
 	private String interestType;
+	@PositiveOrZero(message = "Processing fee cannot be negative")
 	private double processingFee;
+	@Min(value = 1, message = "Tenure must be at least 1 year")
 	private int tenureYears;
+	@PositiveOrZero(message = "Max loan amount cannot be negative")
 	private double maxLoanAmount;
+	@PositiveOrZero(message = "Min loan amount cannot be negative")
 	private double minLoanAmount;
+	@Min(value = 300, message = "Min CIBIL score must be at least 300")
+	@Max(value = 900, message = "Min CIBIL score cannot exceed 900")
 	private int minCibilScore;
 
 	// Eligibility Requirements
+	@PositiveOrZero(message = "Minimum income cannot be negative")
 	private double minimumIncome;
 	private String employmentType;
+	@Min(value = 18, message = "Minimum age must be at least 18")
 	private int minimumAge;
+	@Max(value = 100, message = "Maximum age cannot exceed 100")
 	private int maximumAge;
+
+	@AssertTrue(message = "Min loan amount must be less than or equal to max loan amount")
+	private boolean isLoanAmountRangeValid() {
+		return minLoanAmount <= maxLoanAmount;
+	}
+
+	@AssertTrue(message = "Minimum age must be less than maximum age")
+	private boolean isAgeRangeValid() {
+		return minimumAge == 0 || maximumAge == 0 || minimumAge < maximumAge;
+	}
 	private String nationalityRequirement;
 
 	// Additional Features

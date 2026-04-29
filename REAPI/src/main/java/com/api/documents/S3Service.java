@@ -2,7 +2,7 @@ package com.api.documents;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,8 +41,7 @@ public class S3Service {
 		String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "file";
 		originalFilename = originalFilename.replaceAll("[^a-zA-Z0-9._-]", "_");
 
-		int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999);
-		String fileName = randomNum + "_" + originalFilename;
+		String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
 
 		String normalizedFolder = folderName != null ? folderName.replaceAll("^/|/$", "") : "";
 		String key = (normalizedFolder.isEmpty() ? "" : normalizedFolder + "/") + fileName;
