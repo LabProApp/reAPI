@@ -34,7 +34,7 @@ public class ClientLeadController {
 		this.service = service;
 	}
 
-	// ─── Create a new lead ────────────────────────────────────────────────────
+	// ─── Create ───────────────────────────────────────────────────────────────
 
 	@PostMapping
 	public ResponseEntity<ClientLeadDTO> create(@Valid @RequestBody ClientLeadDTO dto) {
@@ -44,12 +44,41 @@ public class ClientLeadController {
 		return ResponseEntity.ok(created);
 	}
 
-	// ─── Full update (broker CRM) ─────────────────────────────────────────────
+	// ─── Read by ID ───────────────────────────────────────────────────────────
 
-	@PutMapping("/{id}")
-	public ResponseEntity<ClientLeadDTO> update(@PathVariable Long id, @RequestBody ClientLeadDTO dto) {
-		log.info("PUT /api/leads/{}", id);
-		return ResponseEntity.ok(service.updateLead(id, dto));
+	@GetMapping("/{id}")
+	public ResponseEntity<ClientLeadDTO> getById(@PathVariable Long id) {
+		return ResponseEntity.ok(service.getById(id));
+	}
+
+	// ─── Search (unified — all params optional) ───────────────────────────────
+	// Combine any of: brokerId, ownerId, propertyId, userId, status (repeatable),
+	// leadType, mobile, startDate, endDate. Returns enriched summary with
+	// customer, owner, broker, property, and all lead attributes.
+	// Results ordered newest first.
+
+	@GetMapping("/search")
+	public ResponseEntity<List<ClientLeadSummaryDTO>> search(
+			@RequestParam(required = false) Long brokerId,
+			@RequestParam(required = false) Long ownerId,
+			@RequestParam(required = false) Long propertyId,
+			@RequestParam(required = false) Long userId,
+			@RequestParam(required = false) List<MasterEnums.LeadStatus> status,
+			@RequestParam(required = false) MasterEnums.InquiryType leadType,
+			@RequestParam(required = false) String mobile,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+		log.info("GET /api/leads/search brokerId={}, ownerId={}, propertyId={}, userId={}, leadType={}, status={}",
+				brokerId, ownerId, propertyId, userId, leadType, status);
+		return ResponseEntity.ok(service.search(brokerId, ownerId, propertyId, userId, status, leadType, mobile, startDate, endDate));
+	}
+
+	// ─── Enriched property interest list ─────────────────────────────────────
+
+	@GetMapping("/property/{propertyId}/summary")
+	public ResponseEntity<List<ClientLeadSummaryDTO>> getPropertyLeadSummary(@PathVariable Long propertyId) {
+		log.info("GET /api/leads/property/{}/summary", propertyId);
+		return ResponseEntity.ok(service.getLeadSummariesByPropertyId(propertyId));
 	}
 
 	// ─── Status transition ────────────────────────────────────────────────────
@@ -61,13 +90,12 @@ public class ClientLeadController {
 		return ResponseEntity.ok(service.updateStatus(id, req.getStatus(), req.getRemark()));
 	}
 
-	// ─── Assign agent ─────────────────────────────────────────────────────────
+	// ─── Full update ──────────────────────────────────────────────────────────
 
-	@PutMapping("/{id}/assign")
-	public ResponseEntity<ClientLeadDTO> assignAgent(
-			@PathVariable Long id, @RequestBody AgentAssignRequest req) {
-		log.info("PUT /api/leads/{}/assign - agentId={}", id, req.getAgentId());
-		return ResponseEntity.ok(service.assignAgent(id, req.getAgentId(), req.getAgentName()));
+	@PutMapping("/{id}")
+	public ResponseEntity<ClientLeadDTO> update(@PathVariable Long id, @RequestBody ClientLeadDTO dto) {
+		log.info("PUT /api/leads/{}", id);
+		return ResponseEntity.ok(service.updateLead(id, dto));
 	}
 
 	// ─── Record loan approval ─────────────────────────────────────────────────
@@ -89,71 +117,12 @@ public class ClientLeadController {
 		return ResponseEntity.ok(service.scheduleFollowUp(id, req.getFollowUpDate(), req.getRemark()));
 	}
 
-	// ─── Fetch by ID ─────────────────────────────────────────────────────────
-
-	@GetMapping("/{id}")
-	public ResponseEntity<ClientLeadDTO> getById(@PathVariable Long id) {
-		return ResponseEntity.ok(service.getById(id));
-	}
+	// ─── Delete ───────────────────────────────────────────────────────────────
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		service.delete(id);
 		return ResponseEntity.noContent().build();
-	}
-
-	// ─── Fetch by customer ────────────────────────────────────────────────────
-
-	@GetMapping("/user/{userId}")
-	public ResponseEntity<List<ClientLeadDTO>> getByUser(@PathVariable Long userId) {
-		return ResponseEntity.ok(service.getByUserId(userId));
-	}
-
-	// ─── Fetch by property ────────────────────────────────────────────────────
-
-	@GetMapping("/property/{propertyId}")
-	public ResponseEntity<List<ClientLeadDTO>> getByProperty(@PathVariable Long propertyId) {
-		return ResponseEntity.ok(service.getByPropertyId(propertyId));
-	}
-
-	@GetMapping("/property/{propertyId}/summary")
-	public ResponseEntity<List<ClientLeadSummaryDTO>> getPropertyLeadSummary(@PathVariable Long propertyId) {
-		log.info("GET /api/leads/property/{}/summary", propertyId);
-		return ResponseEntity.ok(service.getLeadSummariesByPropertyId(propertyId));
-	}
-
-	// ─── Fetch by owner (all inquiries across owner's properties) ────────────
-
-	@GetMapping("/owner/{ownerId}")
-	public ResponseEntity<List<ClientLeadDTO>> getByOwner(@PathVariable Long ownerId) {
-		return ResponseEntity.ok(service.getByPropertyOwnerId(ownerId));
-	}
-
-	// ─── Fetch by lead type ───────────────────────────────────────────────────
-
-	@GetMapping("/type/{leadType}")
-	public ResponseEntity<List<ClientLeadDTO>> getByLeadType(@PathVariable MasterEnums.InquiryType leadType) {
-		log.info("GET /api/leads/type/{}", leadType);
-		return ResponseEntity.ok(service.getByLeadType(leadType));
-	}
-
-	// ─── Fetch by status ─────────────────────────────────────────────────────
-
-	@GetMapping("/status/{status}")
-	public ResponseEntity<List<ClientLeadDTO>> getByStatus(@PathVariable MasterEnums.LeadStatus status) {
-		return ResponseEntity.ok(service.getByStatus(status));
-	}
-
-	// ─── Broker CRM view ─────────────────────────────────────────────────────
-
-	@GetMapping("/broker/{brokerId}")
-	public ResponseEntity<List<ClientLeadDTO>> getByBroker(
-			@PathVariable Long brokerId,
-			@RequestParam(required = false) List<MasterEnums.LeadStatus> status,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-		log.info("GET /api/leads/broker/{} [status={}, start={}, end={}]", brokerId, status, startDate, endDate);
-		return ResponseEntity.ok(service.getByBrokerWithFilters(brokerId, status, startDate, endDate));
 	}
 
 	// ─── Request bodies ───────────────────────────────────────────────────────
@@ -167,17 +136,6 @@ public class ClientLeadController {
 		public void setStatus(MasterEnums.LeadStatus status) { this.status = status; }
 		public String getRemark() { return remark; }
 		public void setRemark(String remark) { this.remark = remark; }
-	}
-
-	public static class AgentAssignRequest {
-		@NotNull(message = "agentId is required")
-		private Long agentId;
-		private String agentName;
-
-		public Long getAgentId() { return agentId; }
-		public void setAgentId(Long agentId) { this.agentId = agentId; }
-		public String getAgentName() { return agentName; }
-		public void setAgentName(String agentName) { this.agentName = agentName; }
 	}
 
 	public static class ApprovalRequest {

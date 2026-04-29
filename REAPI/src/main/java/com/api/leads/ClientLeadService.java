@@ -89,7 +89,6 @@ public class ClientLeadService {
 	public ClientLeadDTO updateLead(Long id, ClientLeadDTO dto) {
 		log.info("updateLead - id={}", id);
 		ClientLead existing = getEntityById(id);
-		// Preserve system-managed fields
 		mapper.map(dto, existing);
 		existing.setId(id);
 		ClientLead updated = repository.save(existing);
@@ -106,22 +105,12 @@ public class ClientLeadService {
 			lead.setContactedDate(LocalDateTime.now());
 		}
 		ClientLead saved = repository.save(lead);
-
 		notificationService.notifyLeadStatusUpdated(
 				saved.getClientName(), saved.getMobile(), saved.getEmail(),
 				saved.getPropertyTitle(), saved.getPropertyCity(),
 				status.name(), remark);
-
 		log.info("updateStatus - leadId={} updated to {}", id, status);
 		return mapper.map(saved, ClientLeadDTO.class);
-	}
-
-	public ClientLeadDTO assignAgent(Long id, Long agentId, String agentName) {
-		log.info("assignAgent - leadId={}, agentId={}", id, agentId);
-		ClientLead lead = getEntityById(id);
-		lead.setAssignedAgentId(agentId);
-		lead.setAssignedAgentName(agentName);
-		return mapper.map(repository.save(lead), ClientLeadDTO.class);
 	}
 
 	public ClientLeadDTO updateApproval(Long id, String approvedBank, Double approvedLoanAmount, Double approvedInterestRate) {
@@ -147,12 +136,16 @@ public class ClientLeadService {
 		return mapper.map(getEntityById(id), ClientLeadDTO.class);
 	}
 
-	public List<ClientLeadDTO> getByUserId(Long userId) {
-		return toDto(repository.findByUserId(userId));
-	}
-
-	public List<ClientLeadDTO> getByPropertyId(Long propertyId) {
-		return toDto(repository.findByPropertyId(propertyId));
+	public List<ClientLeadSummaryDTO> search(
+			Long brokerId, Long ownerId, Long propertyId, Long userId,
+			List<MasterEnums.LeadStatus> statuses, MasterEnums.InquiryType leadType,
+			String mobile, LocalDateTime startDate, LocalDateTime endDate) {
+		log.info("search - brokerId={}, ownerId={}, propertyId={}, userId={}, leadType={}, statuses={}",
+				brokerId, ownerId, propertyId, userId, leadType, statuses);
+		List<ClientLead> results = repository.findAll(
+				ClientLeadSpecification.build(brokerId, ownerId, propertyId, userId, statuses, leadType, mobile, startDate, endDate));
+		log.info("search - returned {} leads", results.size());
+		return results.stream().map(this::toSummary).collect(Collectors.toList());
 	}
 
 	public List<ClientLeadSummaryDTO> getLeadSummariesByPropertyId(Long propertyId) {
@@ -160,39 +153,6 @@ public class ClientLeadService {
 		return repository.findByPropertyId(propertyId).stream()
 				.map(this::toSummary)
 				.collect(Collectors.toList());
-	}
-
-	public List<ClientLeadDTO> getByPropertyOwnerId(Long ownerId) {
-		return toDto(repository.findByPropertyOwnerId(ownerId));
-	}
-
-	public List<ClientLeadDTO> getByLeadType(MasterEnums.InquiryType leadType) {
-		log.info("getByLeadType - leadType={}", leadType);
-		return toDto(repository.findByLeadType(leadType));
-	}
-
-	public List<ClientLeadDTO> getByStatus(MasterEnums.LeadStatus status) {
-		return toDto(repository.findByStatus(status));
-	}
-
-	public List<ClientLeadDTO> getByBrokerWithFilters(Long brokerId, List<MasterEnums.LeadStatus> status,
-			LocalDateTime startDate, LocalDateTime endDate) {
-		log.info("getByBrokerWithFilters - brokerId={}, status={}", brokerId, status);
-		boolean hasStatus = status != null && !status.isEmpty();
-		boolean hasDates = startDate != null && endDate != null;
-		List<ClientLead> leads;
-
-		if (!hasStatus && !hasDates) {
-			leads = repository.findByBrokerId(brokerId);
-		} else if (hasStatus && !hasDates) {
-			leads = repository.findByBrokerIdAndStatusIn(brokerId, status);
-		} else if (!hasStatus) {
-			leads = repository.findByBrokerIdAndInquiryDateBetween(brokerId, startDate, endDate);
-		} else {
-			leads = repository.findByBrokerIdAndStatusInAndInquiryDateBetween(brokerId, status, startDate, endDate);
-		}
-		log.info("getByBrokerWithFilters - Returned {} leads for brokerId={}", leads.size(), brokerId);
-		return toDto(leads);
 	}
 
 	public void delete(Long id) {
@@ -205,10 +165,6 @@ public class ClientLeadService {
 	private ClientLead getEntityById(Long id) {
 		return repository.findById(id).orElseThrow(() ->
 				new RuntimeException("Lead not found with id: " + id));
-	}
-
-	private List<ClientLeadDTO> toDto(List<ClientLead> leads) {
-		return leads.stream().map(e -> mapper.map(e, ClientLeadDTO.class)).collect(Collectors.toList());
 	}
 
 	private ClientLeadSummaryDTO toSummary(ClientLead lead) {
@@ -248,7 +204,6 @@ public class ClientLeadService {
 		dto.setNextFollowUpDate(lead.getNextFollowUpDate());
 		dto.setExpectedPurchaseDate(lead.getExpectedPurchaseDate());
 
-		// Resolve owner details
 		if (lead.getPropertyOwnerId() != null) {
 			userRepository.findById(lead.getPropertyOwnerId()).ifPresent(u -> {
 				dto.setOwnerName(u.getName());
@@ -256,8 +211,6 @@ public class ClientLeadService {
 				dto.setOwnerEmail(u.getEmail());
 			});
 		}
-
-		// Resolve broker name
 		if (lead.getBrokerId() != null) {
 			userRepository.findById(lead.getBrokerId()).ifPresent(u -> dto.setBrokerName(u.getName()));
 		}

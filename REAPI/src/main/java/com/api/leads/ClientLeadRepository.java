@@ -1,36 +1,13 @@
 package com.api.leads;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import com.api.enums.MasterEnums;
-
 @Repository
-public interface ClientLeadRepository extends JpaRepository<ClientLead, Long> {
-
-	List<ClientLead> findByUserId(Long userId);
-
-	List<ClientLead> findByBrokerId(Long brokerId);
+public interface ClientLeadRepository extends JpaRepository<ClientLead, Long>, JpaSpecificationExecutor<ClientLead> {
 
 	List<ClientLead> findByPropertyId(Long propertyId);
-
-	List<ClientLead> findByPropertyOwnerId(Long propertyOwnerId);
-
-	List<ClientLead> findByLeadType(MasterEnums.InquiryType leadType);
-
-	List<ClientLead> findByStatus(MasterEnums.LeadStatus status);
-
-	List<ClientLead> findByBrokerIdAndStatusIn(Long brokerId, List<MasterEnums.LeadStatus> status);
-
-	List<ClientLead> findByBrokerIdAndLeadType(Long brokerId, MasterEnums.InquiryType leadType);
-
-	List<ClientLead> findByBrokerIdAndInquiryDateBetween(Long brokerId, LocalDateTime start, LocalDateTime end);
-
-	List<ClientLead> findByBrokerIdAndStatusInAndInquiryDateBetween(Long brokerId, List<MasterEnums.LeadStatus> status,
-			LocalDateTime start, LocalDateTime end);
 
 	boolean existsByUserIdAndPropertyId(Long userId, Long propertyId);
 }
