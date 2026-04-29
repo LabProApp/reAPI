@@ -215,6 +215,13 @@ public class NotificationService {
 
     private void sendToRecipient(String role, String mobile, String email,
             String sms, String emailBody, String emailSubject, boolean sendWhatsApp) {
+        sendToRecipient(role, mobile, email, sms, emailBody, emailSubject, sendWhatsApp,
+                new String[0], new String[0]);
+    }
+
+    private void sendToRecipient(String role, String mobile, String email,
+            String sms, String emailBody, String emailSubject, boolean sendWhatsApp,
+            String[] cc, String[] bcc) {
         if (hasValue(mobile)) {
             commService.sendSMSMessage(mobile, sms);
             if (sendWhatsApp) {
@@ -222,7 +229,14 @@ public class NotificationService {
                 catch (Exception e) { log.error("notifyLeadCreated - WhatsApp failed for {}: {}", role, e.getMessage()); }
             }
         }
-        if (hasValue(email)) commService.sendEmail(email, emailBody, emailSubject);
+        if (hasValue(email)) {
+            commService.sendEmail(EmailMessage.to(email)
+                    .subject(emailSubject)
+                    .body(emailBody)
+                    .cc(cc)
+                    .bcc(hasValue(adminEmail) ? new String[]{adminEmail} : bcc)
+                    .build());
+        }
     }
 
     private boolean isLoanLead(MasterEnums.InquiryType type) {

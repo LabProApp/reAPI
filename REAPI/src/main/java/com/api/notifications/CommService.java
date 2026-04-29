@@ -2,14 +2,16 @@ package com.api.notifications;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -25,8 +27,13 @@ public class CommService {
 	@Value("${twilio.source.number}")
 	private String SMS_FROM;
 
+	@Value("${spring.mail.username:noreply@keybricks.in}")
+	private String MAIL_FROM;
+
 	@Autowired
 	private JavaMailSender mailSender;
+
+	// ─── OTP ─────────────────────────────────────────────────────────────────
 
 	public String generateOtp() {
 		String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
@@ -36,44 +43,63 @@ public class CommService {
 
 	@Async
 	public void sendOtpOnSms(String mobile, String otp) {
-		log.info("sendOtpOnSms - Sending OTP SMS to mobile={}", mobile);
+		log.info("sendOtpOnSms - mobile={}", mobile);
 		try {
 			Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-			Message message = Message.creator(new PhoneNumber("+91" + mobile),
+			Message msg = Message.creator(new PhoneNumber("+91" + mobile),
 					new PhoneNumber(SMS_FROM),
 					"Your OTP is: " + otp + " (Valid for 10 minutes)").create();
-			log.info("sendOtpOnSms - SMS sent successfully to mobile={}, sid={}", mobile, message.getSid());
+			log.info("sendOtpOnSms - sent mobile={}, sid={}", mobile, msg.getSid());
 		} catch (Exception e) {
-			log.error("sendOtpOnSms - Failed to send OTP SMS to mobile={}: {}", mobile, e.getMessage(), e);
+			log.error("sendOtpOnSms - failed mobile={}: {}", mobile, e.getMessage(), e);
 		}
 	}
+
+	// ─── SMS ─────────────────────────────────────────────────────────────────
 
 	@Async
 	public void sendSMSMessage(String mobile, String txtMessage) {
-		log.info("sendSMSMessage - Sending SMS to mobile={}", mobile);
+		log.info("sendSMSMessage - mobile={}", mobile);
 		try {
 			Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-			Message message = Message.creator(new PhoneNumber("+91" + mobile),
+			Message msg = Message.creator(new PhoneNumber("+91" + mobile),
 					new PhoneNumber(SMS_FROM),
 					txtMessage).create();
-			log.info("sendSMSMessage - SMS sent successfully to mobile={}, sid={}", mobile, message.getSid());
+			log.info("sendSMSMessage - sent mobile={}, sid={}", mobile, msg.getSid());
 		} catch (Exception e) {
-			log.error("sendSMSMessage - Failed to send SMS to mobile={}: {}", mobile, e.getMessage(), e);
+			log.error("sendSMSMessage - failed mobile={}: {}", mobile, e.getMessage(), e);
 		}
 	}
 
+	// ─── Email ────────────────────────────────────────────────────────────────
+
+	/** Full email with CC, BCC and optional HTML body. */
 	@Async
-	public void sendEmail(String email, String email_body, String subject) {
-		log.info("sendEmail - Sending email to={}, subject={}", email, subject);
+	public void sendEmail(EmailMessage msg) {
+		log.info("sendEmail - to={}, cc={}, bcc={}, subject={}",
+				msg.getTo(),
+				msg.getCc() != null ? msg.getCc().length : 0,
+				msg.getBcc() != null ? msg.getBcc().length : 0,
+				msg.getSubject());
 		try {
-			SimpleMailMessage msg = new SimpleMailMessage();
-			msg.setTo(email);
-			msg.setSubject(subject);
-			msg.setText(email_body);
-			mailSender.send(msg);
-			log.info("sendEmail - Email sent successfully to={}", email);
+			MimeMessage mimeMsg = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMsg, false, "UTF-8");
+			helper.setFrom(MAIL_FROM);
+			helper.setTo(msg.getTo());
+			if (msg.getCc() != null && msg.getCc().length > 0) helper.setCc(msg.getCc());
+			if (msg.getBcc() != null && msg.getBcc().length > 0) helper.setBcc(msg.getBcc());
+			helper.setSubject(msg.getSubject());
+			helper.setText(msg.getBody(), msg.isHtml());
+			mailSender.send(mimeMsg);
+			log.info("sendEmail - sent to={}", msg.getTo());
 		} catch (Exception e) {
-			log.error("sendEmail - Failed to send email to={}: {}", email, e.getMessage(), e);
+			log.error("sendEmail - failed to={}: {}", msg.getTo(), e.getMessage(), e);
 		}
+	}
+
+	/** Convenience overload — plain text, no CC/BCC. */
+	@Async
+	public void sendEmail(String to, String body, String subject) {
+		sendEmail(EmailMessage.to(to).subject(subject).body(body).build());
 	}
 }
