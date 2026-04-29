@@ -22,6 +22,20 @@ import com.api.userproperty.UserPropertyRelation;
 import com.api.userproperty.UserPropertyRelationRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business-logic service for all user-related operations in the real estate API.
+ *
+ * <p>Responsibilities include:
+ * <ul>
+ *   <li>User registration (signup) with BCrypt password encoding and OTP dispatch</li>
+ *   <li>OTP verification and account activation</li>
+ *   <li>JWT-based login and stateless session management</li>
+ *   <li>Password reset and profile management</li>
+ *   <li>Managing user-property relationships (favourites and inquiries)</li>
+ * </ul>
+ *
+ * <p>All dependencies are injected via constructor injection per Spring best practice.
+ */
 @Slf4j
 @Service
 public class UserService {
@@ -35,6 +49,18 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 
+	/**
+	 * Constructs a {@code UserService} with all required collaborators.
+	 *
+	 * @param userRepository             repository for {@link User} persistence
+	 * @param propertyRepository         repository for {@link Property} lookups
+	 * @param propertyRelationRepository repository for user-property relationship records
+	 * @param commService                service for sending OTP via email/SMS
+	 * @param notificationService        service for sending welcome and other notifications
+	 * @param mapper                     ModelMapper instance for DTO ↔ entity conversion
+	 * @param passwordEncoder            BCrypt password encoder
+	 * @param jwtUtil                    utility for generating and validating JWT tokens
+	 */
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
 			UserPropertyRelationRepository propertyRelationRepository, CommService commService,
 			NotificationService notificationService, ModelMapper mapper,
@@ -50,6 +76,19 @@ public class UserService {
 	}
 
 	// ---------------- REGISTER ----------------
+
+	/**
+	 * Registers a new user, encodes their password, assigns default role and status,
+	 * generates an OTP, and dispatches it via email and/or SMS.
+	 *
+	 * <p>At least one of {@code email} or {@code mobile} must be present in the supplied DTO.
+	 * Duplicate email or mobile values are rejected with an {@link IllegalArgumentException}.
+	 *
+	 * @param userDto the registration payload; must contain at minimum an email or mobile
+	 * @return a {@link UserDto} representing the persisted user (password excluded from output)
+	 * @throws IllegalArgumentException if neither email nor mobile is provided,
+	 *                                  or if the email/mobile is already in use
+	 */
 	public UserDto signup(UserDto userDto) {
 		String identifier = userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile();
 		log.info("signup - Signup attempt for identifier={}", identifier);
@@ -101,6 +140,18 @@ public class UserService {
 		return mapper.map(user, UserDto.class);
 	}
 
+	/**
+	 * Verifies the OTP submitted by the user and activates the account on success.
+	 *
+	 * <p>The {@code identifier} may be an email address (containing {@code @}) or a mobile number.
+	 * The OTP must match the stored value and must not have expired (10-minute window).
+	 *
+	 * @param identifier the user's email address or mobile number
+	 * @param otp        the one-time password to verify
+	 * @return {@code 200 OK} with a success message, or {@code 400 Bad Request} if the OTP
+	 *         is invalid or expired
+	 * @throws IllegalArgumentException if no user is found for the given identifier
+	 */
 	public ResponseEntity<String> verifyOtp(String identifier, String otp) {
 		log.info("verifyOtp - OTP verification for identifier={}", identifier);
 		Optional<User> userOptional = identifier.contains("@") ? userRepository.findByEmail(identifier)
@@ -130,6 +181,16 @@ public class UserService {
 		return ResponseEntity.ok("OTP verified! User activated.");
 	}
 
+	/**
+	 * Re-generates and dispatches a fresh OTP for the specified user.
+	 *
+	 * <p>To prevent abuse, a minimum 60-second cooldown is enforced between OTP requests.
+	 *
+	 * @param identifier the user's email address or mobile number
+	 * @return {@code 200 OK} with a confirmation message, or {@code 400 Bad Request} if the
+	 *         cooldown has not elapsed
+	 * @throws IllegalArgumentException if no user is found for the given identifier
+	 */
 	public ResponseEntity<String> resendOtp(String identifier) {
 		log.info("resendOtp - Resend OTP request for identifier={}", identifier);
 		Optional<User> userOptional = identifier.contains("@") ? userRepository.findByEmail(identifier)
@@ -167,6 +228,19 @@ public class UserService {
 	}
 
 	// ---------------- LOGIN ----------------
+
+	/**
+	 * Authenticates a user by email or mobile and password, returning a JWT on success.
+	 *
+	 * <p>The supplied password is checked against the stored BCrypt hash. On success a
+	 * {@link LoginResponse} containing the JWT bearer token and user profile is returned.
+	 *
+	 * @param reqDto the login request DTO; must contain either {@code email} or {@code mobile}
+	 *               and a plain-text {@code password}
+	 * @return {@code 200 OK} with a {@link LoginResponse}, {@code 401 Unauthorized} if the
+	 *         password does not match, or {@code 400 Bad Request} if neither identifier is supplied
+	 * @throws IllegalArgumentException if no user is found for the given email or mobile
+	 */
 	public ResponseEntity<LoginResponse> login(UserDto reqDto) {
 		String identifier = reqDto.getEmail() != null ? reqDto.getEmail() : reqDto.getMobile();
 		log.info("login - Login attempt for identifier={}", identifier);
@@ -202,6 +276,14 @@ public class UserService {
 	}
 
 	// ---------------- PROFILE ----------------
+
+	/**
+	 * Retrieves a user's profile by their email address or mobile number.
+	 *
+	 * @param emailOrMobile the user's email address (containing {@code @}) or mobile number
+	 * @return the {@link UserDto} for the found user
+	 * @throws IllegalArgumentException if no user matches the given identifier
+	 */
 	public UserDto getProfile(String emailOrMobile) {
 		Optional<User> userOpt = emailOrMobile.contains("@") ? userRepository.findByEmail(emailOrMobile)
 				: userRepository.findByMobile(emailOrMobile);
@@ -210,6 +292,13 @@ public class UserService {
 				.orElseThrow(() -> new IllegalArgumentException("User not found"));
 	}
 
+	/**
+	 * Retrieves a user's profile by their numeric user ID.
+	 *
+	 * @param userId the surrogate primary key of the user
+	 * @return the {@link UserDto} for the found user
+	 * @throws IllegalArgumentException if no user exists with the given ID
+	 */
 	public UserDto getProfilebyUserId(Long userId) {
 		Optional<User> userOpt = userRepository.findById(userId);
 
@@ -217,6 +306,16 @@ public class UserService {
 				.orElseThrow(() -> new IllegalArgumentException("User not found"));
 	}
 
+	/**
+	 * Applies a partial update to the authenticated user's profile.
+	 *
+	 * <p>Only non-{@code null} fields in {@code userDto} are applied; the user is located
+	 * by the {@code id} field which must be present in the DTO.
+	 *
+	 * @param userDto the DTO carrying the fields to update; {@code id} must be non-{@code null}
+	 * @return the updated {@link UserDto} reflecting the persisted state
+	 * @throws IllegalArgumentException if no user exists with the ID in the DTO
+	 */
 	public UserDto updateProfile(UserDto userDto) {
 		Optional<User> userOpt = userRepository.findById(userDto.getId());
 
@@ -239,6 +338,16 @@ public class UserService {
 	}
 
 	// ---------------- RESET PASSWORD ----------------
+
+	/**
+	 * Resets the password for the user identified by email or mobile in the supplied DTO.
+	 *
+	 * <p>The new plain-text password is BCrypt-encoded before persistence.
+	 *
+	 * @param userDto the DTO containing the identifier (email or mobile) and the new password
+	 * @return {@code 200 OK} with a success message
+	 * @throws IllegalArgumentException if no user is found for the given identifier
+	 */
 	public ResponseEntity<String> resetPassword(UserDto userDto) {
 		String identifier = userDto.getEmail() != null ? userDto.getEmail() : userDto.getMobile();
 		log.info("resetPassword - Password reset request for identifier={}", identifier);
@@ -262,6 +371,19 @@ public class UserService {
 	}
 
 	// ---------------- PROPERTY RELATIONS ----------------
+
+	/**
+	 * Toggles the favourite flag on the relationship between a user and a property.
+	 *
+	 * <p>If no relationship record exists yet it is created automatically. The
+	 * {@code favouriteDate} timestamp is set when marking as favourite and cleared
+	 * when un-favouriting.
+	 *
+	 * @param userId     the ID of the user performing the action
+	 * @param propertyId the ID of the property to toggle
+	 * @return the {@code propertyId} that was toggled
+	 * @throws RuntimeException if the user or property is not found
+	 */
 	@Transactional
 	public Long markFavourite(Long userId, Long propertyId) {
 
@@ -290,6 +412,18 @@ public class UserService {
 		return propertyId;
 	}
 
+	/**
+	 * Toggles the inquiry (interest) flag on the relationship between a user and a property.
+	 *
+	 * <p>If no relationship record exists yet it is created automatically. The
+	 * {@code inquiryDate} timestamp is set when marking as interested and cleared
+	 * when removing interest.
+	 *
+	 * @param userId     the ID of the user performing the action
+	 * @param propertyId the ID of the property to toggle
+	 * @return the {@code propertyId} that was toggled
+	 * @throws RuntimeException if the user or property is not found
+	 */
 	@Transactional
 	public Long markInterested(Long userId, Long propertyId) {
 
@@ -318,6 +452,15 @@ public class UserService {
 		return propertyId;
 	}
 
+	/**
+	 * Returns all properties that the specified user has marked as favourites.
+	 *
+	 * <p>Each {@link UserPropertyRelation} with {@code favourite = true} is mapped to a
+	 * fully populated {@link PropertyDto} including pricing, location, amenities, and audit fields.
+	 *
+	 * @param userId the ID of the user whose favourites are to be retrieved
+	 * @return a list of {@link PropertyDto} objects representing the user's favourite properties
+	 */
 	@Transactional
 	public List<PropertyDto> getFavouriteProperties(Long userId) {
 		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndFavouriteTrue(userId);
@@ -408,6 +551,15 @@ public class UserService {
 		}).collect(Collectors.toList());
 	}
 
+	/**
+	 * Returns all properties for which the specified user has submitted an inquiry.
+	 *
+	 * <p>Each {@link UserPropertyRelation} with {@code inquiry = true} is mapped to a
+	 * fully populated {@link PropertyDto} including pricing, location, amenities, and audit fields.
+	 *
+	 * @param userId the ID of the user whose inquired properties are to be retrieved
+	 * @return a list of {@link PropertyDto} objects representing the user's inquired properties
+	 */
 	@Transactional
 	public List<PropertyDto> getInquiredProperties(Long userId) {
 		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndInquiryTrue(userId);
@@ -499,6 +651,16 @@ public class UserService {
 	}
 
 	// ---------------- LOGOUT ----------------
+
+	/**
+	 * Handles a logout request.
+	 *
+	 * <p>Because JWT authentication is stateless, server-side session invalidation is not
+	 * required. This method simply returns a confirmation message; token expiry or
+	 * client-side token removal is sufficient for logout.
+	 *
+	 * @return {@code 200 OK} with a logout confirmation message
+	 */
 	public ResponseEntity<String> logout() {
 		return ResponseEntity.ok("Logged out successfully!");
 	}

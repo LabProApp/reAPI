@@ -108,10 +108,22 @@ public class TemplateRegistry {
                 null));
     }
 
+    /**
+     * Retrieves the {@link NotificationTemplateSet} associated with the given key.
+     *
+     * @param key the {@link TemplateKey} to look up
+     * @return the corresponding {@link NotificationTemplateSet}, or {@code null} if not found
+     */
     public static NotificationTemplateSet get(TemplateKey key) {
         return REGISTRY.get(key);
     }
 
+    /**
+     * Returns an unmodifiable view of the entire template registry.
+     *
+     * @return an unmodifiable {@link Map} of all registered {@link TemplateKey} to
+     *         {@link NotificationTemplateSet} mappings
+     */
     public static Map<TemplateKey, NotificationTemplateSet> all() {
         return java.util.Collections.unmodifiableMap(REGISTRY);
     }

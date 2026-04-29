@@ -14,6 +14,13 @@ import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service layer for all bank and interest-rate operations. Orchestrates
+ * persistence via {@link BankRepository} and {@link InterestRatesRepository},
+ * performs manual entity-to-DTO mapping, and delegates document lookups to
+ * {@link DocumentsService}. All public methods are transactional through the
+ * default Spring proxy unless otherwise noted.
+ */
 @Slf4j
 @Service
 public class BankService {
@@ -24,6 +31,13 @@ public class BankService {
 	@Autowired
 	private DocumentsService documentsService;
 
+	/**
+	 * Constructs a {@code BankService} with its required collaborators.
+	 *
+	 * @param bankRepository          the JPA repository for {@link Bank} entities
+	 * @param mapper                  the ModelMapper instance used for DTO mapping
+	 * @param interestRatesRepository the JPA repository for {@link InterestRates} entities
+	 */
 	public BankService(BankRepository bankRepository, ModelMapper mapper,
 			InterestRatesRepository interestRatesRepository) {
 		this.bankRepository = bankRepository;
@@ -31,6 +45,14 @@ public class BankService {
 		this.mapper = mapper;
 	}
 
+	/**
+	 * Retrieves all banks and batch-loads their logo documents in a single
+	 * {@link DocumentsService#getminDocumentsByObjectIds} call to avoid N+1
+	 * queries. The logo URL is resolved from the document whose caption equals
+	 * {@code "LOGO"} (case-insensitive).
+	 *
+	 * @return a list of {@link BankDto} instances, each enriched with its logo URL
+	 */
 	public List<BankDto> getAllBanks() {
 		log.info("Fetching all banks");
 		List<Bank> banks = bankRepository.findAll();
@@ -48,6 +70,12 @@ public class BankService {
 	}
 
 	// ➕ Add a new loan representative
+	/**
+	 * Persists a new bank record from the supplied DTO.
+	 *
+	 * @param bankDto the DTO containing the new bank's details
+	 * @return a {@link BankDto} representing the saved bank, including its generated ID
+	 */
 	public BankDto addBank(BankDto bankDto) {
 		log.info("Adding bank: {}", bankDto.getBankName());
 		Bank entity = toEntity(bankDto);
@@ -56,6 +84,13 @@ public class BankService {
 		return toDto(saved);
 	}
 
+	/**
+	 * Converts a {@link Bank} entity to its corresponding {@link BankDto},
+	 * including a manual mapping of the nested {@link InterestRates} collection.
+	 *
+	 * @param bank the entity to convert; if {@code null} the method returns {@code null}
+	 * @return the populated {@link BankDto}, or {@code null} if {@code bank} is {@code null}
+	 */
 	// Convert Bank entity to BankDto
 	public BankDto toDto(Bank bank) {
 		if (bank == null)
@@ -124,6 +159,14 @@ public class BankService {
 		return dto;
 	}
 
+	/**
+	 * Converts a {@link BankDto} to a new {@link Bank} entity, including a manual
+	 * mapping of the nested {@link InterestRates} collection with the back-reference
+	 * to the parent bank set correctly.
+	 *
+	 * @param dto the DTO to convert; if {@code null} the method returns {@code null}
+	 * @return the populated {@link Bank} entity, or {@code null} if {@code dto} is {@code null}
+	 */
 	// Convert BankDto to Bank entity
 	public Bank toEntity(BankDto dto) {
 		if (dto == null)
@@ -194,6 +237,19 @@ public class BankService {
 		return bank;
 	}
 
+	/**
+	 * Adds a new CIBIL-tiered interest rate slab for the given bank.
+	 * Validates that min/max CIBIL values are non-null, that minCibil does not
+	 * exceed maxCibil, and that the new range does not overlap with any existing
+	 * slab for the same bank.
+	 *
+	 * @param dto the interest rate details including {@code bankId} and CIBIL range
+	 * @return the persisted {@link InterestRatesDto} with its generated ID
+	 * @throws IllegalArgumentException if minCibil or maxCibil is null, or if
+	 *                                  minCibil is greater than maxCibil
+	 * @throws RuntimeException         if the bank is not found or a CIBIL range
+	 *                                  overlap is detected
+	 */
 	public InterestRatesDto addInterestRates(InterestRatesDto dto) {
 		log.info("Adding interest rate for bankId={}, CIBIL range [{}-{}]",
 				dto.getBankId(), dto.getMinCibil(), dto.getMaxCibil());
@@ -237,6 +293,15 @@ public class BankService {
 	}
 
 	// ✏️ UPDATE
+	/**
+	 * Updates an existing CIBIL-tiered interest rate slab identified by
+	 * {@code dto.getId()}.
+	 *
+	 * @param dto the updated interest rate details; must contain a valid {@code id}
+	 * @return a 200 OK response with a success message, or an error if the slab
+	 *         is not found
+	 * @throws RuntimeException if no {@link InterestRates} record exists for the given ID
+	 */
 	public ResponseEntity<?> updateInterestRates(InterestRatesDto dto) {
 		log.info("Updating interest rate id={}", dto.getId());
 		InterestRates rate = interestRatesRepository.findById(dto.getId())
@@ -258,6 +323,14 @@ public class BankService {
 	/**
 	 * List comparison of all loans showing interest rate, processing fee, min CIBIL
 	 */
+	/**
+	 * Returns all CIBIL-tiered interest rate slabs for the specified bank,
+	 * verifying that the bank exists before querying.
+	 *
+	 * @param bankId the ID of the bank whose rate slabs are to be listed
+	 * @return a list of {@link InterestRatesDto} for the bank; never {@code null}
+	 * @throws RuntimeException if no bank is found with the given ID
+	 */
 	public List<InterestRatesDto> getInterestRatesByBank(Long bankId) {
 
 		// Validate bank exists
@@ -268,6 +341,14 @@ public class BankService {
 		return interestRatesRepository.findByBankId(bankId).stream().map(this::toInterestDto).toList();
 	}
 
+	/**
+	 * Retrieves all banks with their full CIBIL-tiered interest rate slabs.
+	 * Fetches all banks and all interest rates in two separate queries, then
+	 * groups and merges them in memory to avoid N+1 queries.
+	 *
+	 * @return a list of {@link BankDto} instances each containing their associated
+	 *         {@link InterestRatesDto} slabs
+	 */
 	public List<BankDto> getAllBanksWithInterestRates() {
 
 		List<Bank> banks = bankRepository.findAll();
@@ -297,6 +378,12 @@ public class BankService {
 		}).toList();
 	}
 
+	/**
+	 * Converts an {@link InterestRates} entity to an {@link InterestRatesDto}.
+	 *
+	 * @param rate the entity to convert
+	 * @return the corresponding {@link InterestRatesDto}
+	 */
 	private InterestRatesDto toInterestDto(InterestRates rate) {
 		InterestRatesDto dto = new InterestRatesDto();
 		dto.setId(rate.getId());
@@ -307,6 +394,13 @@ public class BankService {
 		return dto;
 	}
 
+	/**
+	 * Returns a list of all banks sorted ascending by their base interest rate,
+	 * mapped to {@link LoanComparisonDto} via ModelMapper for use in loan
+	 * comparison views.
+	 *
+	 * @return a sorted list of {@link LoanComparisonDto} instances
+	 */
 	public List<LoanComparisonDto> listComparison() {
 
 		return bankRepository.findAll().stream()
@@ -315,6 +409,17 @@ public class BankService {
 	}
 
 	// ✏️ Update loan representative
+	/**
+	 * Selectively updates an existing bank record field-by-field, preserving JPA
+	 * audit timestamps managed by {@code @PrePersist}/{@code @PreUpdate}. The logo
+	 * URL is only overwritten when the incoming DTO supplies a non-null value.
+	 *
+	 * @param requestDto the DTO containing updated bank data; must include a valid
+	 *                   {@code id}
+	 * @return a 200 OK response containing the updated {@link BankDto}, a 400 Bad
+	 *         Request if the ID is absent, or an error body if the bank is not found
+	 * @throws RuntimeException if no bank is found with the specified ID
+	 */
 	public ResponseEntity<?> updateBank(BankDto requestDto) {
 		log.info("Updating bank id={}", requestDto.getId());
 
@@ -372,6 +477,21 @@ public class BankService {
 	}
 
 	// 🔎 Advanced filtering
+	/**
+	 * Applies optional filter criteria to the bank list using JPA Specifications.
+	 * Any parameter that is {@code null} is ignored, allowing callers to pass any
+	 * combination of filters.
+	 *
+	 * @param maxRate    the maximum acceptable base interest rate; {@code null} to skip
+	 * @param minCibil   the minimum CIBIL score the bank must require; {@code null} to skip
+	 * @param maxTenure  the maximum tenure in years; {@code null} to skip
+	 * @param minIncome  the minimum income requirement; {@code null} to skip
+	 * @param city       the city to filter by (case-insensitive exact match); {@code null} to skip
+	 * @param state      the state to filter by (case-insensitive exact match); {@code null} to skip
+	 * @param bank       a partial bank name to search for (case-insensitive LIKE); {@code null} to skip
+	 * @param postalCode the postal code to filter by (case-insensitive exact match); {@code null} to skip
+	 * @return a list of {@link BankDto} instances matching all supplied criteria
+	 */
 	public List<BankDto> advancedFilter(Double maxRate, Integer minCibil, Integer maxTenure, Double minIncome,
 			String city, String state, String bank, String postalCode) {
 		log.info("Advanced bank filter [maxRate={}, minCibil={}, city={}, state={}]", maxRate, minCibil, city, state);

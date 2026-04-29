@@ -12,6 +12,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REST controller exposing reference-data endpoints under {@code /api/master}.
+ *
+ * <p>Provides read-only access to:
+ * <ul>
+ *   <li>Database-backed master lookup values (cities, states, banks, etc.) via
+ *       {@link MasterLookupService}</li>
+ *   <li>In-memory enum constant listings derived from {@link MasterEnums}</li>
+ * </ul>
+ *
+ * <p>All write-heavy business logic is delegated to {@link MasterLookupService}.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/master")
@@ -19,10 +31,24 @@ public class MasterLookupController {
 
 	private final MasterLookupService service;
 
+	/**
+	 * Constructs a {@code MasterLookupController} with the required service dependency.
+	 *
+	 * @param service the service handling master lookup and enum retrieval
+	 */
 	public MasterLookupController(MasterLookupService service) {
 		this.service = service;
 	}
 
+	/**
+	 * Returns a list of master lookup values filtered by type and status.
+	 *
+	 * <p>{@code GET /api/master/getMasterValues?type=CITY&status=ACTIVE}
+	 *
+	 * @param type   the category type of the lookup values to retrieve (e.g., {@code "CITY"})
+	 * @param status the status filter; defaults to {@code "ACTIVE"} if not specified
+	 * @return a list of {@link MasterLookupDto} entries matching the given type and status
+	 */
 	@GetMapping("/getMasterValues")
 	public List<MasterLookupDto> getMasterValues(@RequestParam String type,
 			@RequestParam(defaultValue = "ACTIVE") String status) {
@@ -32,6 +58,18 @@ public class MasterLookupController {
 		return values;
 	}
 
+	/**
+	 * Returns child lookup entries belonging to a specific parent entry.
+	 *
+	 * <p>{@code GET /api/master/{parentId}/child?type=CITY&status=ACTIVE}
+	 *
+	 * <p>Typical use: fetch all cities under a given state.
+	 *
+	 * @param parentId the surrogate ID of the parent {@link MasterLookup} entry
+	 * @param status   the status filter; defaults to {@code "ACTIVE"} if not specified
+	 * @param type     the category type of child entries to retrieve (e.g., {@code "CITY"})
+	 * @return a list of {@link MasterLookupDto} child entries
+	 */
 	@GetMapping("/{parentId}/child")
 	public List<MasterLookupDto> getChildValues(@PathVariable Long parentId,
 			@RequestParam(defaultValue = "ACTIVE") String status, @RequestParam String type) {
@@ -41,6 +79,16 @@ public class MasterLookupController {
 		return response;
 	}
 
+	/**
+	 * Returns all constants of a named enum from {@link MasterEnums} as strings.
+	 *
+	 * <p>{@code GET /api/master/enum/{enumName}}
+	 *
+	 * @param enumName the simple class name of the desired enum (case-insensitive),
+	 *                 e.g., {@code "UserRoleEnum"} or {@code "PropertyTypeEnum"}
+	 * @return {@code 200 OK} with a list of constant name strings,
+	 *         or {@code 400 Bad Request} if the enum is not found
+	 */
 	@GetMapping("/enum/{enumName}")
 	public ResponseEntity<List<String>> getEnumByName(@PathVariable String enumName) {
 		log.info("GET /api/master/enum/{} - Fetching enum values", enumName);
@@ -49,6 +97,13 @@ public class MasterLookupController {
 		return ResponseEntity.ok(values);
 	}
 
+	/**
+	 * Returns all enums declared inside {@link MasterEnums}, grouped by their simple class name.
+	 *
+	 * <p>{@code GET /api/master/allenums}
+	 *
+	 * @return {@code 200 OK} with a map of enum simple-class-name to list of constant name strings
+	 */
 	@GetMapping("/allenums")
 	public ResponseEntity<Map<String, List<String>>> getAllEnums() {
 		log.info("GET /api/master/allenums - Fetching all enums");

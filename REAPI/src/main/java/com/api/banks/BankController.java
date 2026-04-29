@@ -17,6 +17,11 @@ import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REST controller that exposes bank and interest-rate management endpoints
+ * under the {@code /api/banks} base path. Delegates all business logic to
+ * {@link BankService}.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/banks")
@@ -25,11 +30,22 @@ public class BankController {
 
 	private final BankService bankService;
 
+	/**
+	 * Constructs a {@code BankController} with the required service dependency.
+	 *
+	 * @param bankService the service that handles bank business logic
+	 */
 	public BankController(BankService bankService) {
 		this.bankService = bankService;
 	}
 
 	// 📃 List all banks
+	/**
+	 * Retrieves all bank records, each enriched with its logo URL resolved from
+	 * the document store.
+	 *
+	 * @return 200 OK with the list of all {@link BankDto} instances
+	 */
 	@GetMapping
 	public ResponseEntity<List<BankDto>> getAllBanks() {
 		log.info("GET /api/banks - Fetching all banks");
@@ -39,6 +55,12 @@ public class BankController {
 	}
 
 	// ➕ Add a new bank
+	/**
+	 * Creates a new bank record from the supplied request body.
+	 *
+	 * @param dto the validated {@link BankDto} containing the new bank's details
+	 * @return 200 OK with the persisted {@link BankDto} including its generated ID
+	 */
 	@PostMapping
 	public ResponseEntity<BankDto> addBank(@Valid @RequestBody BankDto dto) {
 		log.info("POST /api/banks - Adding bank: {}", dto.getBankName());
@@ -48,6 +70,14 @@ public class BankController {
 	}
 
 	// ✏️ Update an existing bank
+	/**
+	 * Updates an existing bank identified by its path-variable ID. The ID from the
+	 * path is injected into the DTO before delegating to the service.
+	 *
+	 * @param id  the ID of the bank to update
+	 * @param dto the validated {@link BankDto} containing updated field values
+	 * @return 200 OK with the updated {@link BankDto}, or an appropriate error response
+	 */
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateBank(@PathVariable Long id, @Valid @RequestBody BankDto dto) {
 		log.info("PUT /api/banks/{} - Updating bank", id);
@@ -58,6 +88,12 @@ public class BankController {
 	}
 
 	// ⚖️ Compare banks by interest rate
+	/**
+	 * Returns all banks sorted in ascending order by their base interest rate,
+	 * providing a side-by-side comparison view.
+	 *
+	 * @return 200 OK with banks sorted by ascending interest rate
+	 */
 	@GetMapping("/compare")
 	public ResponseEntity<List<BankDto>> compareBanks() {
 		log.info("GET /api/banks/compare - Comparing banks by interest rate");
@@ -70,6 +106,14 @@ public class BankController {
 
 
 	// ➕ Add interest rates for a bank
+	/**
+	 * Adds a new CIBIL-tiered interest rate slab for the specified bank.
+	 * The {@code bankId} from the path is injected into the DTO before processing.
+	 *
+	 * @param bankId the ID of the bank to which the interest rate slab belongs
+	 * @param dto    the validated {@link InterestRatesDto} with CIBIL range and rate
+	 * @return 200 OK with the persisted {@link InterestRatesDto} including its generated ID
+	 */
 	@PostMapping("/{bankId}/interest-rates")
 	public ResponseEntity<InterestRatesDto> addInterestRate(@PathVariable Long bankId,
 			@Valid @RequestBody InterestRatesDto dto) {
@@ -82,6 +126,14 @@ public class BankController {
 	}
 
 	// ✏️ Update interest rate
+	/**
+	 * Updates an existing CIBIL-tiered interest rate slab for the specified bank.
+	 * The {@code bankId} from the path is injected into the DTO before processing.
+	 *
+	 * @param bankId the ID of the owning bank
+	 * @param dto    the validated {@link InterestRatesDto} containing updated values
+	 * @return 200 OK with a success message, or an error response if the slab is not found
+	 */
 	@PutMapping("/{bankId}/interest-rates")
 	public ResponseEntity<?> updateInterestRates(@PathVariable Long bankId, @Valid @RequestBody InterestRatesDto dto) {
 		log.info("PUT /api/banks/{}/interest-rates - Updating interest rate id={}", bankId, dto.getId());
@@ -92,6 +144,12 @@ public class BankController {
 	}
 
 	// 📃 List interest rates for a bank
+	/**
+	 * Lists all CIBIL-tiered interest rate slabs for the specified bank.
+	 *
+	 * @param bankId the ID of the bank whose rate slabs are to be retrieved
+	 * @return 200 OK with the list of {@link InterestRatesDto} for the bank
+	 */
 	@GetMapping("/{bankId}/interest-rates")
 	public ResponseEntity<List<InterestRatesDto>> getInterestRatesByBank(@PathVariable Long bankId) {
 		log.info("GET /api/banks/{}/interest-rates - Fetching interest rates", bankId);
@@ -101,6 +159,13 @@ public class BankController {
 	}
 
 	// 📃 Get all banks with their interest rates
+	/**
+	 * Retrieves all banks together with their full CIBIL-tiered interest rate slabs
+	 * in a single response, optimised to avoid N+1 queries.
+	 *
+	 * @return 200 OK with the list of {@link BankDto} instances each containing
+	 *         their associated interest rate slabs
+	 */
 	@GetMapping("/with-interest-rates")
 	public ResponseEntity<List<BankDto>> getAllBanksWithInterestRates() {
 		log.info("GET /api/banks/with-interest-rates - Fetching all banks with interest rates");
@@ -111,6 +176,20 @@ public class BankController {
 
 
 	// 🔎 Advanced filtering
+	/**
+	 * Filters banks using any combination of the supplied query parameters.
+	 * All parameters are optional; omitted parameters are ignored in the query.
+	 *
+	 * @param maxRate    the upper bound for the base interest rate
+	 * @param minCibil   the minimum CIBIL score the bank must accept
+	 * @param maxTenure  the upper bound for loan tenure in years
+	 * @param minIncome  the minimum required monthly income
+	 * @param city       the city to filter by (case-insensitive)
+	 * @param state      the state to filter by (case-insensitive)
+	 * @param bank       a partial bank name to search for (case-insensitive)
+	 * @param postalcode the postal code to filter by (case-insensitive)
+	 * @return 200 OK with the list of matching {@link BankDto} instances
+	 */
 	@GetMapping("/filter")
 	public ResponseEntity<List<BankDto>> advancedFilter(@RequestParam(required = false) Double maxRate,
 			@RequestParam(required = false) Integer minCibil, @RequestParam(required = false) Integer maxTenure,

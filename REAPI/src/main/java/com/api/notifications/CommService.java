@@ -14,6 +14,14 @@ import com.twilio.type.PhoneNumber;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Low-level communication service that provides direct send operations for
+ * email (via Spring Mail / JavaMailSender), SMS (via Twilio), and OTP delivery.
+ *
+ * <p>All send methods are executed asynchronously using {@code @Async} so that
+ * callers are not blocked on network I/O. Errors are caught internally and
+ * logged; they do not propagate to the caller.
+ */
 @Slf4j
 @Service
 public class CommService {
@@ -35,12 +43,24 @@ public class CommService {
 
 	// ─── OTP ─────────────────────────────────────────────────────────────────
 
+	/**
+	 * Generates a random six-digit OTP string.
+	 *
+	 * @return a six-digit numeric OTP as a {@code String}
+	 */
 	public String generateOtp() {
 		String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
 		log.debug("generateOtp - Generated OTP");
 		return otp;
 	}
 
+	/**
+	 * Asynchronously sends an OTP to the given mobile number via SMS using Twilio.
+	 * The message includes a 10-minute validity notice.
+	 *
+	 * @param mobile the destination mobile number (without country code; {@code +91} is prepended)
+	 * @param otp    the one-time password string to send
+	 */
 	@Async
 	public void sendOtpOnSms(String mobile, String otp) {
 		log.info("sendOtpOnSms - mobile={}", mobile);
@@ -57,6 +77,12 @@ public class CommService {
 
 	// ─── SMS ─────────────────────────────────────────────────────────────────
 
+	/**
+	 * Asynchronously sends a plain-text SMS to the given mobile number via Twilio.
+	 *
+	 * @param mobile     the destination mobile number (without country code; {@code +91} is prepended)
+	 * @param txtMessage the text content of the SMS
+	 */
 	@Async
 	public void sendSMSMessage(String mobile, String txtMessage) {
 		log.info("sendSMSMessage - mobile={}", mobile);

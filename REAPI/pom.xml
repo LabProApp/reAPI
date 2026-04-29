@@ -104,6 +104,42 @@
 					<mainClass>com.REAPIApplication</mainClass>
 				</configuration>
 			</plugin>
+
+			<!--
+				Generates JavaDoc HTML on every compile and places it under
+				target/classes/static/javadoc so Spring Boot serves the docs at
+				http://localhost:8080/javadoc/index.html without any extra config.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.6.3</version>
+				<executions>
+					<execution>
+						<id>generate-javadoc-html</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputDirectory>${project.build.outputDirectory}/static/javadoc</outputDirectory>
+					<reportOutputDirectory>${project.build.outputDirectory}/static/javadoc</reportOutputDirectory>
+					<destDir>.</destDir>
+					<show>private</show>
+					<windowtitle>Real Estate API – Java Documentation</windowtitle>
+					<doctitle><![CDATA[<h1>Real Estate API</h1><p>Internal Java Documentation – v${project.version}</p>]]></doctitle>
+					<header><![CDATA[<b>Real Estate API v${project.version}</b>]]></header>
+					<bottom><![CDATA[<i>&copy; Real Estate API. All rights reserved.</i>]]></bottom>
+					<source>17</source>
+					<failOnError>false</failOnError>
+					<quiet>true</quiet>
+					<additionalOptions>
+						<additionalOption>-Xdoclint:none</additionalOption>
+					</additionalOptions>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

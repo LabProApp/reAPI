@@ -14,6 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * REST controller for real estate project endpoints.
+ *
+ * <p>Exposes read-only APIs under {@code /api/projects} for listing projects
+ * with optional filters (city, builder, status, property type, price range)
+ * and for fetching a single project by its ID. Pagination and sorting are
+ * fully configurable via query parameters.</p>
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/projects")
@@ -23,6 +31,24 @@ public class ProjectController {
     @Autowired
     private ProjectService service;
 
+    /**
+     * Lists projects with optional filters, pagination, and sorting.
+     *
+     * <p>All filter parameters are optional; omitting them returns all projects.
+     * The {@code sort} parameter accepts a field name and optional direction
+     * separated by a comma (e.g., {@code projectName,asc}).</p>
+     *
+     * @param city         optional city filter
+     * @param builder      optional builder name filter
+     * @param status       optional project status filter
+     * @param propertyType optional property type filter
+     * @param minPrice     optional minimum price filter
+     * @param maxPrice     optional maximum price filter
+     * @param page         zero-based page index (default {@code 0})
+     * @param size         page size (default {@code 20})
+     * @param sort         sort field and direction, e.g., {@code projectName,asc} (default)
+     * @return a {@link ResponseEntity} containing a page of {@link ProjectDto} objects
+     */
     @GetMapping
     public ResponseEntity<Page<ProjectDto>> listProjects(
             @RequestParam(required = false) String city,
@@ -52,6 +78,13 @@ public class ProjectController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * Fetches a single project by its primary key.
+     *
+     * @param id the project ID
+     * @return {@code 200 OK} with the {@link ProjectDto} if found,
+     *         or {@code 404 Not Found} if no project exists with the given ID
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDto> getById(@PathVariable Long id) {
         log.info("GET /api/projects/{} - Fetching project", id);

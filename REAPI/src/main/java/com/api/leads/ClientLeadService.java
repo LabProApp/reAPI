@@ -15,6 +15,16 @@ import com.api.user.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service layer for all client lead operations. Manages the full lifecycle of
+ * a {@link ClientLead} — creation, status transitions, approval recording,
+ * follow-up scheduling, search, and deletion. Enriches read results with
+ * resolved owner and broker display names from the User repository and fires
+ * asynchronous notifications via {@link NotificationService}.
+ *
+ * <p>All public methods are wrapped in a transaction via the class-level
+ * {@link Transactional} annotation.
+ */
 @Slf4j
 @Service
 @Transactional
@@ -26,6 +36,15 @@ public class ClientLeadService {
 	private final UserRepository userRepository;
 	private final NotificationService notificationService;
 
+	/**
+	 * Constructs a {@code ClientLeadService} with its required collaborators.
+	 *
+	 * @param repository           the JPA repository for {@link ClientLead} entities
+	 * @param mapper               the ModelMapper instance used for DTO/entity mapping
+	 * @param propertyRepository   repository used to auto-populate property snapshots
+	 * @param userRepository       repository used to resolve user, owner, and broker details
+	 * @param notificationService  service used to fire lead-related notifications
+	 */
 	public ClientLeadService(ClientLeadRepository repository, ModelMapper mapper,
 			PropertyRepository propertyRepository, UserRepository userRepository,
 			NotificationService notificationService) {
@@ -38,6 +57,21 @@ public class ClientLeadService {
 
 	// ─── Create ───────────────────────────────────────────────────────────────
 
+	/**
+	 * Creates a new client lead. If a lead already exists for the same
+	 * {@code userId} and {@code propertyId} combination, a
+	 * {@link RuntimeException} is thrown. Client info is auto-populated from the
+	 * User entity when {@code userId} is supplied, and property snapshot fields
+	 * are auto-populated from the Property entity when {@code propertyId} is
+	 * supplied. After saving, broker and owner contacts are resolved and passed
+	 * to {@link NotificationService#notifyLeadCreated}.
+	 *
+	 * @param dto the lead details from the request body; {@code clientName},
+	 *            {@code mobile}, and {@code leadType} are mandatory
+	 * @return the persisted lead mapped to a {@link ClientLeadDTO}
+	 * @throws RuntimeException if a duplicate lead already exists for the
+	 *                          given user and property
+	 */
 	public ClientLeadDTO createLead(ClientLeadDTO dto) {
 		log.info("createLead - leadType={}, userId={}, propertyId={}", dto.getLeadType(), dto.getUserId(), dto.getPropertyId());
 
@@ -86,6 +120,15 @@ public class ClientLeadService {
 
 	// ─── Update ───────────────────────────────────────────────────────────────
 
+	/**
+	 * Fully updates an existing lead by mapping all fields from the supplied DTO
+	 * onto the persisted entity, preserving the original ID.
+	 *
+	 * @param id  the ID of the lead to update
+	 * @param dto the updated lead data
+	 * @return the updated lead mapped to a {@link ClientLeadDTO}
+	 * @throws RuntimeException if no lead is found with the given ID
+	 */
 	public ClientLeadDTO updateLead(Long id, ClientLeadDTO dto) {
 		log.info("updateLead - id={}", id);
 		ClientLead existing = getEntityById(id);
@@ -96,6 +139,18 @@ public class ClientLeadService {
 		return mapper.map(updated, ClientLeadDTO.class);
 	}
 
+	/**
+	 * Transitions the status of a lead and optionally records a remark. If the
+	 * new status is {@link MasterEnums.LeadStatus#CONTACTED} and no contacted
+	 * date has been set yet, the current timestamp is recorded. A status-change
+	 * notification is dispatched after saving.
+	 *
+	 * @param id     the ID of the lead whose status is to be updated
+	 * @param status the new status value
+	 * @param remark an optional internal remark about the status change
+	 * @return the updated lead mapped to a {@link ClientLeadDTO}
+	 * @throws RuntimeException if no lead is found with the given ID
+	 */
 	public ClientLeadDTO updateStatus(Long id, MasterEnums.LeadStatus status, String remark) {
 		log.info("updateStatus - leadId={}, newStatus={}", id, status);
 		ClientLead lead = getEntityById(id);
@@ -113,6 +168,17 @@ public class ClientLeadService {
 		return mapper.map(saved, ClientLeadDTO.class);
 	}
 
+	/**
+	 * Records loan approval details on an existing lead after the bank has
+	 * processed the application.
+	 *
+	 * @param id                   the ID of the lead to update
+	 * @param approvedBank         the name of the bank that approved the loan
+	 * @param approvedLoanAmount   the approved loan amount
+	 * @param approvedInterestRate the annual interest rate at which the loan was approved
+	 * @return the updated lead mapped to a {@link ClientLeadDTO}
+	 * @throws RuntimeException if no lead is found with the given ID
+	 */
 	public ClientLeadDTO updateApproval(Long id, String approvedBank, Double approvedLoanAmount, Double approvedInterestRate) {
 		log.info("updateApproval - leadId={}, bank={}", id, approvedBank);
 		ClientLead lead = getEntityById(id);
@@ -122,6 +188,16 @@ public class ClientLeadService {
 		return mapper.map(repository.save(lead), ClientLeadDTO.class);
 	}
 
+	/**
+	 * Schedules or updates the next follow-up date for a lead and optionally
+	 * records a remark.
+	 *
+	 * @param id           the ID of the lead to update
+	 * @param followUpDate the next follow-up timestamp
+	 * @param remark       an optional remark about the follow-up
+	 * @return the updated lead mapped to a {@link ClientLeadDTO}
+	 * @throws RuntimeException if no lead is found with the given ID
+	 */
 	public ClientLeadDTO scheduleFollowUp(Long id, LocalDateTime followUpDate, String remark) {
 		log.info("scheduleFollowUp - leadId={}, followUpDate={}", id, followUpDate);
 		ClientLead lead = getEntityById(id);
@@ -132,10 +208,36 @@ public class ClientLeadService {
 
 	// ─── Read ─────────────────────────────────────────────────────────────────
 
+	/**
+	 * Retrieves a single lead by its ID.
+	 *
+	 * @param id the ID of the lead to retrieve
+	 * @return the lead mapped to a {@link ClientLeadDTO}
+	 * @throws RuntimeException if no lead is found with the given ID
+	 */
 	public ClientLeadDTO getById(Long id) {
 		return mapper.map(getEntityById(id), ClientLeadDTO.class);
 	}
 
+	/**
+	 * Searches for leads using any combination of the supplied filter criteria.
+	 * Delegates predicate construction to {@link ClientLeadSpecification#build}
+	 * and enriches each result with resolved owner and broker display names.
+	 * Results are ordered newest-first by inquiry date.
+	 *
+	 * @param brokerId   filter by broker ID; {@code null} to skip
+	 * @param ownerId    filter by property owner ID; {@code null} to skip
+	 * @param propertyId filter by property ID; {@code null} to skip
+	 * @param userId     filter by client user ID; {@code null} to skip
+	 * @param statuses   filter by one or more lead statuses; {@code null} or empty to skip
+	 * @param leadType   filter by inquiry type; {@code null} to skip
+	 * @param mobile     partial mobile number match; {@code null} or blank to skip
+	 * @param startDate  include only leads with an inquiry date on or after this value;
+	 *                   {@code null} to skip
+	 * @param endDate    include only leads with an inquiry date on or before this value;
+	 *                   {@code null} to skip
+	 * @return a list of enriched {@link ClientLeadDTO} instances matching all supplied criteria
+	 */
 	public List<ClientLeadDTO> search(
 			Long brokerId, Long ownerId, Long propertyId, Long userId,
 			List<MasterEnums.LeadStatus> statuses, MasterEnums.InquiryType leadType,
@@ -148,6 +250,13 @@ public class ClientLeadService {
 		return results.stream().map(this::toEnrichedDto).collect(Collectors.toList());
 	}
 
+	/**
+	 * Returns an enriched lead summary for all leads associated with the given
+	 * property, including resolved owner and broker display names.
+	 *
+	 * @param propertyId the ID of the property whose leads are to be retrieved
+	 * @return a list of enriched {@link ClientLeadDTO} instances; empty if none exist
+	 */
 	public List<ClientLeadDTO> getLeadSummariesByPropertyId(Long propertyId) {
 		log.info("getLeadSummariesByPropertyId - propertyId={}", propertyId);
 		return repository.findByPropertyId(propertyId).stream()
@@ -155,6 +264,11 @@ public class ClientLeadService {
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * Deletes the lead with the given ID.
+	 *
+	 * @param id the ID of the lead to delete
+	 */
 	public void delete(Long id) {
 		log.info("delete - id={}", id);
 		repository.deleteById(id);
@@ -162,11 +276,27 @@ public class ClientLeadService {
 
 	// ─── Helpers ─────────────────────────────────────────────────────────────
 
+	/**
+	 * Retrieves a {@link ClientLead} entity by ID, throwing a
+	 * {@link RuntimeException} if it does not exist.
+	 *
+	 * @param id the ID of the lead to fetch
+	 * @return the found {@link ClientLead} entity
+	 * @throws RuntimeException if no lead exists with the given ID
+	 */
 	private ClientLead getEntityById(Long id) {
 		return repository.findById(id).orElseThrow(() ->
 				new RuntimeException("Lead not found with id: " + id));
 	}
 
+	/**
+	 * Converts a {@link ClientLead} entity to a {@link ClientLeadDTO} and
+	 * enriches the result with the resolved display names of the property owner
+	 * and the broker, looked up from the User repository.
+	 *
+	 * @param lead the entity to enrich
+	 * @return an enriched {@link ClientLeadDTO} with owner and broker details populated
+	 */
 	private ClientLeadDTO toEnrichedDto(ClientLead lead) {
 		ClientLeadDTO dto = mapper.map(lead, ClientLeadDTO.class);
 		if (lead.getPropertyOwnerId() != null) {
@@ -182,6 +312,14 @@ public class ClientLeadService {
 		return dto;
 	}
 
+	/**
+	 * Resolves the email and mobile of a user by their ID. Returns an array of
+	 * two empty strings if the ID is {@code null} or the user is not found.
+	 *
+	 * @param userId the ID of the user whose contact details are to be resolved
+	 * @return a two-element array {@code [email, mobile]}; elements are empty
+	 *         strings when the user cannot be resolved
+	 */
 	private String[] resolveContact(Long userId) {
 		if (userId == null) return new String[]{"", ""};
 		return userRepository.findById(userId)
@@ -191,6 +329,12 @@ public class ClientLeadService {
 				.orElse(new String[]{"", ""});
 	}
 
+	/**
+	 * Returns {@code true} if the given string is {@code null} or blank.
+	 *
+	 * @param s the string to test
+	 * @return {@code true} if {@code s} is null or contains only whitespace
+	 */
 	private boolean blank(String s) {
 		return s == null || s.isBlank();
 	}

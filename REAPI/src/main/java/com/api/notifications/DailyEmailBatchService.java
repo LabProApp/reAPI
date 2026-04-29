@@ -11,6 +11,16 @@ import com.api.user.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Scheduled service that sends a daily digest email to all registered users.
+ *
+ * <p>The batch job runs every day at 08:00 AM server time (cron: {@code 0 0 8 * * ?}).
+ * It fetches all users from the database and dispatches an email to each user that has
+ * a non-blank email address. Emails are sent asynchronously via {@link CommService}.
+ *
+ * <p>This service requires that Spring's {@code @EnableScheduling} is active on the
+ * application context.
+ */
 @Slf4j
 @Service
 public class DailyEmailBatchService {
@@ -21,6 +31,10 @@ public class DailyEmailBatchService {
     @Autowired
     private CommService commService;
 
+    /**
+     * Sends the daily update email to all users with a valid email address.
+     * Triggered automatically every day at 08:00 AM by the Spring task scheduler.
+     */
     @Scheduled(cron = "0 0 8 * * ?")
     public void sendDailyEmails() {
         List<User> users = userRepository.findAll();
