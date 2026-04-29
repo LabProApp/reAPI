@@ -58,7 +58,7 @@ public class ClientLeadController {
 	// Results ordered newest first.
 
 	@GetMapping("/search")
-	public ResponseEntity<List<ClientLeadSummaryDTO>> search(
+	public ResponseEntity<List<ClientLeadDTO>> search(
 			@RequestParam(required = false) Long brokerId,
 			@RequestParam(required = false) Long ownerId,
 			@RequestParam(required = false) Long propertyId,
@@ -76,7 +76,7 @@ public class ClientLeadController {
 	// ─── Enriched property interest list ─────────────────────────────────────
 
 	@GetMapping("/property/{propertyId}/summary")
-	public ResponseEntity<List<ClientLeadSummaryDTO>> getPropertyLeadSummary(@PathVariable Long propertyId) {
+	public ResponseEntity<List<ClientLeadDTO>> getPropertyLeadSummary(@PathVariable Long propertyId) {
 		log.info("GET /api/leads/property/{}/summary", propertyId);
 		return ResponseEntity.ok(service.getLeadSummariesByPropertyId(propertyId));
 	}

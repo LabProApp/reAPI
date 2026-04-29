@@ -94,6 +94,13 @@ public class ClientLeadDTO extends BaseDto {
 	private Double approvedLoanAmount;
 	private Double approvedInterestRate;
 
+	// ─── Resolved Display Fields (populated on read, ignored on write) ──────────
+
+	private String ownerName;
+	private String ownerMobile;
+	private String ownerEmail;
+	private String brokerName;
+
 	// ─── Notification Preference ──────────────────────────────────────────────
 
 	private boolean sendWhatsApp;
@@ -237,6 +244,18 @@ public class ClientLeadDTO extends BaseDto {
 
 	public Double getApprovedInterestRate() { return approvedInterestRate; }
 	public void setApprovedInterestRate(Double approvedInterestRate) { this.approvedInterestRate = approvedInterestRate; }
+
+	public String getOwnerName() { return ownerName; }
+	public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+
+	public String getOwnerMobile() { return ownerMobile; }
+	public void setOwnerMobile(String ownerMobile) { this.ownerMobile = ownerMobile; }
+
+	public String getOwnerEmail() { return ownerEmail; }
+	public void setOwnerEmail(String ownerEmail) { this.ownerEmail = ownerEmail; }
+
+	public String getBrokerName() { return brokerName; }
+	public void setBrokerName(String brokerName) { this.brokerName = brokerName; }
 
 	public boolean isSendWhatsApp() { return sendWhatsApp; }
 	public void setSendWhatsApp(boolean sendWhatsApp) { this.sendWhatsApp = sendWhatsApp; }

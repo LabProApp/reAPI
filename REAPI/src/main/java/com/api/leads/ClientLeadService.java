@@ -136,7 +136,7 @@ public class ClientLeadService {
 		return mapper.map(getEntityById(id), ClientLeadDTO.class);
 	}
 
-	public List<ClientLeadSummaryDTO> search(
+	public List<ClientLeadDTO> search(
 			Long brokerId, Long ownerId, Long propertyId, Long userId,
 			List<MasterEnums.LeadStatus> statuses, MasterEnums.InquiryType leadType,
 			String mobile, LocalDateTime startDate, LocalDateTime endDate) {
@@ -145,13 +145,13 @@ public class ClientLeadService {
 		List<ClientLead> results = repository.findAll(
 				ClientLeadSpecification.build(brokerId, ownerId, propertyId, userId, statuses, leadType, mobile, startDate, endDate));
 		log.info("search - returned {} leads", results.size());
-		return results.stream().map(this::toSummary).collect(Collectors.toList());
+		return results.stream().map(this::toEnrichedDto).collect(Collectors.toList());
 	}
 
-	public List<ClientLeadSummaryDTO> getLeadSummariesByPropertyId(Long propertyId) {
+	public List<ClientLeadDTO> getLeadSummariesByPropertyId(Long propertyId) {
 		log.info("getLeadSummariesByPropertyId - propertyId={}", propertyId);
 		return repository.findByPropertyId(propertyId).stream()
-				.map(this::toSummary)
+				.map(this::toEnrichedDto)
 				.collect(Collectors.toList());
 	}
 
@@ -167,43 +167,8 @@ public class ClientLeadService {
 				new RuntimeException("Lead not found with id: " + id));
 	}
 
-	private ClientLeadSummaryDTO toSummary(ClientLead lead) {
-		ClientLeadSummaryDTO dto = new ClientLeadSummaryDTO();
-		dto.setId(lead.getId());
-		dto.setLeadType(lead.getLeadType());
-		dto.setStatus(lead.getStatus());
-		dto.setLeadSource(lead.getLeadSource());
-		dto.setClientName(lead.getClientName());
-		dto.setMobile(lead.getMobile());
-		dto.setEmail(lead.getEmail());
-		dto.setProfession(lead.getProfession());
-		dto.setMonthlyIncome(lead.getMonthlyIncome());
-		dto.setPropertyId(lead.getPropertyId());
-		dto.setPropertyOwnerId(lead.getPropertyOwnerId());
-		dto.setBrokerId(lead.getBrokerId());
-		dto.setAssignedAgentName(lead.getAssignedAgentName());
-		dto.setPropertyTitle(lead.getPropertyTitle());
-		dto.setPropertyCity(lead.getPropertyCity());
-		dto.setPropertyState(lead.getPropertyState());
-		dto.setPropertyLocality(lead.getPropertyLocality());
-		dto.setPropertyType(lead.getPropertyType());
-		dto.setPropertyPrice(lead.getPropertyPrice());
-		dto.setBudget(lead.getBudget());
-		dto.setMinBudget(lead.getMinBudget());
-		dto.setMaxBudget(lead.getMaxBudget());
-		dto.setRequiredLoanAmount(lead.getRequiredLoanAmount());
-		dto.setLoanTenureYears(lead.getLoanTenureYears());
-		dto.setLoanType(lead.getLoanType());
-		dto.setPreferredBank(lead.getPreferredBank());
-		dto.setDocumentServicesRequired(lead.getDocumentServicesRequired());
-		dto.setSpecifications(lead.getSpecifications());
-		dto.setMessage(lead.getMessage());
-		dto.setRemark(lead.getRemark());
-		dto.setInquiryDate(lead.getInquiryDate());
-		dto.setContactedDate(lead.getContactedDate());
-		dto.setNextFollowUpDate(lead.getNextFollowUpDate());
-		dto.setExpectedPurchaseDate(lead.getExpectedPurchaseDate());
-
+	private ClientLeadDTO toEnrichedDto(ClientLead lead) {
+		ClientLeadDTO dto = mapper.map(lead, ClientLeadDTO.class);
 		if (lead.getPropertyOwnerId() != null) {
 			userRepository.findById(lead.getPropertyOwnerId()).ifPresent(u -> {
 				dto.setOwnerName(u.getName());
@@ -214,7 +179,6 @@ public class ClientLeadService {
 		if (lead.getBrokerId() != null) {
 			userRepository.findById(lead.getBrokerId()).ifPresent(u -> dto.setBrokerName(u.getName()));
 		}
-
 		return dto;
 	}
 
