@@ -1,7 +1,5 @@
 package com.api.security;
 
-import java.util.Date;
-
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,8 +16,9 @@ import io.jsonwebtoken.security.Keys;
  * throughout the Real Estate API's stateless authentication flow.
  *
  * <p>Tokens are signed with the HS256 algorithm using a Base64-encoded secret
- * key configured via the {@code jwt.secret} application property. The token
- * lifetime is controlled by the {@code jwt.expiration} property (milliseconds).</p>
+ * key configured via the {@code jwt.secret} application property. Tokens do
+ * not carry an expiration claim — they remain valid indefinitely until the
+ * signing secret is rotated, which is appropriate for mobile clients.</p>
  *
  * <p>Each token carries the following claims:</p>
  * <ul>
@@ -34,9 +33,6 @@ public class JwtUtil {
 	@Value("${jwt.secret}")
 	private String secret;
 
-	@Value("${jwt.expiration}")
-	private long expiration;
-
 	/**
 	 * Builds and signs a new JWT for the given user.
 	 *
@@ -50,8 +46,6 @@ public class JwtUtil {
 				.subject(String.valueOf(userId))
 				.claim("identifier", identifier)
 				.claim("role", role)
-				.issuedAt(new Date())
-				.expiration(new Date(System.currentTimeMillis() + expiration))
 				.signWith(signingKey())
 				.compact();
 	}
@@ -83,16 +77,17 @@ public class JwtUtil {
 	}
 
 	/**
-	 * Checks whether the supplied JWT is still valid (i.e. not expired and
-	 * correctly signed).
+	 * Checks whether the supplied JWT has a valid signature and well-formed claims.
+	 * Tokens have no expiration, so only signature integrity is verified.
 	 *
 	 * @param token the compact JWT string to validate
-	 * @return {@code true} if the token is valid and not yet expired;
-	 *         {@code false} if it is expired, malformed, or has an invalid signature
+	 * @return {@code true} if the token signature is valid; {@code false} if it is
+	 *         malformed or the signature cannot be verified
 	 */
 	public boolean isTokenValid(String token) {
 		try {
-			return !extractClaims(token).getExpiration().before(new Date());
+			extractClaims(token);
+			return true;
 		} catch (JwtException | IllegalArgumentException e) {
 			return false;
 		}
