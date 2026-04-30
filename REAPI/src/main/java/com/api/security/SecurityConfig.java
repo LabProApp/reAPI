@@ -16,12 +16,10 @@ public class SecurityConfig {
 
 	private final JwtAuthFilter jwtAuthFilter;
 
-	
 	public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
 		this.jwtAuthFilter = jwtAuthFilter;
 	}
 
-	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
@@ -34,7 +32,17 @@ public class SecurityConfig {
 					"/api/user/verifyOtp",
 					"/api/user/resend-otp",
 					"/api/user/reset-password",
-					"/v3/api-docs
+					"/v3/api-docs/**",
+					"/swagger-ui/**",
+					"/swagger-ui.html"
+				).permitAll()
+				.anyRequest().authenticated()
+			)
+			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
