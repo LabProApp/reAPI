@@ -10,14 +10,6 @@ import com.twilio.type.PhoneNumber;
 
 import jakarta.annotation.PostConstruct;
 
-/**
- * Spring service that wraps the Twilio API to send WhatsApp messages.
- *
- * <p>On application startup, the {@link #init()} method initialises the Twilio SDK
- * using credentials and the WhatsApp-enabled sender number from {@link TwilioConfig}.
- * Messages are sent synchronously; callers are responsible for exception handling if
- * fire-and-forget behaviour is required.
- */
 @Service
 public class WhatsAppService {
 
@@ -25,19 +17,12 @@ public class WhatsAppService {
 
 	private final TwilioConfig config;
 
-	/**
-	 * Constructs the {@code WhatsAppService} with the required Twilio configuration.
-	 *
-	 * @param config the Twilio configuration properties (accountSid, authToken, whatsappNumber)
-	 */
+	
 	public WhatsAppService(TwilioConfig config) {
 		this.config = config;
 	}
 
-	/**
-	 * Initialises the Twilio SDK with credentials from {@link TwilioConfig}.
-	 * Invoked automatically by Spring after dependency injection is complete.
-	 */
+	
 	@PostConstruct
 	public void init() {
 		log.info("WhatsAppService - Initializing Twilio with accountSid={}", config.getAccountSid());
@@ -45,17 +30,7 @@ public class WhatsAppService {
 		log.info("WhatsAppService - Twilio initialized successfully");
 	}
 
-	/**
-	 * Sends a WhatsApp message to the specified phone number via the Twilio API.
-	 *
-	 * <p>The destination number must include the country code (e.g. {@code +919876543210}).
-	 * The Twilio "whatsapp:" URI scheme is prepended automatically.
-	 *
-	 * @param toNumber    the destination phone number in E.164 format (e.g. {@code +919876543210})
-	 * @param messageBody the text content of the WhatsApp message
-	 * @return the Twilio message SID of the sent message
-	 * @throws RuntimeException if the Twilio API call fails
-	 */
+	
 	public String sendMessage(String toNumber, String messageBody) {
 		log.info("sendMessage - Sending WhatsApp message to={}", toNumber);
 		try {

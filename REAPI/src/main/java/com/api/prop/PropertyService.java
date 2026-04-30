@@ -16,15 +16,6 @@ import com.api.commons.ResourceNotFoundException;
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
 
-/**
- * Service layer for all property-related business operations.
- *
- * <p>Handles CRUD operations and search functionality for {@link Property}
- * entities. Documents are loaded in a single batch query after each list
- * retrieval to avoid the N+1 query problem. Mapping between {@link Property}
- * and {@link PropertyDto} is performed via ModelMapper supplemented by the
- * manual {@code toDto} method for fine-grained control.</p>
- */
 @Service
 public class PropertyService {
 
@@ -35,24 +26,14 @@ public class PropertyService {
 	@Autowired
 	private DocumentsService documentsService;
 
-	/**
-	 * Constructs the service with its required dependencies.
-	 *
-	 * @param repository the JPA repository for {@link Property} entities
-	 * @param mapper     the ModelMapper instance used for DTO/entity conversion
-	 */
+	
 	@Autowired
 	public PropertyService(PropertyRepository repository, ModelMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
 	}
 
-	/**
-	 * Persists a new property listing.
-	 *
-	 * @param propertyDto the data transfer object containing the listing details
-	 * @return the persisted listing as a {@link PropertyDto} with the generated ID
-	 */
+	
 	public PropertyDto addProperty(PropertyDto propertyDto) {
 		log.info("addProperty - Adding property: title={}, city={}, type={}",
 				propertyDto.getTitle(), propertyDto.getCity(), propertyDto.getType());
@@ -62,14 +43,7 @@ public class PropertyService {
 		return mapper.map(saved, PropertyDto.class);
 	}
 
-	/**
-	 * Retrieves all property listings with their associated documents.
-	 *
-	 * <p>Documents are fetched in a single batch call keyed by property ID to
-	 * prevent N+1 queries.</p>
-	 *
-	 * @return a list of all {@link PropertyDto} objects, each including their document list
-	 */
+	
 	public List<PropertyDto> getAllProperties() {
 		log.info("getAllProperties - Fetching all properties");
 		List<Property> properties = repository.findAll();
@@ -82,13 +56,7 @@ public class PropertyService {
 		}).collect(Collectors.toList());
 	}
 
-	/**
-	 * Retrieves a single property by its primary key, including associated documents.
-	 *
-	 * @param id the property ID to look up
-	 * @return an {@link Optional} containing the {@link PropertyDto} if found,
-	 *         or {@link Optional#empty()} if no property exists with that ID
-	 */
+	
 	public Optional<PropertyDto> getPropertyById(Long id) {
 		log.info("getPropertyById - Fetching property id={}", id);
 		return repository.findById(id).map(p -> {
@@ -98,24 +66,7 @@ public class PropertyService {
 		});
 	}
 
-	/**
-	 * Performs a basic filtered search across property listings.
-	 *
-	 * <p>All parameters are optional; passing {@code null} for a parameter means
-	 * that filter is not applied. Documents are batch-loaded for the result set.</p>
-	 *
-	 * @param city          filter by city (partial match, case-insensitive)
-	 * @param type          filter by property type (partial match, case-insensitive)
-	 * @param category      filter by category (partial match, case-insensitive)
-	 * @param minArea       minimum super area in sq ft (inclusive)
-	 * @param maxArea       maximum super area in sq ft (inclusive)
-	 * @param minPrice      minimum price (inclusive)
-	 * @param maxPrice      maximum price (inclusive)
-	 * @param rentOrSale    filter by rent/sale indicator (exact match, case-insensitive)
-	 * @param postDate      return only listings posted on or after this date-time
-	 * @param postedByUser  filter by the ID of the user who posted the listing
-	 * @return list of matching {@link PropertyDto} objects with documents populated
-	 */
+	
 	public List<PropertyDto> search(String city, String type, String category, Double minArea, Double maxArea,
 			Double minPrice, Double maxPrice, String rentOrSale, LocalDateTime postDate, Long postedByUser) {
 		log.info("search - Searching properties [city={}, type={}, category={}, rentOrSale={}, price={}-{}]",
@@ -130,18 +81,7 @@ public class PropertyService {
 		}).collect(Collectors.toList());
 	}
 
-	/**
-	 * Updates an existing property with all fields from the supplied DTO.
-	 *
-	 * <p>The update is selective: every mapped field is explicitly copied from
-	 * {@code updatedDto} onto the persisted entity so that only the fields
-	 * present in the DTO are changed.</p>
-	 *
-	 * @param id         the primary key of the property to update
-	 * @param updatedDto the DTO carrying the new field values
-	 * @return the updated listing as a {@link PropertyDto}
-	 * @throws ResourceNotFoundException if no property exists with the given ID
-	 */
+	
 	public PropertyDto updateProperty(Long id, PropertyDto updatedDto) {
 		log.info("updateProperty - Updating property id={}", id);
 		Property updatedProperty = mapper.map(updatedDto, Property.class);
@@ -233,12 +173,7 @@ public class PropertyService {
 		return mapper.map(saved, PropertyDto.class);
 	}
 
-	/**
-	 * Deletes a property by its primary key.
-	 *
-	 * @param id the ID of the property to delete
-	 * @throws ResourceNotFoundException if no property exists with the given ID
-	 */
+	
 	public void deleteProperty(Long id) {
 		log.info("deleteProperty - Deleting property id={}", id);
 		if (!repository.existsById(id)) {
@@ -249,37 +184,7 @@ public class PropertyService {
 		log.info("deleteProperty - Property id={} deleted", id);
 	}
 
-	/**
-	 * Performs an advanced multi-criteria search across property listings.
-	 *
-	 * <p>Supports all basic search filters plus title, address, bedroom/bathroom
-	 * ranges, amenity, and a global location keyword that matches against city,
-	 * locality, state, address, and title simultaneously. All parameters are
-	 * optional. Documents are batch-loaded for the result set.</p>
-	 *
-	 * @param title               filter by title (partial match, case-insensitive)
-	 * @param address             filter by address (partial match, case-insensitive)
-	 * @param city                filter by city (partial match, case-insensitive)
-	 * @param type                filter by property type (partial match, case-insensitive)
-	 * @param category            filter by category (partial match, case-insensitive)
-	 * @param postedBy            filter by poster type (partial match, case-insensitive)
-	 * @param constructionStatus  filter by construction status (partial match, case-insensitive)
-	 * @param currency            filter by currency code (partial match, case-insensitive)
-	 * @param location            global location keyword matched across multiple fields
-	 * @param minPrice            minimum price (inclusive)
-	 * @param maxPrice            maximum price (inclusive)
-	 * @param minBedrooms         minimum bedroom count (inclusive)
-	 * @param maxBedrooms         maximum bedroom count (inclusive)
-	 * @param minBathrooms        minimum bathroom count (inclusive)
-	 * @param maxBathrooms        maximum bathroom count (inclusive)
-	 * @param minArea             minimum super area in sq ft (inclusive)
-	 * @param maxArea             maximum super area in sq ft (inclusive)
-	 * @param amenity             filter by a single amenity ID (case-insensitive CSV match)
-	 * @param rentOrSale          filter by rent/sale indicator (exact match, case-insensitive)
-	 * @param postDate            return only listings posted on or after this date-time
-	 * @param postedByUser        filter by the ID of the user who posted the listing
-	 * @return list of matching {@link PropertyDto} objects with documents populated
-	 */
+	
 	public List<PropertyDto> advancedSearch(String title, String address, String city, String type, String category,
 			String postedBy, String constructionStatus, String currency, String location, Double minPrice,
 			Double maxPrice, Integer minBedrooms, Integer maxBedrooms, Integer minBathrooms, Integer maxBathrooms,
@@ -303,17 +208,7 @@ public class PropertyService {
 		}).collect(Collectors.toList());
 	}
 
-	/**
-	 * Manually maps a {@link Property} entity to a {@link PropertyDto}.
-	 *
-	 * <p>This explicit field-by-field mapping is used in preference to ModelMapper
-	 * for list operations to ensure all fields (including audit/base fields) are
-	 * correctly transferred. The {@code documentList} is not populated here and
-	 * must be set by the calling method after documents are retrieved.</p>
-	 *
-	 * @param p the property entity to convert
-	 * @return a fully populated {@link PropertyDto} (without document list)
-	 */
+	
 	private PropertyDto toDto(Property p) {
 		PropertyDto dto = new PropertyDto();
 		dto.setId(p.getId());

@@ -3,23 +3,6 @@ package com.api.notifications;
 import java.util.EnumMap;
 import java.util.Map;
 
-/**
- * Central registry of all notification templates.
- *
- * Templates use {{varName}} placeholders. Use TemplateRenderer.render() to substitute.
- *
- * Variable reference per key:
- *
- *  WELCOME                        : name
- *  BROKER_PROPERTY_LEAD           : leadId, customerName, mobile, email, propertyTitle, city, price, message
- *  BROKER_LOAN_LEAD               : leadId, customerName, mobile, email, loanType, loanAmount, tenure, preferredBank
- *  BROKER_LEGAL_LEAD              : leadId, customerName, mobile, email, services, city, specifications
- *  CUSTOMER_PROPERTY_CONFIRMATION : name, propertyTitle, city, price
- *  CUSTOMER_LOAN_CONFIRMATION     : name, loanType, loanAmount
- *  CUSTOMER_LEGAL_CONFIRMATION    : name, services, city
- *  LEAD_STATUS_UPDATE             : customerName, propertyTitle, city, status, remark
- *  PROPERTY_SHARE                 : senderName, title, location, city, price, rentOrSale, bedrooms, type
- */
 public class TemplateRegistry {
 
     private static final String APP = "KeyBricks";
@@ -108,22 +91,12 @@ public class TemplateRegistry {
                 null));
     }
 
-    /**
-     * Retrieves the {@link NotificationTemplateSet} associated with the given key.
-     *
-     * @param key the {@link TemplateKey} to look up
-     * @return the corresponding {@link NotificationTemplateSet}, or {@code null} if not found
-     */
+    
     public static NotificationTemplateSet get(TemplateKey key) {
         return REGISTRY.get(key);
     }
 
-    /**
-     * Returns an unmodifiable view of the entire template registry.
-     *
-     * @return an unmodifiable {@link Map} of all registered {@link TemplateKey} to
-     *         {@link NotificationTemplateSet} mappings
-     */
+    
     public static Map<TemplateKey, NotificationTemplateSet> all() {
         return java.util.Collections.unmodifiableMap(REGISTRY);
     }

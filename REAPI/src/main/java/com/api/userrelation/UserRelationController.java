@@ -16,19 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.user.User;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-/**
- * REST controller for user relation endpoints.
- *
- * <p>Exposes APIs under {@code /api/user-relations} to create, retrieve, and
- * delete directional relationships between two users (e.g., CLIENT_OF,
- * AGENT_OF, BROKER_OF). On the create endpoint, lightweight {@link User} stubs
- * are constructed from the IDs supplied in the {@link UserRelationDto} so that
- * full entity loading is deferred to the service layer, avoiding serialisation
- * issues caused by {@code @JsonBackReference} on the entity.</p>
- */
 @RestController
 @RequestMapping("/api/user-relations")
 @Tag(name = "User Relation APIs", description = "Operations related to Maintain Relations between Agents & Clients")
@@ -40,19 +31,7 @@ public class UserRelationController {
 	@Autowired
 	private UserRelationService userRelationService;
 
-	/**
-	 * Creates a new user relation, or updates it if a relation between the same
-	 * two users already exists (upsert behaviour).
-	 *
-	 * <p>User stubs (carrying only the ID) are built from {@code dto.getUserId()}
-	 * and {@code dto.getRelatedUserId()} to avoid loading full {@link User}
-	 * entities at the controller layer. The service validates that both users
-	 * exist before persisting.</p>
-	 *
-	 * @param dto the relation request containing user IDs, relation type, and optional comments
-	 * @return {@code 200 OK} with the created or updated {@link UserRelation}
-	 */
-	// 🔹 Create or update relation
+	@Operation(summary = "Create or update a user relation")
 	@PostMapping("/create")
 	public ResponseEntity<UserRelation> createRelation(@RequestBody UserRelationDto dto) {
 		log.info("POST /api/user-relations/create - Creating relation type={}", dto.getRelationType());
@@ -70,12 +49,7 @@ public class UserRelationController {
 		return ResponseEntity.ok(relation);
 	}
 
-	/**
-	 * Returns all user relations in the system.
-	 *
-	 * @return {@code 200 OK} with the list of all {@link UserRelation} entities
-	 */
-	// 🔹 Get all relations
+	@Operation(summary = "Get all user relations")
 	@GetMapping("/all")
 	public ResponseEntity<List<UserRelation>> getAllRelations() {
 		log.info("GET /api/user-relations/all - Fetching all relations");
@@ -84,13 +58,7 @@ public class UserRelationController {
 		return ResponseEntity.ok(relations);
 	}
 
-	/**
-	 * Returns all relations where the specified user is the primary user.
-	 *
-	 * @param userId the ID of the primary user
-	 * @return {@code 200 OK} with the list of matching {@link UserRelation} entities
-	 */
-	// 🔹 Get relations by user ID
+	@Operation(summary = "Get relations for a specific user")
 	@GetMapping("/user/{userId}")
 	public ResponseEntity<List<UserRelation>> getRelationsByUser(@PathVariable Long userId) {
 		log.info("GET /api/user-relations/user/{} - Fetching relations for user", userId);
@@ -99,14 +67,7 @@ public class UserRelationController {
 		return ResponseEntity.ok(relations);
 	}
 
-	/**
-	 * Returns all relations for the specified user that match the given relation type.
-	 *
-	 * @param userId       the ID of the primary user
-	 * @param relationType the relation type to filter by (e.g., CLIENT_OF, DEALER_OF)
-	 * @return {@code 200 OK} with the list of matching {@link UserRelation} entities
-	 */
-	// 🔹 Get relations by type (CLIENT_OF, DEALER_OF, etc.)
+	@Operation(summary = "Get user relations by type")
 	@GetMapping("/user/{userId}/relation/{relationType}")
 	public ResponseEntity<List<UserRelation>> getUserRelationsByType(@PathVariable Long userId,
 			@PathVariable String relationType) {
@@ -116,13 +77,7 @@ public class UserRelationController {
 		return ResponseEntity.ok(relations);
 	}
 
-	/**
-	 * Deletes the user relation with the given ID.
-	 *
-	 * @param id the ID of the relation to delete
-	 * @return {@code 204 No Content} on successful deletion
-	 */
-	// 🔹 Delete a relation by ID
+	@Operation(summary = "Delete a user relation")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteRelation(@PathVariable Long id) {
 		log.info("DELETE /api/user-relations/{} - Deleting relation", id);

@@ -17,24 +17,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
-/**
- * Service for interacting with AWS S3 using the AWS SDK v2.
- *
- * <p>Provides three core operations:
- * <ul>
- *   <li>{@link #uploadFile(MultipartFile, String)} — uploads a multipart file
- *       to S3 under a UUID-prefixed key within an optional folder.</li>
- *   <li>{@link #generatePresignedUrl(String)} — generates a 60-minute
- *       presigned GET URL so clients can download a private object without
- *       requiring AWS credentials.</li>
- *   <li>{@link #deleteFile(String)} — deletes an S3 object by key.</li>
- * </ul>
- *
- * <p>The target S3 bucket and region are read from {@code application.properties}
- * via the {@code aws.s3.bucket-name} and {@code aws.s3.region} keys. The
- * {@link S3Client} and {@link S3Presigner} beans are configured in
- * {@link S3Config}.
- */
 @Service
 public class S3Service {
 
@@ -47,35 +29,13 @@ public class S3Service {
 	private final S3Client s3Client;
 	private final S3Presigner s3Presigner;
 
-	/**
-	 * Constructs the service with the required AWS SDK clients.
-	 *
-	 * @param s3Client    the AWS SDK v2 S3 client used for upload and delete
-	 * @param s3Presigner the AWS SDK v2 S3 presigner used for generating
-	 *                    time-limited download URLs
-	 */
+	
 	public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
 		this.s3Client = s3Client;
 		this.s3Presigner = s3Presigner;
 	}
 
-	/**
-	 * Uploads a multipart file to the configured S3 bucket.
-	 *
-	 * <p>The S3 object key is composed as
-	 * {@code <folderName>/<UUID>_<sanitisedFilename>}. Special characters in
-	 * the original filename are replaced with underscores. If {@code folderName}
-	 * is {@code null} or empty the key contains no folder prefix.
-	 *
-	 * @param file       the multipart file to upload; must not be {@code null}
-	 *                   or empty
-	 * @param folderName the S3 "folder" (key prefix) to place the file under,
-	 *                   e.g. {@code "PROPERTY"} or {@code "LOAN_DOCUMENT"};
-	 *                   leading and trailing slashes are stripped automatically
-	 * @return the S3 object key of the uploaded file
-	 * @throws IOException              if reading the file's input stream fails
-	 * @throws IllegalArgumentException if {@code file} is {@code null} or empty
-	 */
+	
 	public String uploadFile(MultipartFile file, String folderName) throws IOException {
 		if (file == null || file.isEmpty()) {
 			log.warn("uploadFile - Rejected: file is null or empty");
@@ -102,13 +62,7 @@ public class S3Service {
 		return key;
 	}
 
-	/**
-	 * Deletes the S3 object identified by the given key from the configured
-	 * bucket.
-	 *
-	 * @param key the S3 object key to delete; must not be {@code null} or blank
-	 * @throws IllegalArgumentException if {@code key} is {@code null} or blank
-	 */
+	
 	public void deleteFile(String key) {
 		if (key == null || key.isBlank()) {
 			log.warn("deleteFile - Rejected: S3 key is null or blank");
@@ -120,14 +74,7 @@ public class S3Service {
 		log.info("deleteFile - S3 object deleted key={}", key);
 	}
 
-	/**
-	 * Generates a presigned GET URL for the S3 object identified by the given
-	 * key. The URL is valid for 60 minutes from the time of generation.
-	 *
-	 * @param key the S3 object key; must not be {@code null} or blank
-	 * @return the presigned download URL as a string
-	 * @throws IllegalArgumentException if {@code key} is {@code null} or blank
-	 */
+	
 	public String generatePresignedUrl(String key) {
 		if (key == null || key.isBlank()) {
 			log.warn("generatePresignedUrl - Rejected: S3 key is null or blank");

@@ -1,4 +1,4 @@
-﻿package com.api.banks;
+package com.api.banks;
 
 import java.util.List;
 import java.util.Map;

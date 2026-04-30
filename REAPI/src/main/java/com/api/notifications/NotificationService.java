@@ -15,23 +15,6 @@ import com.api.prop.PropertyDto;
 import com.api.prop.SharePropertyRequest;
 import com.api.user.User;
 
-/**
- * Orchestrates multi-channel notification delivery for the real estate platform.
- *
- * <p>This service acts as the central dispatcher for all business-level notifications.
- * It selects the appropriate template content from {@link NotificationTemplates} based on
- * the context (lead type, user action, etc.) and routes delivery to {@link CommService}
- * (email and SMS) and {@link WhatsAppService} (WhatsApp).
- *
- * <p>Lead notifications are routed by {@link MasterEnums.InquiryType}:
- * <ul>
- *   <li>Loan types (HOME_LOAN, LAP, BALANCE_TRANSFER, LOAN_TRANSFER) invoke loan-lead flow.</li>
- *   <li>Legal types (PROPERTY_REGISTRATION, RENT_AGREEMENT, DOCUMENT_SERVICES) invoke legal-lead flow.</li>
- *   <li>All other types invoke the standard property-lead flow.</li>
- * </ul>
- *
- * <p>All public methods are annotated with {@code @Async} and execute on a separate thread.
- */
 @Service
 public class NotificationService {
 
@@ -57,12 +40,7 @@ public class NotificationService {
     private final CommService commService;
     private final WhatsAppService whatsAppService;
 
-    /**
-     * Constructs a {@code NotificationService} with the required communication dependencies.
-     *
-     * @param commService     the low-level email/SMS communication service
-     * @param whatsAppService the WhatsApp messaging service
-     */
+    
     public NotificationService(CommService commService, WhatsAppService whatsAppService) {
         this.commService = commService;
         this.whatsAppService = whatsAppService;
@@ -70,14 +48,7 @@ public class NotificationService {
 
     // ─── Property Share ──────────────────────────────────────────────────────
 
-    /**
-     * Asynchronously notifies the recipient that a property has been shared with them.
-     * Sends SMS and optionally WhatsApp if a mobile number is present; sends email if an
-     * email address is present.
-     *
-     * @param property the property details to share
-     * @param request  the share request containing recipient contact info and sender name
-     */
+    
     @Async
     public void notifyPropertyShared(PropertyDto property, SharePropertyRequest request) {
         String senderName = request.getSenderName();
@@ -112,19 +83,7 @@ public class NotificationService {
 
     // ─── Lead Created (routes by lead type) ──────────────────────────────────
 
-    /**
-     * Dispatches creation notifications to all relevant parties based on leadType:
-     *  - Property leads  → broker, owner, customer confirmation
-     *  - Loan leads      → broker, bank, customer confirmation
-     *  - Legal leads     → broker, service provider, customer confirmation
-     *
-     * @param lead          the newly created lead entity
-     * @param brokerEmail   email address of the assigned broker (may be blank)
-     * @param brokerMobile  mobile number of the assigned broker (may be blank)
-     * @param ownerEmail    email address of the property owner (may be blank)
-     * @param ownerMobile   mobile number of the property owner (may be blank)
-     * @param sendWhatsApp  {@code true} to also deliver notifications via WhatsApp
-     */
+    
     @Async
     public void notifyLeadCreated(ClientLead lead, String brokerEmail, String brokerMobile,
             String ownerEmail, String ownerMobile, boolean sendWhatsApp) {
@@ -141,17 +100,7 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Sends property-lead notifications to the broker, the property owner (if different),
-     * and a confirmation to the customer.
-     *
-     * @param lead         the lead entity
-     * @param brokerEmail  broker's email address
-     * @param brokerMobile broker's mobile number
-     * @param ownerEmail   property owner's email address
-     * @param ownerMobile  property owner's mobile number
-     * @param sendWhatsApp {@code true} to also deliver via WhatsApp
-     */
+    
     private void notifyPropertyLead(ClientLead lead, String brokerEmail, String brokerMobile,
             String ownerEmail, String ownerMobile, boolean sendWhatsApp) {
 
@@ -180,15 +129,7 @@ public class NotificationService {
                     NotificationTemplates.customerConfirmationEmailSubject(lead.getPropertyTitle()));
     }
 
-    /**
-     * Sends loan-lead notifications to the broker and the bank contact (if provided),
-     * and a loan confirmation to the customer.
-     *
-     * @param lead         the lead entity with loan-specific fields populated
-     * @param brokerEmail  broker's email address
-     * @param brokerMobile broker's mobile number
-     * @param sendWhatsApp {@code true} to also deliver via WhatsApp
-     */
+    
     private void notifyLoanLead(ClientLead lead, String brokerEmail, String brokerMobile, boolean sendWhatsApp) {
         String loanTypeName = lead.getLoanType() != null ? lead.getLoanType().name() : "HOME_LOAN";
 
@@ -215,15 +156,7 @@ public class NotificationService {
                     NotificationTemplates.customerLoanConfirmationEmailSubject(loanTypeName));
     }
 
-    /**
-     * Sends legal-lead notifications to the broker and the service provider (if provided),
-     * and a legal-service confirmation to the customer.
-     *
-     * @param lead         the lead entity with legal-specific fields populated
-     * @param brokerEmail  broker's email address
-     * @param brokerMobile broker's mobile number
-     * @param sendWhatsApp {@code true} to also deliver via WhatsApp
-     */
+    
     private void notifyLegalLead(ClientLead lead, String brokerEmail, String brokerMobile, boolean sendWhatsApp) {
         // Alert broker
         String brokerSms = NotificationTemplates.legalLeadSms(
@@ -250,18 +183,7 @@ public class NotificationService {
 
     // ─── Lead Status Updated ──────────────────────────────────────────────────
 
-    /**
-     * Asynchronously notifies the customer when the status of their lead inquiry has changed.
-     * Sends SMS and email to the customer with the updated status and an optional remark.
-     *
-     * @param customerName   the customer's display name
-     * @param customerMobile the customer's mobile number (may be blank)
-     * @param customerEmail  the customer's email address (may be blank)
-     * @param propTitle      the title of the property the lead refers to
-     * @param propCity       the city where the property is located
-     * @param status         the new lead status string
-     * @param remark         an optional remark or note accompanying the status update
-     */
+    
     @Async
     public void notifyLeadStatusUpdated(
             String customerName, String customerMobile, String customerEmail,
@@ -279,11 +201,7 @@ public class NotificationService {
 
     // ─── Welcome ─────────────────────────────────────────────────────────────
 
-    /**
-     * Asynchronously sends a welcome notification to a newly registered user via SMS and email.
-     *
-     * @param user the newly registered {@link User} entity
-     */
+    
     @Async
     public void notifyWelcome(User user) {
         log.info("notifyWelcome - userId={}", user.getId());
@@ -298,38 +216,14 @@ public class NotificationService {
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    /**
-     * Convenience overload of {@link #sendToRecipient(String, String, String, String, String, String, boolean, String[], String[])}
-     * with empty CC and BCC arrays.
-     *
-     * @param role         a human-readable label for the recipient (used in log messages)
-     * @param mobile       recipient's mobile number (may be blank)
-     * @param email        recipient's email address (may be blank)
-     * @param sms          the SMS message body
-     * @param emailBody    the email body text
-     * @param emailSubject the email subject line
-     * @param sendWhatsApp {@code true} to also deliver via WhatsApp
-     */
+    
     private void sendToRecipient(String role, String mobile, String email,
             String sms, String emailBody, String emailSubject, boolean sendWhatsApp) {
         sendToRecipient(role, mobile, email, sms, emailBody, emailSubject, sendWhatsApp,
                 new String[0], new String[0]);
     }
 
-    /**
-     * Sends SMS, email, and optionally WhatsApp to a single recipient.
-     * The admin email (if configured) is automatically added to BCC on all outgoing emails.
-     *
-     * @param role         a human-readable label for the recipient (used in log messages)
-     * @param mobile       recipient's mobile number (may be blank)
-     * @param email        recipient's email address (may be blank)
-     * @param sms          the SMS message body
-     * @param emailBody    the email body text
-     * @param emailSubject the email subject line
-     * @param sendWhatsApp {@code true} to also deliver via WhatsApp
-     * @param cc           CC recipients for the email
-     * @param bcc          BCC recipients for the email (admin email is appended automatically)
-     */
+    
     private void sendToRecipient(String role, String mobile, String email,
             String sms, String emailBody, String emailSubject, boolean sendWhatsApp,
             String[] cc, String[] bcc) {
@@ -350,32 +244,17 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Returns {@code true} if the given inquiry type belongs to the loan category.
-     *
-     * @param type the inquiry type to check
-     * @return {@code true} if {@code type} is a loan-related inquiry type
-     */
+    
     private boolean isLoanLead(MasterEnums.InquiryType type) {
         return type != null && LOAN_TYPES.contains(type);
     }
 
-    /**
-     * Returns {@code true} if the given inquiry type belongs to the legal-services category.
-     *
-     * @param type the inquiry type to check
-     * @return {@code true} if {@code type} is a legal-services inquiry type
-     */
+    
     private boolean isLegalLead(MasterEnums.InquiryType type) {
         return type != null && LEGAL_TYPES.contains(type);
     }
 
-    /**
-     * Returns {@code true} if the given string is non-null and not blank.
-     *
-     * @param s the string to test
-     * @return {@code true} if {@code s} has at least one non-whitespace character
-     */
+    
     private boolean hasValue(String s) {
         return s != null && !s.isBlank();
     }

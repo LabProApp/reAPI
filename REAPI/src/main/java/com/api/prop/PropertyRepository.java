@@ -7,43 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-/**
- * Spring Data JPA repository for {@link Property} entities.
- *
- * <p>Extends {@link JpaRepository} to provide standard CRUD operations and
- * defines two custom JPQL queries:
- * <ul>
- *   <li>{@link #search} — a basic filtered search with city, type, category,
- *       area, price, rent/sale, post-date, and poster filters.</li>
- *   <li>{@link #searchAll} — an advanced search that adds title, address,
- *       bedroom/bathroom ranges, a global location keyword (matched against
- *       city, locality, state, address, and title), and an amenity CSV
- *       filter.</li>
- * </ul>
- * All filter parameters accept {@code null} to opt out of that criterion.</p>
- */
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, Long> {
 
-	/**
-	 * Searches for properties matching the supplied basic criteria.
-	 *
-	 * <p>Any parameter may be {@code null}; a {@code null} value disables that
-	 * filter entirely. String comparisons use case-insensitive {@code LIKE}
-	 * matching; {@code rentOrSale} uses an exact case-insensitive equality check.</p>
-	 *
-	 * @param city          city filter (partial match); {@code null} to skip
-	 * @param type          property type filter (partial match); {@code null} to skip
-	 * @param category      category filter (partial match); {@code null} to skip
-	 * @param minArea       minimum super area in sq ft (inclusive); {@code null} to skip
-	 * @param maxArea       maximum super area in sq ft (inclusive); {@code null} to skip
-	 * @param minPrice      minimum price (inclusive); {@code null} to skip
-	 * @param maxPrice      maximum price (inclusive); {@code null} to skip
-	 * @param rentOrSale    rent/sale indicator (exact, case-insensitive); {@code null} to skip
-	 * @param postDate      earliest post date-time (inclusive); {@code null} to skip
-	 * @param postedByUser  ID of the user who posted the listing; {@code null} to skip
-	 * @return list of matching {@link Property} entities
-	 */
+	
 	@Query("""
 			    SELECT p FROM Property p
 			    WHERE (:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%')))
@@ -60,39 +27,7 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 	List<Property> search(String city, String type, String category, Double minArea, Double maxArea, Double minPrice,
 			Double maxPrice, String rentOrSale, LocalDateTime postDate, Long postedByUser);
 
-	/**
-	 * Performs an advanced multi-criteria search across all indexed property fields.
-	 *
-	 * <p>Any parameter may be {@code null}; a {@code null} value disables that
-	 * filter entirely. The {@code location} parameter is matched against
-	 * {@code city}, {@code location}, {@code state}, {@code address}, and
-	 * {@code title} simultaneously. The {@code amenity} parameter is matched
-	 * against the comma-separated amenity string using exact, prefix, suffix,
-	 * and infix patterns.</p>
-	 *
-	 * @param title               title filter (partial match); {@code null} to skip
-	 * @param address             address filter (partial match); {@code null} to skip
-	 * @param city                city filter (partial match); {@code null} to skip
-	 * @param type                property type filter (partial match); {@code null} to skip
-	 * @param category            category filter (partial match); {@code null} to skip
-	 * @param postedBy            poster type filter (partial match); {@code null} to skip
-	 * @param constructionStatus  construction status filter (partial match); {@code null} to skip
-	 * @param currency            currency code filter (partial match); {@code null} to skip
-	 * @param location            global location keyword matched across multiple fields; {@code null} to skip
-	 * @param minPrice            minimum price (inclusive); {@code null} to skip
-	 * @param maxPrice            maximum price (inclusive); {@code null} to skip
-	 * @param minBedrooms         minimum bedroom count (inclusive); {@code null} to skip
-	 * @param maxBedrooms         maximum bedroom count (inclusive); {@code null} to skip
-	 * @param minBathrooms        minimum bathroom count (inclusive); {@code null} to skip
-	 * @param maxBathrooms        maximum bathroom count (inclusive); {@code null} to skip
-	 * @param minArea             minimum super area in sq ft (inclusive); {@code null} to skip
-	 * @param maxArea             maximum super area in sq ft (inclusive); {@code null} to skip
-	 * @param amenity             single amenity ID to match in the CSV amenities field; {@code null} to skip
-	 * @param rentOrSale          rent/sale indicator (exact, case-insensitive); {@code null} to skip
-	 * @param postDate            earliest post date-time (inclusive); {@code null} to skip
-	 * @param postedByUser        ID of the user who posted the listing; {@code null} to skip
-	 * @return distinct list of matching {@link Property} entities
-	 */
+	
 	@Query("""
 			SELECT DISTINCT p FROM Property p
 			WHERE

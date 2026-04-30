@@ -12,20 +12,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * REST controller for document and legal service provider endpoints.
- *
- * <p>Exposes CRUD and search APIs under {@code /api/providers}. The search
- * endpoint supports free-text and location-based filtering with full pagination
- * and sorting. All request/response bodies use {@link DocumentLegalServiceProviderDto}
- * to decouple the API contract from the persistence model.</p>
- */
 @RestController
 @RequestMapping("/api/providers")
 @Tag(name = "Document Legal Vendor Services", description = "Operations for Document Legal Vendor Services")
@@ -39,25 +32,7 @@ public class DocumentLegalServiceProviderController {
 	@Autowired
 	private ModelMapper modelMapper;
 
-	/**
-	 * Searches for providers using optional free-text and location filters with pagination and sorting.
-	 *
-	 * <p>The {@code q} parameter searches across legal name, contact name, email,
-	 * and phone numbers. Location parameters ({@code city}, {@code state},
-	 * {@code country}) apply exact case-insensitive matches. The {@code sort}
-	 * parameter accepts a field name and optional direction separated by a comma
-	 * (e.g., {@code legalname,asc}).</p>
-	 *
-	 * @param q       optional free-text search term
-	 * @param city    optional city filter
-	 * @param state   optional state filter
-	 * @param country optional country filter
-	 * @param page    zero-based page index (default {@code 0})
-	 * @param size    page size (default {@code 20})
-	 * @param sort    sort field and direction, e.g., {@code legalname,asc} (default)
-	 * @return a {@link ResponseEntity} containing a page of {@link DocumentLegalServiceProviderDto} objects
-	 */
-	// Public listing with pagination, filtering & sorting
+	@Operation(summary = "Search document and legal service providers")
 	@GetMapping("/search")
 	public ResponseEntity<Page<DocumentLegalServiceProviderDto>> list(@RequestParam(required = false) String q,
 			@RequestParam(required = false) String city, @RequestParam(required = false) String state,
@@ -81,13 +56,7 @@ public class DocumentLegalServiceProviderController {
 		return ResponseEntity.ok(dtoPage);
 	}
 
-	/**
-	 * Fetches a single provider by its primary key.
-	 *
-	 * @param id the provider ID
-	 * @return {@code 200 OK} with the {@link DocumentLegalServiceProviderDto} if found,
-	 *         or {@code 404 Not Found} if no provider exists with the given ID
-	 */
+	@Operation(summary = "Get provider by ID")
 	@GetMapping("/id/{id}")
 	public ResponseEntity<DocumentLegalServiceProviderDto> get(@PathVariable Long id) {
 		log.info("GET /api/providers/id/{} - Fetching provider", id);
@@ -103,14 +72,7 @@ public class DocumentLegalServiceProviderController {
 				});
 	}
 
-	/**
-	 * Creates a new document and legal service provider.
-	 *
-	 * @param requestDto the provider data to persist; must pass validation constraints
-	 * @return {@code 200 OK} with the created {@link DocumentLegalServiceProviderDto}
-	 *         (including the generated ID)
-	 */
-	// Admin endpoints
+	@Operation(summary = "Create a new service provider")
 	@PostMapping
 	public ResponseEntity<DocumentLegalServiceProviderDto> create(
 			@Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
@@ -122,14 +84,7 @@ public class DocumentLegalServiceProviderController {
 		return ResponseEntity.ok(dto);
 	}
 
-	/**
-	 * Updates an existing provider identified by the given ID.
-	 *
-	 * @param id         the ID of the provider to update
-	 * @param requestDto the updated provider data; must pass validation constraints
-	 * @return {@code 200 OK} with the updated {@link DocumentLegalServiceProviderDto}
-	 * @throws IllegalArgumentException if no provider exists with the given {@code id}
-	 */
+	@Operation(summary = "Update an existing service provider")
 	@PutMapping("/{id}")
 	public ResponseEntity<DocumentLegalServiceProviderDto> update(@PathVariable Long id,
 			@Valid @RequestBody DocumentLegalServiceProviderDto requestDto) {
@@ -141,12 +96,7 @@ public class DocumentLegalServiceProviderController {
 		return ResponseEntity.ok(dto);
 	}
 
-	/**
-	 * Deletes the provider with the given ID.
-	 *
-	 * @param id the ID of the provider to delete
-	 * @return {@code 204 No Content} on successful deletion
-	 */
+	@Operation(summary = "Delete a service provider")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		log.info("DELETE /api/providers/{} - Deleting provider", id);
