@@ -1,0 +1,1310 @@
+{
+  "info": {
+    "name": "Real Estate API",
+    "description": "Complete Postman collection for the Real Estate Mobile API.\n\n**Setup:**\n1. Import this collection into Postman.\n2. The `baseUrl` variable defaults to `http://localhost:8080` — change it for staging/prod.\n3. Call **Login** first; the test script automatically saves the JWT to `{{token}}`.\n4. All protected endpoints inherit the Bearer token from the collection-level auth.\n\n**Variables:** `baseUrl`, `token`, `userId`, `propertyId`, `bankId`, `leadId`, `documentId`, `projectId`, `providerId`, `relationId`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",    "value": "http://localhost:8080", "type": "string" },
+    { "key": "token",      "value": "",  "type": "string" },
+    { "key": "userId",     "value": "1", "type": "string" },
+    { "key": "propertyId", "value": "1", "type": "string" },
+    { "key": "bankId",     "value": "1", "type": "string" },
+    { "key": "leadId",     "value": "1", "type": "string" },
+    { "key": "documentId", "value": "1", "type": "string" },
+    { "key": "projectId",  "value": "1", "type": "string" },
+    { "key": "providerId", "value": "1", "type": "string" },
+    { "key": "relationId", "value": "1", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "🔐 Auth",
+      "description": "Public endpoints — no token required. Log in to auto-save the JWT.",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"name\": \"Nikhil Aggarwal\",\n    \"email\": \"nikhil@example.com\",\n    \"mobile\": \"9876543210\",\n    \"password\": \"Password@123\",\n    \"role\": \"AGENT\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"address\": \"123 Main Street\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "signup"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json();",
+                  "if (response.token) {",
+                  "    pm.collectionVariables.set('token', response.token);",
+                  "    console.log('Token saved: ' + response.token);",
+                  "}",
+                  "if (response.user && response.user.id) {",
+                  "    pm.collectionVariables.set('userId', String(response.user.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"email\": \"nikhil@example.com\",\n    \"password\": \"Password@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/verifyOtp?identifier=nikhil@example.com&otp=123456",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "verifyOtp"],
+              "query": [
+                { "key": "identifier", "value": "nikhil@example.com" },
+                { "key": "otp",        "value": "123456" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/resend-otp?identifier=nikhil@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "resend-otp"],
+              "query": [
+                { "key": "identifier", "value": "nikhil@example.com" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"email\": \"nikhil@example.com\",\n    \"password\": \"NewPassword@123\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "reset-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "👤 User Profile",
+      "description": "Profile retrieval and update endpoints.",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/me?identifier=nikhil@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "me"],
+              "query": [
+                { "key": "identifier", "value": "nikhil@example.com" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile by User ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/profile/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "profile", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"name\": \"Nikhil Aggarwal Updated\",\n    \"mobile\": \"9876543210\",\n    \"city\": \"Pune\",\n    \"state\": \"Maharashtra\",\n    \"address\": \"456 New Street\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "update"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "❤️ User Interactions",
+      "description": "Mark properties as favourite or inquired; retrieve those lists.",
+      "item": [
+        {
+          "name": "Mark Favourite",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{userId}}/favourite/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{userId}}", "favourite", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Interested (Inquiry)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{userId}}/interest/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{userId}}", "interest", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Favourite Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{userId}}/favourites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{userId}}", "favourites"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inquired Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{userId}}/inqueries",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{userId}}", "inqueries"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "🏠 Properties",
+      "description": "Property listing management — CRUD, search, and sharing.",
+      "item": [
+        {
+          "name": "Add Property",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"title\": \"2BHK Apartment in Andheri West\",\n    \"description\": \"Spacious 2BHK apartment with sea view and modern interiors.\",\n    \"address\": \"123 Versova Road, Andheri West\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"type\": \"Apartment\",\n    \"category\": \"Residential\",\n    \"rentOrSale\": \"Sale\",\n    \"price\": 8500000.0,\n    \"currency\": \"INR\",\n    \"bedrooms\": 2,\n    \"bathrooms\": 2,\n    \"carpetArea\": 850.0,\n    \"superArea\": 1050.0,\n    \"location\": \"Andheri West\",\n    \"landmark\": \"Near Versova Metro\",\n    \"latitude\": 19.1197,\n    \"longitude\": 72.8468,\n    \"facing\": \"East\",\n    \"floorNumber\": 5,\n    \"totalFloors\": 15,\n    \"parkingCount\": \"1\",\n    \"parkingType\": \"Covered\",\n    \"propertyAge\": \"2 Years\",\n    \"ownershipType\": \"Freehold\",\n    \"furnishing\": \"Semi-Furnished\",\n    \"constructionStatus\": \"Ready to Move\",\n    \"builderName\": \"Godrej Properties\",\n    \"projectName\": \"Godrej Prime\",\n    \"reraApproved\": true,\n    \"reraNumber\": \"P51800012345\",\n    \"negotiable\": true,\n    \"loanAvailable\": true,\n    \"postedBy\": \"Owner\",\n    \"postedByUser\": 1,\n    \"contactNumber\": \"9876543210\",\n    \"amenities\": \"1,2,3,4,5\",\n    \"verified\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Property",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"title\": \"2BHK Apartment in Andheri West — Updated\",\n    \"price\": 9000000.0,\n    \"negotiable\": false,\n    \"description\": \"Freshly painted and renovated.\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"type\": \"Apartment\",\n    \"category\": \"Residential\",\n    \"rentOrSale\": \"Sale\",\n    \"constructionStatus\": \"Ready to Move\",\n    \"location\": \"Andheri West\",\n    \"postedBy\": \"Owner\",\n    \"contactNumber\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property/update/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "update", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/getall",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "getall"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Property by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/get/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "get", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/search?city=Mumbai&type=Apartment&rentOrSale=Sale&minPrice=5000000&maxPrice=15000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "search"],
+              "query": [
+                { "key": "city",        "value": "Mumbai" },
+                { "key": "type",        "value": "Apartment" },
+                { "key": "category",    "value": "Residential", "disabled": true },
+                { "key": "rentOrSale",  "value": "Sale" },
+                { "key": "minPrice",    "value": "5000000" },
+                { "key": "maxPrice",    "value": "15000000" },
+                { "key": "minArea",     "value": "500",    "disabled": true },
+                { "key": "maxArea",     "value": "2000",   "disabled": true },
+                { "key": "postDate",    "value": "",       "disabled": true },
+                { "key": "postedByUser","value": "",       "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Advanced Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/advancedsearch?city=Mumbai&rentOrSale=Sale&minPrice=5000000&maxPrice=15000000&minBedrooms=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "advancedsearch"],
+              "query": [
+                { "key": "title",              "value": "",           "disabled": true },
+                { "key": "address",            "value": "",           "disabled": true },
+                { "key": "city",               "value": "Mumbai" },
+                { "key": "type",               "value": "",           "disabled": true },
+                { "key": "category",           "value": "",           "disabled": true },
+                { "key": "postedBy",           "value": "",           "disabled": true },
+                { "key": "constructionStatus", "value": "",           "disabled": true },
+                { "key": "currency",           "value": "",           "disabled": true },
+                { "key": "location",           "value": "",           "disabled": true },
+                { "key": "rentOrSale",         "value": "Sale" },
+                { "key": "minPrice",           "value": "5000000" },
+                { "key": "maxPrice",           "value": "15000000" },
+                { "key": "minBedrooms",        "value": "2" },
+                { "key": "maxBedrooms",        "value": "",           "disabled": true },
+                { "key": "minBathrooms",       "value": "",           "disabled": true },
+                { "key": "maxBathrooms",       "value": "",           "disabled": true },
+                { "key": "minArea",            "value": "",           "disabled": true },
+                { "key": "maxArea",            "value": "",           "disabled": true },
+                { "key": "amenity",            "value": "",           "disabled": true },
+                { "key": "postDate",           "value": "",           "disabled": true },
+                { "key": "postedByUser",       "value": "",           "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Share Property",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"senderName\": \"Nikhil Aggarwal\",\n    \"toEmail\": \"buyer@example.com\",\n    \"toMobile\": \"+919876543210\",\n    \"sendWhatsApp\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}/share",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}", "share"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "🏦 Banks",
+      "description": "Bank partner management, interest rate slabs, loan comparison, and filtering.",
+      "item": [
+        {
+          "name": "Get All Banks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Bank",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"bankName\": \"HDFC Bank\",\n    \"bankType\": \"PRIVATE\",\n    \"contactName\": \"Rahul Sharma\",\n    \"contactNumber\": \"9876543210\",\n    \"email\": \"rahul@hdfc.com\",\n    \"website\": \"https://www.hdfcbank.com\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"address\": \"HDFC House, Senapati Bapat Marg, Mumbai\",\n    \"maxLoanAmount\": 10000000.0,\n    \"minLoanAmount\": 500000.0,\n    \"interestRate\": 8.5,\n    \"processingFee\": 0.5,\n    \"minimumIncome\": 50000.0,\n    \"tenureYears\": 30,\n    \"minCibilScore\": 700,\n    \"minimumAge\": 21,\n    \"maximumAge\": 65,\n    \"loanAvailable\": true,\n    \"reraApproved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/banks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Bank",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"bankName\": \"HDFC Bank\",\n    \"bankType\": \"PRIVATE\",\n    \"contactName\": \"Amit Kumar\",\n    \"contactNumber\": \"9123456780\",\n    \"email\": \"amit@hdfc.com\",\n    \"website\": \"https://www.hdfcbank.com\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"address\": \"HDFC House, Senapati Bapat Marg, Mumbai\",\n    \"maxLoanAmount\": 12000000.0,\n    \"minLoanAmount\": 500000.0,\n    \"interestRate\": 8.25,\n    \"processingFee\": 0.4,\n    \"minimumIncome\": 45000.0,\n    \"tenureYears\": 30,\n    \"minCibilScore\": 680,\n    \"minimumAge\": 21,\n    \"maximumAge\": 65,\n    \"loanAvailable\": true,\n    \"reraApproved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/{{bankId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "{{bankId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Compare Banks (Loan Comparison)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/compare",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "compare"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Banks with Interest Rates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/with-interest-rates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "with-interest-rates"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Banks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/filter?maxRate=9.0&minCibil=700",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "filter"],
+              "query": [
+                { "key": "maxRate",   "value": "9.0" },
+                { "key": "minCibil",  "value": "700" },
+                { "key": "maxTenure", "value": "",     "disabled": true },
+                { "key": "minIncome", "value": "",     "disabled": true },
+                { "key": "city",      "value": "",     "disabled": true },
+                { "key": "state",     "value": "",     "disabled": true },
+                { "key": "bank",      "value": "",     "disabled": true },
+                { "key": "postalcode","value": "",     "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Interest Rate Slab",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"bankId\": 1,\n    \"minCibil\": 700,\n    \"maxCibil\": 749,\n    \"interestRate\": 8.75\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/{{bankId}}/interest-rates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "{{bankId}}", "interest-rates"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Interest Rate Slab",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"bankId\": 1,\n    \"minCibil\": 700,\n    \"maxCibil\": 749,\n    \"interestRate\": 8.50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/{{bankId}}/interest-rates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "{{bankId}}", "interest-rates"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Interest Rates by Bank",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banks/{{bankId}}/interest-rates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banks", "{{bankId}}", "interest-rates"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "📄 Documents",
+      "description": "Upload, retrieve, verify/reject, and delete documents stored in AWS S3.",
+      "item": [
+        {
+          "name": "Upload Documents (Generic)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "files",      "type": "file",   "src": [] },
+                { "key": "titles",     "type": "text",   "value": "Property Photo" },
+                { "key": "captions",   "type": "text",   "value": "Front view" },
+                { "key": "uploadedBy", "type": "text",   "value": "1" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/uploadDocuments/PROPERTY/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "uploadDocuments", "PROPERTY", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Loan Documents",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "files",      "type": "file",   "src": [] },
+                { "key": "titles",     "type": "text",   "value": "Salary Slip" },
+                { "key": "captions",   "type": "text",   "value": "Last 3 months" },
+                { "key": "uploadedBy", "type": "text",   "value": "1" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/upload/loan/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "upload", "loan", "{{leadId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Legal Documents",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "files",      "type": "file",   "src": [] },
+                { "key": "titles",     "type": "text",   "value": "Sale Deed" },
+                { "key": "captions",   "type": "text",   "value": "Original sale deed" },
+                { "key": "uploadedBy", "type": "text",   "value": "1" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/upload/legal/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "upload", "legal", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Documents by Object",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/PROPERTY/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "PROPERTY", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Loan Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/loan/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "loan", "{{leadId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Legal Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/legal/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "legal", "{{propertyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/{{documentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "{{documentId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Document Status (Verify / Reject)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"status\": \"VERIFIED\",\n    \"comments\": \"Document looks genuine and complete.\",\n    \"rejectionReason\": null,\n    \"reviewedBy\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/{{documentId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "{{documentId}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Pending Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Documents by Object",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/pending/LOAN_DOCUMENT/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "pending", "LOAN_DOCUMENT", "{{leadId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "📋 Client Leads",
+      "description": "Lead lifecycle management — create, search, status updates, approvals, follow-ups.",
+      "item": [
+        {
+          "name": "Create Lead",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"userId\": 1,\n    \"propertyId\": 1,\n    \"brokerId\": 2,\n    \"leadType\": \"PROPERTY_INQUIRY\",\n    \"mobile\": \"9876543210\",\n    \"message\": \"I am interested in this 2BHK apartment. Please arrange a site visit.\",\n    \"sendWhatsApp\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leads",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lead by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "{{leadId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Leads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/search?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "search"],
+              "query": [
+                { "key": "userId",     "value": "{{userId}}" },
+                { "key": "brokerId",   "value": "",  "disabled": true },
+                { "key": "ownerId",    "value": "",  "disabled": true },
+                { "key": "propertyId", "value": "",  "disabled": true },
+                { "key": "status",     "value": "",  "disabled": true },
+                { "key": "leadType",   "value": "",  "disabled": true },
+                { "key": "mobile",     "value": "",  "disabled": true },
+                { "key": "startDate",  "value": "",  "disabled": true },
+                { "key": "endDate",    "value": "",  "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Property Lead Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/property/{{propertyId}}/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "property", "{{propertyId}}", "summary"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Lead Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"status\": \"CONTACTED\",\n    \"remark\": \"Called the client. Site visit scheduled for tomorrow.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/{{leadId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "{{leadId}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Lead",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"mobile\": \"9876543210\",\n    \"message\": \"Updated inquiry note: preferred possession before June 2025.\",\n    \"brokerId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "{{leadId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Lead Approval (Loan)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"approvedBank\": \"HDFC Bank\",\n    \"approvedLoanAmount\": 7500000.0,\n    \"approvedInterestRate\": 8.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/{{leadId}}/approval",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "{{leadId}}", "approval"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Schedule Follow-Up",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"followUpDate\": \"2026-05-10T10:00:00\",\n    \"remark\": \"Client wants to revisit the property next week.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/{{leadId}}/followup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "{{leadId}}", "followup"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Lead",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "{{leadId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "🔔 Notifications",
+      "description": "Send SMS, email, WhatsApp, and template-based multi-channel notifications.",
+      "item": [
+        {
+          "name": "Send SMS",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"mobile\": \"+919876543210\",\n    \"message\": \"Your property listing has been approved. Visit the app to view details.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/sms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "sms"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"to\": \"buyer@example.com\",\n    \"subject\": \"Property Listing — 2BHK Andheri West\",\n    \"body\": \"<h1>Property Details</h1><p>We have a great 2BHK available for sale in Andheri West at ₹85 Lakhs. Contact us to book a site visit.</p>\",\n    \"cc\": [\"agent@example.com\"],\n    \"bcc\": [],\n    \"html\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "email"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send WhatsApp",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"mobile\": \"+919876543210\",\n    \"message\": \"Hi! A new property matching your preferences is available. Check the app for details.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/whatsapp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "whatsapp"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send by Template",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"templateKey\": \"OTP_VERIFICATION\",\n    \"email\": \"user@example.com\",\n    \"mobile\": \"+919876543210\",\n    \"cc\": [],\n    \"bcc\": [],\n    \"html\": false,\n    \"channels\": [\"EMAIL\", \"SMS\"],\n    \"variables\": {\n        \"name\": \"Nikhil\",\n        \"otp\": \"123456\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/template/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "template", "send"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List All Templates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "templates"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retrigger Lead Inquiry Notification",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/lead/{{leadId}}/inquiry",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "lead", "{{leadId}}", "inquiry"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retrigger Lead Status Notification",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/lead/{{leadId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "lead", "{{leadId}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Welcome Notification to User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/user/{{userId}}/welcome",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "user", "{{userId}}", "welcome"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "🏗️ Projects",
+      "description": "Real estate development project listings with filtering and pagination.",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects?page=0&size=20&sort=projectName,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects"],
+              "query": [
+                { "key": "city",         "value": "",             "disabled": true },
+                { "key": "builder",      "value": "",             "disabled": true },
+                { "key": "status",       "value": "",             "disabled": true },
+                { "key": "propertyType", "value": "",             "disabled": true },
+                { "key": "minPrice",     "value": "",             "disabled": true },
+                { "key": "maxPrice",     "value": "",             "disabled": true },
+                { "key": "page",         "value": "0" },
+                { "key": "size",         "value": "20" },
+                { "key": "sort",         "value": "projectName,asc" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", "{{projectId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "⚖️ Service Providers",
+      "description": "Legal and documentation service providers (lawyers, notaries, etc.).",
+      "item": [
+        {
+          "name": "Search Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/providers/search?page=0&size=20&sort=legalname,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "providers", "search"],
+              "query": [
+                { "key": "q",      "value": "",    "disabled": true },
+                { "key": "city",   "value": "",    "disabled": true },
+                { "key": "state",  "value": "",    "disabled": true },
+                { "key": "country","value": "",    "disabled": true },
+                { "key": "page",   "value": "0" },
+                { "key": "size",   "value": "20" },
+                { "key": "sort",   "value": "legalname,asc" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Provider by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/providers/id/{{providerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "providers", "id", "{{providerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Provider",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"legalname\": \"Sharma Legal Associates\",\n    \"serviceType\": \"Property Registration\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"country\": \"India\",\n    \"contactNumber\": \"9876543210\",\n    \"email\": \"sharma@legal.com\",\n    \"rating\": 4.5,\n    \"verified\": true,\n    \"address\": \"12 Law Street, Fort, Mumbai\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/providers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "providers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Provider",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"legalname\": \"Sharma Legal Associates\",\n    \"serviceType\": \"Property Registration & Consultation\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"country\": \"India\",\n    \"contactNumber\": \"9876543210\",\n    \"email\": \"info@sharma-legal.com\",\n    \"rating\": 4.8,\n    \"verified\": true,\n    \"address\": \"15 Law Street, Fort, Mumbai\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/providers/{{providerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "providers", "{{providerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Provider",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/providers/{{providerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "providers", "{{providerId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "👥 User Relations",
+      "description": "Directional relationships between users (agent–client, broker–owner, etc.).",
+      "item": [
+        {
+          "name": "Create / Update Relation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n    \"userId\": 2,\n    \"relatedUserId\": 5,\n    \"relationType\": \"CLIENT_OF\",\n    \"comments\": \"Referred by broker Nikhil.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user-relations/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user-relations", "create"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Relations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user-relations/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user-relations", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Relations by User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user-relations/user/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user-relations", "user", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Relations by User and Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user-relations/user/{{userId}}/relation/CLIENT_OF",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user-relations", "user", "{{userId}}", "relation", "CLIENT_OF"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Relation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user-relations/{{relationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user-relations", "{{relationId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "📚 Master Lookup",
+      "description": "Reference data endpoints — enums and database-backed lookup tables.",
+      "item": [
+        {
+          "name": "Get Master Values by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/master/getMasterValues?type=PROPERTY_TYPE&status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "master", "getMasterValues"],
+              "query": [
+                { "key": "type",   "value": "PROPERTY_TYPE" },
+                { "key": "status", "value": "ACTIVE" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Child Values by Parent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/master/1/child?type=PROPERTY_SUBTYPE&status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "master", "1", "child"],
+              "query": [
+                { "key": "type",   "value": "PROPERTY_SUBTYPE" },
+                { "key": "status", "value": "ACTIVE" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Enum by Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/master/enum/DocumentStatus",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "master", "enum", "DocumentStatus"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Enums",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/master/allenums",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "master", "allenums"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+
+  ]
+}
