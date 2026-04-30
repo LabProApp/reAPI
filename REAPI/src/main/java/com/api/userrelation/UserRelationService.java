@@ -3,6 +3,8 @@ package com.api.userrelation;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +13,6 @@ import com.api.user.User;
 import com.api.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for user relation operations.
@@ -22,11 +23,12 @@ import lombok.extern.slf4j.Slf4j;
  * type and comments are updated rather than creating a duplicate. All mutating
  * operations execute within a transaction.</p>
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserRelationService {
+
+	private static final Logger log = LoggerFactory.getLogger(UserRelationService.class);
 
 	@Autowired
 	private UserRelationRepository userRelationRepository;

@@ -1,5 +1,7 @@
 package com.api.notifications;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -12,7 +14,6 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
 import jakarta.mail.internet.MimeMessage;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Low-level communication service that provides direct send operations for
@@ -22,9 +23,10 @@ import lombok.extern.slf4j.Slf4j;
  * callers are not blocked on network I/O. Errors are caught internally and
  * logged; they do not propagate to the caller.
  */
-@Slf4j
 @Service
 public class CommService {
+
+	private static final Logger log = LoggerFactory.getLogger(CommService.class);
 
 	@Value("${twilio.accountSid}")
 	private String ACCOUNT_SID;

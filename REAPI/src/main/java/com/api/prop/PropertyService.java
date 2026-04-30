@@ -7,13 +7,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.api.commons.ResourceNotFoundException;
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for all property-related business operations.
@@ -24,9 +25,10 @@ import lombok.extern.slf4j.Slf4j;
  * and {@link PropertyDto} is performed via ModelMapper supplemented by the
  * manual {@code toDto} method for fine-grained control.</p>
  */
-@Slf4j
 @Service
 public class PropertyService {
+
+	private static final Logger log = LoggerFactory.getLogger(PropertyService.class);
 
 	private final PropertyRepository repository;
 	private final ModelMapper mapper;

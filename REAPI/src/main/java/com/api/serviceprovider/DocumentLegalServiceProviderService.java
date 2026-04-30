@@ -2,14 +2,14 @@ package com.api.serviceprovider;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for document and legal service provider operations.
@@ -20,10 +20,11 @@ import lombok.extern.slf4j.Slf4j;
  * support free-text and location-based filtering. All mutating operations are
  * wrapped in a transaction.</p>
  */
-@Slf4j
 @Service
 @Transactional
 public class DocumentLegalServiceProviderService {
+
+	private static final Logger log = LoggerFactory.getLogger(DocumentLegalServiceProviderService.class);
 
 	@Autowired
 	private DocumentLegalServiceProviderRepository repo;

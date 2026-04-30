@@ -1,5 +1,7 @@
 package com.api.projects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST controller for real estate project endpoints.
@@ -22,11 +23,12 @@ import lombok.extern.slf4j.Slf4j;
  * and for fetching a single project by its ID. Pagination and sorting are
  * fully configurable via query parameters.</p>
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/projects")
 @Tag(name = "Real Estate Projects", description = "APIs for listing real estate projects")
 public class ProjectController {
+
+    private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
 
     @Autowired
     private ProjectService service;

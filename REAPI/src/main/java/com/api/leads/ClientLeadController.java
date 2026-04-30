@@ -3,6 +3,8 @@ package com.api.leads;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,7 +22,6 @@ import com.api.enums.MasterEnums;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST controller that exposes unified lead management endpoints under the
@@ -28,11 +29,12 @@ import lombok.extern.slf4j.Slf4j;
  * service lead types via a single set of endpoints. All business logic is
  * delegated to {@link ClientLeadService}.
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/leads")
 @Tag(name = "Client Leads APIs", description = "Unified lead management — property, rental, loan, and legal service leads")
 public class ClientLeadController {
+
+	private static final Logger log = LoggerFactory.getLogger(ClientLeadController.class);
 
 	private final ClientLeadService service;
 

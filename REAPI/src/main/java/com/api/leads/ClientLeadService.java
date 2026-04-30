@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,8 +14,6 @@ import com.api.enums.MasterEnums;
 import com.api.notifications.NotificationService;
 import com.api.prop.PropertyRepository;
 import com.api.user.UserRepository;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for all client lead operations. Manages the full lifecycle of
@@ -25,10 +25,11 @@ import lombok.extern.slf4j.Slf4j;
  * <p>All public methods are wrapped in a transaction via the class-level
  * {@link Transactional} annotation.
  */
-@Slf4j
 @Service
 @Transactional
 public class ClientLeadService {
+
+	private static final Logger log = LoggerFactory.getLogger(ClientLeadService.class);
 
 	private final ClientLeadRepository repository;
 	private final ModelMapper mapper;

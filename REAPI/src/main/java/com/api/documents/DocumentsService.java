@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.api.enums.MasterEnums;
 
 import jakarta.persistence.EntityNotFoundException;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for all document management operations in the real estate API.
@@ -36,10 +37,11 @@ import lombok.extern.slf4j.Slf4j;
  *       fetching documents for a list of parent objects.</li>
  * </ul>
  */
-@Slf4j
 @Service
 @Transactional
 public class DocumentsService {
+
+	private static final Logger log = LoggerFactory.getLogger(DocumentsService.class);
 
 	private static final Set<String> CUSTOMER_UPLOAD_TYPES = Set.of("LOAN_DOCUMENT", "LEGAL_DOCUMENT");
 

@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,6 @@ import com.api.prop.PropertyRepository;
 import com.api.security.JwtUtil;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userproperty.UserPropertyRelationRepository;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Business-logic service for all user-related operations in the real estate API.
@@ -36,9 +37,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>All dependencies are injected via constructor injection per Spring best practice.
  */
-@Slf4j
 @Service
 public class UserService {
+
+	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 	private final UserRepository userRepository;
 	private final PropertyRepository propertyRepository;

@@ -3,6 +3,8 @@ package com.api.prop;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +21,6 @@ import com.api.notifications.NotificationService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST controller exposing property management endpoints under
@@ -31,11 +32,12 @@ import lombok.extern.slf4j.Slf4j;
  * multi-channel notification (email / SMS / WhatsApp) via
  * {@link NotificationService}.</p>
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/property")
 @Tag(name = "Property APIs", description = "Operations related to Property management")
 public class PropertyController {
+
+	private static final Logger log = LoggerFactory.getLogger(PropertyController.class);
 
 	@Autowired
 	private PropertyService service;

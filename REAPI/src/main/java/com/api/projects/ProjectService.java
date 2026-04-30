@@ -3,13 +3,13 @@ package com.api.projects;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for real estate project operations.
@@ -20,9 +20,10 @@ import lombok.extern.slf4j.Slf4j;
  * mapped to {@link ProjectDto} using ModelMapper before being returned
  * to the caller.</p>
  */
-@Slf4j
 @Service
 public class ProjectService {
+
+	private static final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
 	@Autowired
 	private ProjectRepository repository;

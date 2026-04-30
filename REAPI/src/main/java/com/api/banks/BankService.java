@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for all bank and interest-rate operations. Orchestrates
@@ -21,9 +22,10 @@ import lombok.extern.slf4j.Slf4j;
  * {@link DocumentsService}. All public methods are transactional through the
  * default Spring proxy unless otherwise noted.
  */
-@Slf4j
 @Service
 public class BankService {
+
+	private static final Logger log = LoggerFactory.getLogger(BankService.class);
 
 	private final BankRepository bankRepository;
 	private final InterestRatesRepository interestRatesRepository;

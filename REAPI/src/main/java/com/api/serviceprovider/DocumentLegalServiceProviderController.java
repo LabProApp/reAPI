@@ -1,6 +1,8 @@
 package com.api.serviceprovider;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,11 +26,12 @@ import java.util.stream.Collectors;
  * and sorting. All request/response bodies use {@link DocumentLegalServiceProviderDto}
  * to decouple the API contract from the persistence model.</p>
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/providers")
 @Tag(name = "Document Legal Vendor Services", description = "Operations for Document Legal Vendor Services")
 public class DocumentLegalServiceProviderController {
+
+	private static final Logger log = LoggerFactory.getLogger(DocumentLegalServiceProviderController.class);
 
 	@Autowired
 	private DocumentLegalServiceProviderService service;

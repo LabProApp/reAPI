@@ -3,6 +3,8 @@ package com.api.notifications;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -12,8 +14,6 @@ import com.api.leads.ClientLead;
 import com.api.prop.PropertyDto;
 import com.api.prop.SharePropertyRequest;
 import com.api.user.User;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Orchestrates multi-channel notification delivery for the real estate platform.
@@ -32,9 +32,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>All public methods are annotated with {@code @Async} and execute on a separate thread.
  */
-@Slf4j
 @Service
 public class NotificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private static final Set<MasterEnums.InquiryType> LOAN_TYPES = EnumSet.of(
             MasterEnums.InquiryType.HOME_LOAN,

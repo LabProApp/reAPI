@@ -7,8 +7,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service layer for master lookup and enum retrieval operations.
@@ -22,9 +23,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>Dependencies are injected via constructor injection per Spring best practice.
  */
-@Slf4j
 @Service
 public class MasterLookupService {
+
+	private static final Logger log = LoggerFactory.getLogger(MasterLookupService.class);
 
 	private final MasterLookupRepository repository;
 	private final ModelMapper mapper;

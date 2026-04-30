@@ -2,6 +2,8 @@ package com.api.userrelation;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +18,6 @@ import com.api.user.User;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST controller for user relation endpoints.
@@ -28,12 +29,13 @@ import lombok.extern.slf4j.Slf4j;
  * full entity loading is deferred to the service layer, avoiding serialisation
  * issues caused by {@code @JsonBackReference} on the entity.</p>
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/user-relations")
 @Tag(name = "User Relation APIs", description = "Operations related to Maintain Relations between Agents & Clients")
 @RequiredArgsConstructor
 public class UserRelationController {
+
+	private static final Logger log = LoggerFactory.getLogger(UserRelationController.class);
 
 	@Autowired
 	private UserRelationService userRelationService;

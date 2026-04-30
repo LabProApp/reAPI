@@ -2,14 +2,14 @@ package com.api.notifications;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.api.user.User;
 import com.api.user.UserRepository;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Scheduled service that sends a daily digest email to all registered users.
@@ -21,9 +21,10 @@ import lombok.extern.slf4j.Slf4j;
  * <p>This service requires that Spring's {@code @EnableScheduling} is active on the
  * application context.
  */
-@Slf4j
 @Service
 public class DailyEmailBatchService {
+
+    private static final Logger log = LoggerFactory.getLogger(DailyEmailBatchService.class);
 
     @Autowired
     private UserRepository userRepository;

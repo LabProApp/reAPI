@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +16,6 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service for interacting with AWS S3 using the AWS SDK v2.
@@ -34,9 +35,10 @@ import lombok.extern.slf4j.Slf4j;
  * {@link S3Client} and {@link S3Presigner} beans are configured in
  * {@link S3Config}.
  */
-@Slf4j
 @Service
 public class S3Service {
+
+	private static final Logger log = LoggerFactory.getLogger(S3Service.class);
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;

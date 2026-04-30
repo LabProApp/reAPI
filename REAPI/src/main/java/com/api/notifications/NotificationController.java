@@ -15,8 +15,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,11 +42,12 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Base path: {@code /api/notifications}
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/notifications")
 @Tag(name = "Notification APIs", description = "Send SMS, Email, WhatsApp and trigger template-based notifications")
 public class NotificationController {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationController.class);
 
     private final CommService commService;
     private final WhatsAppService whatsAppService;
