@@ -104,15 +104,24 @@ public class DocumentsService {
 	}
 
 	
-	// Delete a document
+	// Delete a document and its S3 object
 	public void deleteDocument(Long id) {
 		log.info("deleteDocument - Deleting document id={}", id);
 		Documents doc = documentsRepository.findById(id).orElseThrow(() -> {
 			log.error("deleteDocument - Document not found for id={}", id);
 			return new RuntimeException("Document not found");
 		});
+		String s3Key = doc.getS3key();
 		documentsRepository.delete(doc);
-		log.info("deleteDocument - Document id={} deleted (s3key={})", id, doc.getS3key());
+		log.info("deleteDocument - DB record deleted for id={}, s3key={}", id, s3Key);
+		if (s3Key != null && !s3Key.isBlank()) {
+			try {
+				s3Service.deleteFile(s3Key);
+				log.info("deleteDocument - S3 object deleted key={}", s3Key);
+			} catch (Exception e) {
+				log.error("deleteDocument - Failed to delete S3 object key={}: {}", s3Key, e.getMessage());
+			}
+		}
 	}
 
 	

@@ -82,7 +82,7 @@ public class S3Service {
 		}
 		log.debug("generatePresignedUrl - Generating presigned URL for key={}", key);
 		GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(key).build();
-		String url = s3Presigner.presignGetObject(p -> p.signatureDuration(Duration.ofMinutes(60)).getObjectRequest(request))
+		String url = s3Presigner.presignGetObject(p -> p.signatureDuration(Duration.ofMinutes(15)).getObjectRequest(request))
 				.url().toString();
 		log.debug("generatePresignedUrl - Presigned URL generated for key={}", key);
 		return url;
