@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.api.commons.ResourceNotFoundException;
 import com.api.documents.DocumentminDto;
@@ -34,6 +35,7 @@ public class PropertyService {
 	}
 
 	
+	@Transactional
 	public PropertyDto addProperty(PropertyDto propertyDto) {
 		log.info("addProperty - Adding property: title={}, city={}, type={}",
 				propertyDto.getTitle(), propertyDto.getCity(), propertyDto.getType());
@@ -82,6 +84,7 @@ public class PropertyService {
 	}
 
 	
+	@Transactional
 	public PropertyDto updateProperty(Long id, PropertyDto updatedDto) {
 		log.info("updateProperty - Updating property id={}", id);
 		Property updatedProperty = mapper.map(updatedDto, Property.class);
@@ -174,6 +177,7 @@ public class PropertyService {
 	}
 
 	
+	@Transactional
 	public void deleteProperty(Long id) {
 		log.info("deleteProperty - Deleting property id={}", id);
 		if (!repository.existsById(id)) {
@@ -209,7 +213,7 @@ public class PropertyService {
 	}
 
 	
-	private PropertyDto toDto(Property p) {
+	PropertyDto toDto(Property p) {
 		PropertyDto dto = new PropertyDto();
 		dto.setId(p.getId());
 		dto.setTitle(p.getTitle());

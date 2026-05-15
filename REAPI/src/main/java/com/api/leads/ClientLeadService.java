@@ -1,7 +1,10 @@
 package com.api.leads;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -13,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.api.enums.MasterEnums;
 import com.api.notifications.NotificationService;
 import com.api.prop.PropertyRepository;
+import com.api.user.User;
 import com.api.user.UserRepository;
 
 @Service
@@ -154,15 +158,13 @@ public class ClientLeadService {
 		List<ClientLead> results = repository.findAll(
 				ClientLeadSpecification.build(brokerId, ownerId, propertyId, userId, statuses, leadType, mobile, startDate, endDate));
 		log.info("search - returned {} leads", results.size());
-		return results.stream().map(this::toEnrichedDto).collect(Collectors.toList());
+		return enrichLeads(results);
 	}
 
 	
 	public List<ClientLeadDTO> getLeadSummariesByPropertyId(Long propertyId) {
 		log.info("getLeadSummariesByPropertyId - propertyId={}", propertyId);
-		return repository.findByPropertyId(propertyId).stream()
-				.map(this::toEnrichedDto)
-				.collect(Collectors.toList());
+		return enrichLeads(repository.findByPropertyId(propertyId));
 	}
 
 	
@@ -180,19 +182,28 @@ public class ClientLeadService {
 	}
 
 	
-	private ClientLeadDTO toEnrichedDto(ClientLead lead) {
-		ClientLeadDTO dto = mapper.map(lead, ClientLeadDTO.class);
-		if (lead.getPropertyOwnerId() != null) {
-			userRepository.findById(lead.getPropertyOwnerId()).ifPresent(u -> {
-				dto.setOwnerName(u.getName());
-				dto.setOwnerMobile(u.getMobile());
-				dto.setOwnerEmail(u.getEmail());
-			});
+	// Batch-loads all owner/broker users in one IN query instead of per-lead lookups.
+	private List<ClientLeadDTO> enrichLeads(List<ClientLead> leads) {
+		Set<Long> userIds = new HashSet<>();
+		for (ClientLead l : leads) {
+			if (l.getPropertyOwnerId() != null) userIds.add(l.getPropertyOwnerId());
+			if (l.getBrokerId() != null) userIds.add(l.getBrokerId());
 		}
-		if (lead.getBrokerId() != null) {
-			userRepository.findById(lead.getBrokerId()).ifPresent(u -> dto.setBrokerName(u.getName()));
-		}
-		return dto;
+		Map<Long, User> userMap = userRepository.findAllById(userIds).stream()
+				.collect(Collectors.toMap(User::getId, u -> u));
+
+		return leads.stream().map(lead -> {
+			ClientLeadDTO dto = mapper.map(lead, ClientLeadDTO.class);
+			User owner = userMap.get(lead.getPropertyOwnerId());
+			if (owner != null) {
+				dto.setOwnerName(owner.getName());
+				dto.setOwnerMobile(owner.getMobile());
+				dto.setOwnerEmail(owner.getEmail());
+			}
+			User broker = userMap.get(lead.getBrokerId());
+			if (broker != null) dto.setBrokerName(broker.getName());
+			return dto;
+		}).collect(Collectors.toList());
 	}
 
 	

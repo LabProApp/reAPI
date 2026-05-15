@@ -1,5 +1,7 @@
 package com.api.notifications;
 
+import java.security.SecureRandom;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,59 +22,84 @@ public class CommService {
 
 	private static final Logger log = LoggerFactory.getLogger(CommService.class);
 
-	@Value("${twilio.accountSid}")
+	@Value("${twilio.accountSid:}")
 	private String ACCOUNT_SID;
 
-	@Value("${twilio.authToken}")
+	@Value("${twilio.authToken:}")
 	private String AUTH_TOKEN;
 
-	@Value("${twilio.source.number}")
+	@Value("${twilio.source.number:}")
 	private String SMS_FROM;
 
-	@Value("${spring.mail.username:noreply@keybricks.in}")
+	@Value("${spring.mail.username:}")
+	private String MAIL_USERNAME;
+
+	@Value("${mail.from:noreply@keybricks.in}")
 	private String MAIL_FROM;
 
 	@Autowired
 	private JavaMailSender mailSender;
 
+	private boolean mailConfigured() {
+		return MAIL_USERNAME != null && !MAIL_USERNAME.isBlank();
+	}
+
+	private boolean smsConfigured() {
+		return ACCOUNT_SID != null && !ACCOUNT_SID.isBlank()
+				&& AUTH_TOKEN != null && !AUTH_TOKEN.isBlank();
+	}
+
 	// ─── OTP ─────────────────────────────────────────────────────────────────
 
-	
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+	private static String mask(String mobile) {
+		if (mobile == null || mobile.length() < 4) return "***";
+		return mobile.substring(0, 2) + "****" + mobile.substring(mobile.length() - 2);
+	}
+
 	public String generateOtp() {
-		String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+		int otp = SECURE_RANDOM.nextInt(900000) + 100000;
 		log.debug("generateOtp - Generated OTP");
-		return otp;
+		return String.valueOf(otp);
 	}
 
 	
 	@Async
 	public void sendOtpOnSms(String mobile, String otp) {
-		log.info("sendOtpOnSms - mobile={}", mobile);
+		if (!smsConfigured()) {
+			log.warn("sendOtpOnSms - SMS credentials not configured; skipping send to {}", mask(mobile));
+			return;
+		}
+		log.info("sendOtpOnSms - mobile={}", mask(mobile));
 		try {
 			Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 			Message msg = Message.creator(new PhoneNumber("+91" + mobile),
 					new PhoneNumber(SMS_FROM),
 					"Your OTP is: " + otp + " (Valid for 10 minutes)").create();
-			log.info("sendOtpOnSms - sent mobile={}, sid={}", mobile, msg.getSid());
+			log.info("sendOtpOnSms - sent mobile={}, sid={}", mask(mobile), msg.getSid());
 		} catch (Exception e) {
-			log.error("sendOtpOnSms - failed mobile={}: {}", mobile, e.getMessage(), e);
+			log.error("sendOtpOnSms - failed mobile={}: {}", mask(mobile), e.getMessage(), e);
 		}
 	}
 
 	// ─── SMS ─────────────────────────────────────────────────────────────────
 
-	
 	@Async
 	public void sendSMSMessage(String mobile, String txtMessage) {
-		log.info("sendSMSMessage - mobile={}", mobile);
+		if (!smsConfigured()) {
+			log.warn("sendSMSMessage - SMS credentials not configured; skipping send to {}", mask(mobile));
+			return;
+		}
+		log.info("sendSMSMessage - mobile={}", mask(mobile));
 		try {
 			Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 			Message msg = Message.creator(new PhoneNumber("+91" + mobile),
 					new PhoneNumber(SMS_FROM),
 					txtMessage).create();
-			log.info("sendSMSMessage - sent mobile={}, sid={}", mobile, msg.getSid());
+			log.info("sendSMSMessage - sent mobile={}, sid={}", mask(mobile), msg.getSid());
 		} catch (Exception e) {
-			log.error("sendSMSMessage - failed mobile={}: {}", mobile, e.getMessage(), e);
+			log.error("sendSMSMessage - failed mobile={}: {}", mask(mobile), e.getMessage(), e);
 		}
 	}
 
@@ -81,6 +108,10 @@ public class CommService {
 	
 	@Async
 	public void sendEmail(EmailMessage msg) {
+		if (!mailConfigured()) {
+			log.warn("sendEmail - SMTP credentials not configured; skipping send to {}", msg.getTo());
+			return;
+		}
 		log.info("sendEmail - to={}, cc={}, bcc={}, subject={}",
 				msg.getTo(),
 				msg.getCc() != null ? msg.getCc().length : 0,
@@ -97,6 +128,9 @@ public class CommService {
 			helper.setText(msg.getBody(), msg.isHtml());
 			mailSender.send(mimeMsg);
 			log.info("sendEmail - sent to={}", msg.getTo());
+		} catch (jakarta.mail.AuthenticationFailedException e) {
+			log.warn("sendEmail - SMTP authentication failed (check MAIL_USERNAME/MAIL_PASSWORD); skipping send to {}: {}",
+					msg.getTo(), e.getMessage());
 		} catch (Exception e) {
 			log.error("sendEmail - failed to={}: {}", msg.getTo(), e.getMessage(), e);
 		}

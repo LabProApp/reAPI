@@ -18,6 +18,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
@@ -33,7 +34,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "property")
+@Table(name = "property", indexes = {
+	@Index(name = "idx_property_city", columnList = "city"),
+	@Index(name = "idx_property_type", columnList = "type"),
+	@Index(name = "idx_property_rent_or_sale", columnList = "rentOrSale"),
+	@Index(name = "idx_property_posted_by_user", columnList = "postedByUser"),
+	@Index(name = "idx_property_price", columnList = "price")
+})
 public class Property extends BaseEntity {
 
 	@Id

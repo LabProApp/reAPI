@@ -55,6 +55,7 @@ public class BankService {
 
 	// ➕ Add a new loan representative
 	
+	@Transactional
 	public BankDto addBank(BankDto bankDto) {
 		log.info("Adding bank: {}", bankDto.getBankName());
 		Bank entity = toEntity(bankDto);
@@ -204,6 +205,7 @@ public class BankService {
 	}
 
 	
+	@Transactional
 	public InterestRatesDto addInterestRates(InterestRatesDto dto) {
 		log.info("Adding interest rate for bankId={}, CIBIL range [{}-{}]",
 				dto.getBankId(), dto.getMinCibil(), dto.getMaxCibil());
@@ -248,6 +250,7 @@ public class BankService {
 
 	// ✏️ UPDATE
 	
+	@Transactional
 	public ResponseEntity<?> updateInterestRates(InterestRatesDto dto) {
 		log.info("Updating interest rate id={}", dto.getId());
 		InterestRates rate = interestRatesRepository.findById(dto.getId())
@@ -329,6 +332,7 @@ public class BankService {
 
 	// ✏️ Update loan representative
 	
+	@Transactional
 	public ResponseEntity<?> updateBank(BankDto requestDto) {
 		log.info("Updating bank id={}", requestDto.getId());
 

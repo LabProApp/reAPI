@@ -23,6 +23,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -35,6 +38,16 @@ public class DocumentsController {
 
 	public DocumentsController(DocumentsService documentsService) {
 		this.documentsService = documentsService;
+	}
+
+	private Long callerId() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return auth != null ? (Long) auth.getPrincipal() : null;
+	}
+
+	private boolean isAdmin() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
 	}
 
 	@Operation(summary = "Upload documents for any object type")
@@ -85,6 +98,13 @@ public class DocumentsController {
 	public ResponseEntity<List<DocumentDto>> getDocuments(
 			@PathVariable String objectType,
 			@PathVariable Long objectId) {
+		// For USER documents, enforce caller can only read their own unless ADMIN
+		if ("USER".equalsIgnoreCase(objectType) && !isAdmin()) {
+			Long caller = callerId();
+			if (caller == null || !caller.equals(objectId)) {
+				return ResponseEntity.status(403).build();
+			}
+		}
 		log.info("GET /api/documents/{}/{} - Fetching documents", objectType, objectId);
 		List<DocumentDto> dtos = documentsService.getDocumentsByObject(objectType, objectId);
 		log.info("GET /api/documents/{}/{} - Returned {} documents", objectType, objectId, dtos.size());

@@ -13,12 +13,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 import com.api.enums.MasterEnums;
 import com.api.notifications.CommService;
 import com.api.notifications.NotificationService;
 import com.api.prop.Property;
 import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
+import com.api.prop.PropertyService;
 import com.api.security.JwtUtil;
 import com.api.userproperty.UserPropertyRelation;
 import com.api.userproperty.UserPropertyRelationRepository;
@@ -30,6 +33,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final PropertyRepository propertyRepository;
+	private final PropertyService propertyService;
 	private final UserPropertyRelationRepository propertyRelationRepository;
 	private final CommService commService;
 	private final NotificationService notificationService;
@@ -37,13 +41,15 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 
-	
+
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
+			PropertyService propertyService,
 			UserPropertyRelationRepository propertyRelationRepository, CommService commService,
 			NotificationService notificationService, ModelMapper mapper,
 			PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
 		this.userRepository = userRepository;
 		this.propertyRepository = propertyRepository;
+		this.propertyService = propertyService;
 		this.propertyRelationRepository = propertyRelationRepository;
 		this.commService = commService;
 		this.notificationService = notificationService;
@@ -82,8 +88,6 @@ public class UserService {
 		if (user.getPassword() != null) {
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
 		}
-		userRepository.save(user);
-
 		String otp = commService.generateOtp();
 		user.setOtp(otp);
 		user.setOtpGeneratedAt(LocalDateTime.now());
@@ -346,182 +350,29 @@ public class UserService {
 	@Transactional
 	public List<PropertyDto> getFavouriteProperties(Long userId) {
 		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndFavouriteTrue(userId);
-
-		return relations.stream().map(upr -> {
-			Property p = upr.getProperty();
-			PropertyDto dto = new PropertyDto();
-
-			// --- Basic Info ---
-			dto.setId(p.getId());
-			dto.setTitle(p.getTitle());
-			dto.setAddress(p.getAddress());
-			dto.setCity(p.getCity());
-			dto.setState(p.getState());
-			dto.setType(p.getType());
-			dto.setCategory(p.getCategory());
-			dto.setRentOrSale(p.getRentOrSale());
-			dto.setPropertyStatus(p.getPropertyStatus());
-			dto.setVerified(p.isVerified());
-
-			// --- Pricing ---
-			dto.setPrice(p.getPrice());
-			dto.setCurrency(p.getCurrency());
-			dto.setMonthlyRent(p.getMonthlyRent());
-			dto.setSecurityDeposit(p.getSecurityDeposit());
-			dto.setBrokerage(p.getBrokerage());
-			dto.setNegotiable(p.getNegotiable());
-			dto.setLoanAvailable(p.getLoanAvailable());
-
-			// --- Area & Rooms ---
-			dto.setBedrooms(p.getBedrooms());
-			dto.setBathrooms(p.getBathrooms());
-			dto.setCarpetArea(p.getCarpetArea());
-			dto.setSuperArea(p.getSuperArea());
-
-			// --- Location ---
-			dto.setLocation(p.getLocation());
-			dto.setLandmark(p.getLandmark());
-			dto.setLatitude(p.getLatitude());
-			dto.setLongitude(p.getLongitude());
-			dto.setFacing(p.getFacing());
-
-			// --- Building Info ---
-			dto.setFloorNumber(p.getFloorNumber());
-			dto.setTotalFloors(p.getTotalFloors());
-			dto.setParkingCount(p.getParkingCount());
-			dto.setParkingType(p.getParkingType());
-			dto.setPropertyAge(p.getPropertyAge());
-			dto.setOwnershipType(p.getOwnershipType());
-			dto.setFurnishing(p.getFurnishing());
-			dto.setConstructionStatus(p.getConstructionStatus());
-			dto.setReadyDate(p.getReadyDate());
-
-			// --- Project / Builder ---
-			dto.setProjectName(p.getProjectName());
-			dto.setBuilderName(p.getBuilderName());
-			dto.setReraApproved(p.getReraApproved());
-			dto.setReraNumber(p.getReraNumber());
-
-			// --- Tenant Rules (for Rent) ---
-			dto.setPreferredTenants(p.getPreferredTenants());
-			dto.setPetsAllowed(p.getPetsAllowed());
-			dto.setNonVegAllowed(p.getNonVegAllowed());
-			dto.setLeaseDuration(p.getLeaseDuration());
-			dto.setNoticePeriod(p.getNoticePeriod());
-			dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
-
-			// --- Meta ---
-			dto.setPostedBy(p.getPostedBy());
-			dto.setPostedByUser(p.getPostedByUser());
-			dto.setPostDate(p.getPostDate());
-			dto.setContactNumber(p.getContactNumber());
-			dto.setDescription(p.getDescription());
-
-			// --- Stats ---
-			dto.setViewsCount(p.getViewsCount());
-			dto.setShortListCount(p.getShortListCount());
-
-			// --- Amenities ---
-			dto.setAmenitiesFromList(p.getAmenitiesAsList());
-
-			// --- Audit ---
-			dto.setCode(p.getCode());
-			dto.setLastUpdatedTs(p.getLastUpdatedTs());
-			dto.setUpdatedBy(p.getUpdatedBy());
-
-			return dto;
-		}).collect(Collectors.toList());
+		return batchLoadPropertyDtos(relations);
 	}
 
-	
 	@Transactional
 	public List<PropertyDto> getInquiredProperties(Long userId) {
 		List<UserPropertyRelation> relations = propertyRelationRepository.findByUserIdAndInquiryTrue(userId);
+		return batchLoadPropertyDtos(relations);
+	}
 
-		return relations.stream().map(upr -> {
-			Property p = upr.getProperty();
-			PropertyDto dto = new PropertyDto();
-
-			// --- Basic Info ---
-			dto.setId(p.getId());
-			dto.setTitle(p.getTitle());
-			dto.setAddress(p.getAddress());
-			dto.setCity(p.getCity());
-			dto.setState(p.getState());
-			dto.setType(p.getType());
-			dto.setCategory(p.getCategory());
-			dto.setRentOrSale(p.getRentOrSale());
-			dto.setPropertyStatus(p.getPropertyStatus());
-			dto.setVerified(p.isVerified());
-
-			// --- Pricing ---
-			dto.setPrice(p.getPrice());
-			dto.setCurrency(p.getCurrency());
-			dto.setMonthlyRent(p.getMonthlyRent());
-			dto.setSecurityDeposit(p.getSecurityDeposit());
-			dto.setBrokerage(p.getBrokerage());
-			dto.setNegotiable(p.getNegotiable());
-			dto.setLoanAvailable(p.getLoanAvailable());
-
-			// --- Area & Rooms ---
-			dto.setBedrooms(p.getBedrooms());
-			dto.setBathrooms(p.getBathrooms());
-			dto.setCarpetArea(p.getCarpetArea());
-			dto.setSuperArea(p.getSuperArea());
-
-			// --- Location ---
-			dto.setLocation(p.getLocation());
-			dto.setLandmark(p.getLandmark());
-			dto.setLatitude(p.getLatitude());
-			dto.setLongitude(p.getLongitude());
-			dto.setFacing(p.getFacing());
-
-			// --- Building Info ---
-			dto.setFloorNumber(p.getFloorNumber());
-			dto.setTotalFloors(p.getTotalFloors());
-			dto.setParkingCount(p.getParkingCount());
-			dto.setParkingType(p.getParkingType());
-			dto.setPropertyAge(p.getPropertyAge());
-			dto.setOwnershipType(p.getOwnershipType());
-			dto.setFurnishing(p.getFurnishing());
-			dto.setConstructionStatus(p.getConstructionStatus());
-			dto.setReadyDate(p.getReadyDate());
-
-			// --- Project / Builder ---
-			dto.setProjectName(p.getProjectName());
-			dto.setBuilderName(p.getBuilderName());
-			dto.setReraApproved(p.getReraApproved());
-			dto.setReraNumber(p.getReraNumber());
-
-			// --- Tenant Rules (for Rent) ---
-			dto.setPreferredTenants(p.getPreferredTenants());
-			dto.setPetsAllowed(p.getPetsAllowed());
-			dto.setNonVegAllowed(p.getNonVegAllowed());
-			dto.setLeaseDuration(p.getLeaseDuration());
-			dto.setNoticePeriod(p.getNoticePeriod());
-			dto.setMaintenanceIncluded(p.getMaintenanceIncluded());
-
-			// --- Meta ---
-			dto.setPostedBy(p.getPostedBy());
-			dto.setPostedByUser(p.getPostedByUser());
-			dto.setPostDate(p.getPostDate());
-			dto.setContactNumber(p.getContactNumber());
-			dto.setDescription(p.getDescription());
-
-			// --- Stats ---
-			dto.setViewsCount(p.getViewsCount());
-			dto.setShortListCount(p.getShortListCount());
-
-			// --- Amenities ---
-			dto.setAmenitiesFromList(p.getAmenitiesAsList());
-
-			// --- Audit ---
-			dto.setCode(p.getCode());
-			dto.setLastUpdatedTs(p.getLastUpdatedTs());
-			dto.setUpdatedBy(p.getUpdatedBy());
-
-			return dto;
-		}).collect(Collectors.toList());
+	// Fetches all properties for the given relations in one IN query, then maps via PropertyService.toDto().
+	// Avoids N+1: previously each upr.getProperty() triggered a separate SELECT.
+	private List<PropertyDto> batchLoadPropertyDtos(List<UserPropertyRelation> relations) {
+		if (relations.isEmpty()) return List.of();
+		List<Long> ids = relations.stream()
+				.map(r -> r.getProperty().getId())
+				.collect(Collectors.toList());
+		Map<Long, Property> propertyMap = propertyRepository.findAllById(ids).stream()
+				.collect(Collectors.toMap(Property::getId, p -> p));
+		return ids.stream()
+				.map(propertyMap::get)
+				.filter(p -> p != null)
+				.map(propertyService::toDto)
+				.collect(Collectors.toList());
 	}
 
 	// ---------------- LOGOUT ----------------
