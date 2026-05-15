@@ -25,13 +25,25 @@ public class WhatsAppService {
 	
 	@PostConstruct
 	public void init() {
-		log.info("WhatsAppService - Initializing Twilio with accountSid={}", config.getAccountSid());
-		Twilio.init(config.getAccountSid(), config.getAuthToken());
-		log.info("WhatsAppService - Twilio initialized successfully");
+		String sid = config.getAccountSid();
+		if (sid == null || sid.isBlank()) {
+			log.warn("WhatsAppService - Twilio credentials not configured; init skipped");
+			return;
+		}
+		try {
+			Twilio.init(sid, config.getAuthToken());
+			log.info("WhatsAppService - Twilio initialized");
+		} catch (Exception e) {
+			log.warn("WhatsAppService - Twilio init failed; WhatsApp sends will be no-ops: {}", e.getMessage());
+		}
 	}
 
-	
 	public String sendMessage(String toNumber, String messageBody) {
+		String sid = config.getAccountSid();
+		if (sid == null || sid.isBlank()) {
+			log.warn("sendMessage - Twilio not configured; skipping WhatsApp send to {}", toNumber);
+			return null;
+		}
 		log.info("sendMessage - Sending WhatsApp message to={}", toNumber);
 		try {
 			Message message = Message.creator(new PhoneNumber("whatsapp:" + toNumber),
@@ -41,7 +53,7 @@ public class WhatsAppService {
 			return message.getSid();
 		} catch (Exception e) {
 			log.error("sendMessage - Failed to send WhatsApp message to={}: {}", toNumber, e.getMessage(), e);
-			throw e;
+			return null;
 		}
 	}
 }

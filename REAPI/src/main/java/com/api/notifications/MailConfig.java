@@ -12,32 +12,28 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 @Configuration
 public class MailConfig {
 
-    @Value("${mail.provider:gmail}") // default gmail
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MailConfig.class);
+
+    @Value("${mail.provider:ses}") // default ses
     private String mailProvider;
 
     @Value("${aws.ses.region:ap-south-1}")
     private String sesRegion;
 
-    
     @Bean
     public JavaMailSender javaMailSender(Environment env) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 
         if ("gmail".equalsIgnoreCase(mailProvider)) {
-
             mailSender.setHost("smtp.gmail.com");
             mailSender.setPort(587);
-
         } else if ("ses".equalsIgnoreCase(mailProvider)) {
-
             mailSender.setHost("email-smtp." + sesRegion + ".amazonaws.com");
             mailSender.setPort(587);
-
         } else {
-            throw new IllegalArgumentException(
-                "Invalid mail.provider value: " + mailProvider +
-                " (allowed: gmail, ses)"
-            );
+            log.warn("MailConfig - unknown mail.provider='{}'; defaulting to SES", mailProvider);
+            mailSender.setHost("email-smtp." + sesRegion + ".amazonaws.com");
+            mailSender.setPort(587);
         }
 
         mailSender.setUsername(env.getProperty("spring.mail.username"));

@@ -19,14 +19,14 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthFilter.class);
+
 	private final JwtUtil jwtUtil;
 
-	
 	public JwtAuthFilter(JwtUtil jwtUtil) {
 		this.jwtUtil = jwtUtil;
 	}
 
-	
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
@@ -37,20 +37,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		String token = authHeader.substring(7);
-		if (!jwtUtil.isTokenValid(token)) {
-			filterChain.doFilter(request, response);
-			return;
+		String token = authHeader.substring(7).trim();
+		try {
+			if (!jwtUtil.isTokenValid(token)) {
+				filterChain.doFilter(request, response);
+				return;
+			}
+
+			Claims claims = jwtUtil.extractClaims(token);
+			Long userId = Long.parseLong(claims.getSubject());
+			String role = claims.get("role", String.class);
+			if (role == null || role.isBlank()) role = "CLIENT";
+
+			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+					userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+		} catch (Exception e) {
+			log.warn("JwtAuthFilter - token rejected: {}", e.getMessage());
+			SecurityContextHolder.clearContext();
 		}
-
-		Claims claims = jwtUtil.extractClaims(token);
-		Long userId = Long.parseLong(claims.getSubject());
-		String role = claims.get("role", String.class);
-
-		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-				userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		filterChain.doFilter(request, response);
 	}

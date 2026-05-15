@@ -213,7 +213,7 @@ public class PropertyService {
 	}
 
 	
-	PropertyDto toDto(Property p) {
+	public PropertyDto toDto(Property p) {
 		PropertyDto dto = new PropertyDto();
 		dto.setId(p.getId());
 		dto.setTitle(p.getTitle());
