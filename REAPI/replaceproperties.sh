@@ -1,128 +1,111 @@
 #!/usr/bin/env bash
+# ============================================================================
+#  replaceproperties.sh — produce a deployable application.properties
+# ----------------------------------------------------------------------------
+#  1. Bootstrap secret.properties from .example if missing.
+#  2. Generate JWT_SECRET inside secret.properties if blank (first run only).
+#  3. Substitute ${KEY} / ${KEY:default} placeholders using secret.properties.
+#  4. Write the result to target/application.properties.
+#     The source application.properties is NEVER modified — re-runnable safely.
 #
-# Substitute ${KEY} and ${KEY:default} placeholders in application.properties
-# using values from secret.properties. Both files must sit alongside this script.
+#  Usage:
+#      ./replaceproperties.sh
 #
-# Usage:
-#   ./replaceproperties.sh
-#
-# Writes the result back to application.properties (a .bak copy is kept).
-# Does NOT modify the running JAR — re-run before each deploy as needed.
-#
+#  After this runs, start the app from target/:
+#      cd target && java -jar realestate-api-*.jar
+#  Spring Boot will read target/application.properties automatically.
+# ============================================================================
 
 set -euo pipefail
 
-# ---------- Setup ----------
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SECRETS_FILE="$SCRIPT_DIR/secret.properties"
-PROPS_FILE="$SCRIPT_DIR/application.properties"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE="$DIR/application.properties"
+SECRETS="$DIR/secret.properties"
+EXAMPLE="$DIR/secret.properties.example"
+OUTDIR="$DIR/target"
+OUT="$OUTDIR/application.properties"
 
-echo "=================================================="
-echo " replaceproperties.sh — $(date '+%Y-%m-%d %H:%M:%S')"
-echo "=================================================="
-echo "[INFO] Working directory : $SCRIPT_DIR"
-echo "[INFO] Secrets file      : $SECRETS_FILE"
-echo "[INFO] Target properties : $PROPS_FILE"
+echo "[prepare] source : $SOURCE"
+echo "[prepare] secrets: $SECRETS"
+echo "[prepare] output : $OUT"
 echo
 
-# ---------- Pre-flight checks ----------
-if [[ ! -f "$SECRETS_FILE" ]]; then
-    echo "[ERROR] $SECRETS_FILE not found" >&2
+# ── 1. Ensure secret.properties exists ──────────────────────────────────────
+if [[ ! -f "$SECRETS" ]]; then
+  if [[ ! -f "$EXAMPLE" ]]; then
+    echo "[ERROR] Neither secret.properties nor secret.properties.example found." >&2
     exit 1
+  fi
+  cp "$EXAMPLE" "$SECRETS"
+  chmod 600 "$SECRETS"
+  echo "[init]  Bootstrapped secret.properties from .example — fill in real values"
 fi
-echo "[OK]   secret.properties found"
+chmod 600 "$SECRETS" 2>/dev/null || true
 
-if [[ ! -f "$PROPS_FILE" ]]; then
-    echo "[ERROR] $PROPS_FILE not found" >&2
+# ── 2. Generate JWT_SECRET on first run ─────────────────────────────────────
+# A blank "JWT_SECRET=" line counts as missing.
+if ! grep -qE '^[[:space:]]*JWT_SECRET=[^[:space:]]+' "$SECRETS"; then
+  if command -v openssl >/dev/null 2>&1; then
+    NEW_JWT="$(openssl rand -base64 64 | tr -d '\n\r')"
+  elif [[ -r /dev/urandom ]]; then
+    NEW_JWT="$(head -c 64 /dev/urandom | base64 | tr -d '\n\r')"
+  else
+    echo "[ERROR] Cannot generate JWT_SECRET — install openssl or provide /dev/urandom." >&2
     exit 1
+  fi
+  TMP="${SECRETS}.tmp.$$"
+  if grep -qE '^[[:space:]]*JWT_SECRET=' "$SECRETS"; then
+    awk -v s="$NEW_JWT" '
+      /^[[:space:]]*JWT_SECRET=/ { print "JWT_SECRET=" s; next }
+      { print }
+    ' "$SECRETS" > "$TMP"
+  else
+    cp "$SECRETS" "$TMP"
+    echo "JWT_SECRET=$NEW_JWT" >> "$TMP"
+  fi
+  mv "$TMP" "$SECRETS"
+  chmod 600 "$SECRETS"
+  echo "[init]  Generated JWT_SECRET (64 random bytes, Base64)"
 fi
-echo "[OK]   application.properties found"
 
-# Protect the secrets file and back up the target.
-chmod 600 "$SECRETS_FILE" 2>/dev/null || true
-echo "[INFO] Hardened permissions on secret.properties (chmod 600)"
+# ── 3. Build the sed substitution program from secret.properties ────────────
+SED_PROG="$(mktemp)"
+trap 'rm -f "$SED_PROG"' EXIT
 
-cp -f "$PROPS_FILE" "${PROPS_FILE}.bak"
-echo "[INFO] Backup written    : ${PROPS_FILE}.bak"
-echo
-
-# ---------- Build sed substitution script ----------
-tmp_sed="$(mktemp)"
-trap 'rm -f "$tmp_sed"' EXIT
-
-echo "[INFO] Reading secrets and building substitutions..."
 loaded=0
-skipped=0
 while IFS= read -r line || [[ -n "$line" ]]; do
-    # Strip Windows CR
-    line="${line%$'\r'}"
-    # Trim leading whitespace
-    line="${line#"${line%%[![:space:]]*}"}"
-    # Skip blanks and comments
-    [[ -z "$line" || "$line" == \#* ]] && continue
+  line="${line%$'\r'}"                                  # strip CR
+  line="${line#"${line%%[![:space:]]*}"}"              # trim leading ws
+  [[ -z "$line" || "${line:0:1}" == "#" ]] && continue # skip blanks + comments
 
-    # Split on first '='
-    key="${line%%=*}"
-    value="${line#*=}"
+  key="${line%%=*}"
+  val="${line#*=}"
+  key="${key//[[:space:]]/}"
+  [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
 
-    # Trim whitespace from key
-    key="${key%"${key##*[![:space:]]}"}"
-    key="${key#"${key%%[![:space:]]*}"}"
+  # Escape sed-special chars in the replacement: \ & and our delimiter |
+  esc="$(printf '%s' "$val" | sed -e 's/[\\&|]/\\&/g')"
+  # ${KEY:default}  →  value      (must come first; longer pattern)
+  printf 's|\\${%s:[^}]*}|%s|g\n' "$key" "$esc" >> "$SED_PROG"
+  # ${KEY}          →  value
+  printf 's|\\${%s}|%s|g\n'        "$key" "$esc" >> "$SED_PROG"
 
-    # Strip surrounding quotes from value
-    if   [[ "$value" =~ ^\"(.*)\"$ ]]; then value="${BASH_REMATCH[1]}"
-    elif [[ "$value" =~ ^\'(.*)\'$ ]]; then value="${BASH_REMATCH[1]}"
-    fi
+  loaded=$((loaded + 1))
+done < "$SECRETS"
 
-    if [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
-        echo "[WARN] skipping invalid key: '$key'"
-        skipped=$((skipped + 1))
-        continue
-    fi
+# ── 4. Substitute into target/application.properties ────────────────────────
+mkdir -p "$OUTDIR"
+sed -f "$SED_PROG" "$SOURCE" > "$OUT"
+chmod 644 "$OUT"
+echo "[ok]    Wrote $OUT ($loaded substitution(s))"
 
-    if [[ -z "$value" ]]; then
-        echo "[WARN] $key has empty value — placeholder will be cleared"
-    fi
-
-    # Escape backslash, forward slash, and ampersand in the value for sed.
-    escaped="$(printf '%s' "$value" | sed -e 's/[\\/&]/\\&/g')"
-
-    # Two substitutions per key: ${KEY:default} first (longer match), then ${KEY}.
-    printf 's/\\${%s:[^}]*}/%s/g\n' "$key" "$escaped" >> "$tmp_sed"
-    printf 's/\\${%s}/%s/g\n'        "$key" "$escaped" >> "$tmp_sed"
-
-    # Mask value in log (show first 2 / last 2 chars only)
-    vlen=${#value}
-    if (( vlen > 6 )); then
-        masked="${value:0:2}****${value: -2}"
-    else
-        masked="****"
-    fi
-    echo "[OK]   loaded $key = $masked"
-    loaded=$((loaded + 1))
-done < "$SECRETS_FILE"
-
-echo
-
-# ---------- Apply substitutions ----------
-echo "[INFO] Applying $loaded substitution(s) to $PROPS_FILE..."
-sed -i -f "$tmp_sed" "$PROPS_FILE"
-echo "[OK]   sed completed"
-
-# ---------- Verify ----------
-remaining="$(grep -oE '\$\{[A-Za-z_][A-Za-z0-9_]*(:[^}]*)?\}' "$PROPS_FILE" | sort -u || true)"
-if [[ -n "$remaining" ]]; then
-    echo
-    echo "[WARN] The following placeholders were not substituted:"
-    echo "$remaining" | sed 's/^/         /'
+# ── 5. Report leftover placeholders so missing secrets are visible ──────────
+left="$(grep -oE '\$\{[A-Za-z_][A-Za-z0-9_]*(:[^}]*)?\}' "$OUT" | sort -u || true)"
+if [[ -n "$left" ]]; then
+  echo
+  echo "[warn]  Unresolved placeholders in output (will fall back to inline defaults):"
+  echo "$left" | sed 's/^/          /'
 fi
 
 echo
-echo "=================================================="
-echo " Summary"
-echo "=================================================="
-echo " Keys loaded     : $loaded"
-echo " Keys skipped    : $skipped"
-echo " Target updated  : $PROPS_FILE"
-echo " Backup at       : ${PROPS_FILE}.bak"
-echo "=================================================="
+echo "[done]  Deploy with:  cd target && java -jar realestate-api-*.jar"
