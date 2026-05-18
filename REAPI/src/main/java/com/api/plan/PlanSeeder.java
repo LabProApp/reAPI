@@ -105,7 +105,9 @@ public class PlanSeeder implements CommandLineRunner {
 		defaults.put(JOURNEY,          new boolean[] { true,  true,  true  });
 		defaults.put(BANK_LOANS,       new boolean[] { false, true,  true  });
 		defaults.put(POST_PROPERTY,    new boolean[] { false, true,  true  });
-		defaults.put(POST_REQUIREMENT, new boolean[] { false, false, true  });
+		// Post Requirement is a free-tier hook: every signup, even BASIC,
+		// can publish a buyer requirement so we can collect leads.
+		defaults.put(POST_REQUIREMENT, new boolean[] { true,  true,  true  });
 		// Documentation is a PREMIUM-only feature.
 		defaults.put(DOCUMENTATION,    new boolean[] { false, false, true  });
 
