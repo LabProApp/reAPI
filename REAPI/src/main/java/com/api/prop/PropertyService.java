@@ -16,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.api.commons.ResourceNotFoundException;
 import com.api.documents.DocumentminDto;
 import com.api.documents.DocumentsService;
+import com.api.enums.MasterEnums;
+import com.api.plan.PlanService;
+import com.api.user.User;
+import com.api.user.UserRepository;
 
 @Service
 public class PropertyService {
@@ -26,8 +30,12 @@ public class PropertyService {
 	private final ModelMapper mapper;
 	@Autowired
 	private DocumentsService documentsService;
+	@Autowired
+	private PlanService planService;
+	@Autowired
+	private UserRepository userRepository;
 
-	
+
 	@Autowired
 	public PropertyService(PropertyRepository repository, ModelMapper mapper) {
 		this.repository = repository;
@@ -39,10 +47,42 @@ public class PropertyService {
 	public PropertyDto addProperty(PropertyDto propertyDto) {
 		log.info("addProperty - Adding property: title={}, city={}, type={}",
 				propertyDto.getTitle(), propertyDto.getCity(), propertyDto.getType());
+		enforcePostingLimit(propertyDto.getPostedByUser());
 		Property property = mapper.map(propertyDto, Property.class);
 		Property saved = repository.save(property);
 		log.info("addProperty - Property saved with id={}", saved.getId());
 		return mapper.map(saved, PropertyDto.class);
+	}
+
+	/**
+	 * Throws {@link PropertyLimitExceededException} if the user has already
+	 * posted as many properties as their plan allows. Posting on behalf of
+	 * a missing user / unknown plan is treated as BASIC (limit 0) and
+	 * rejected.
+	 */
+	private void enforcePostingLimit(Long userId) {
+		if (userId == null) {
+			throw new PropertyLimitExceededException(
+				"Posting user is required.",
+				"BASIC", 0, 0);
+		}
+		User user = userRepository.findById(userId).orElse(null);
+		MasterEnums.PackageEnum pkg = user != null ? user.getUserPackage() : null;
+		int limit = planService.getPropertyLimit(pkg);
+		long current = repository.countByPostedByUser(userId);
+		String planName = pkg != null ? pkg.name() : "BASIC";
+		if (current >= limit) {
+			String reason = limit == 0
+				? "Your current plan does not include property listings. " +
+				  "Upgrade to Delux or Premium to post a property."
+				: String.format(
+					"You have reached your plan's posting limit (%d/%d). " +
+					"Upgrade your plan to post more properties.",
+					current, limit);
+			log.warn("addProperty - REJECTED userId={} plan={} count={} limit={}",
+					userId, planName, current, limit);
+			throw new PropertyLimitExceededException(reason, planName, limit, (int) current);
+		}
 	}
 
 	

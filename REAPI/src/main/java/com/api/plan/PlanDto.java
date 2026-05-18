@@ -12,15 +12,17 @@ public class PlanDto {
 	private MasterEnums.PackageEnum planName;
 	private String displayName;
 	private Double priceYearly;
+	private Integer propertyLimit;
 	private Map<String, Boolean> featureFlags;
 
 	public PlanDto() {}
 
 	public PlanDto(MasterEnums.PackageEnum planName, String displayName, Double priceYearly,
-			Map<String, Boolean> featureFlags) {
+			Integer propertyLimit, Map<String, Boolean> featureFlags) {
 		this.planName = planName;
 		this.displayName = displayName;
 		this.priceYearly = priceYearly;
+		this.propertyLimit = propertyLimit;
 		this.featureFlags = featureFlags;
 	}
 
@@ -32,6 +34,9 @@ public class PlanDto {
 
 	public Double getPriceYearly() { return priceYearly; }
 	public void setPriceYearly(Double priceYearly) { this.priceYearly = priceYearly; }
+
+	public Integer getPropertyLimit() { return propertyLimit; }
+	public void setPropertyLimit(Integer propertyLimit) { this.propertyLimit = propertyLimit; }
 
 	public Map<String, Boolean> getFeatureFlags() { return featureFlags; }
 	public void setFeatureFlags(Map<String, Boolean> featureFlags) { this.featureFlags = featureFlags; }

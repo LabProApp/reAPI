@@ -9,6 +9,7 @@ import static com.api.plan.PlanFeatureKeys.POST_PROPERTY;
 import static com.api.plan.PlanFeatureKeys.POST_REQUIREMENT;
 import static com.api.plan.PlanFeatureKeys.RENT_PG;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,12 +21,15 @@ import org.springframework.stereotype.Component;
 import com.api.enums.MasterEnums;
 
 /**
- * Seeds the {@code plans} and {@code plan_features} tables on startup.
+ * Seeds (and keeps in sync) the {@code plans} and {@code plan_features}
+ * tables on startup.
  *
- * <p>Idempotent: only inserts a plan or a feature row if the same
- * (plan, featureKey) tuple is missing. Existing rows (including manual
- * tweaks) are left untouched so ops can edit prices/flags directly in
- * the DB without the seeder undoing the change on next boot.</p>
+ * <p><b>Sync semantics:</b> The hardcoded defaults below are treated as the
+ * canonical source of truth. On every boot the seeder writes them through:
+ * missing rows are inserted, and existing rows whose value differs from
+ * the canonical default are <em>updated</em>. This means edits made
+ * directly in the DB will be overwritten on next restart — which is the
+ * trade-off we want while the tier matrix is still being iterated on.</p>
  */
 @Component
 public class PlanSeeder implements CommandLineRunner {
@@ -47,31 +51,50 @@ public class PlanSeeder implements CommandLineRunner {
 	}
 
 	private void seedPlans() {
-		upsertPlan(MasterEnums.PackageEnum.BASIC, "Basic", 0.0);
-		upsertPlan(MasterEnums.PackageEnum.DELUX, "Delux", 9999.0);
-		upsertPlan(MasterEnums.PackageEnum.PREMIUM, "Premium", 19999.0);
+		//                                                       priceYearly  propertyLimit
+		upsertPlan(MasterEnums.PackageEnum.BASIC,   "Basic",     0.0,         0);
+		upsertPlan(MasterEnums.PackageEnum.DELUX,   "Delux",     9999.0,      250);
+		upsertPlan(MasterEnums.PackageEnum.PREMIUM, "Premium",   19999.0,     500);
 	}
 
-	private void upsertPlan(MasterEnums.PackageEnum name, String displayName, double price) {
-		if (planRepository.findByPlanName(name).isPresent()) return;
-		planRepository.save(new Plan(name, displayName, price));
-		log.info("PlanSeeder - inserted plan {} ({} INR/yr)", name, price);
+	private void upsertPlan(MasterEnums.PackageEnum name, String displayName,
+			double price, int propertyLimit) {
+		Plan existing = planRepository.findByPlanName(name).orElse(null);
+		if (existing == null) {
+			planRepository.save(new Plan(name, displayName, price, propertyLimit));
+			log.info("PlanSeeder - inserted plan {} ({} INR/yr, propertyLimit={})", name, price, propertyLimit);
+			return;
+		}
+		boolean changed = false;
+		if (!displayName.equals(existing.getDisplayName())) {
+			existing.setDisplayName(displayName); changed = true;
+		}
+		if (existing.getPriceYearly() == null || existing.getPriceYearly() != price) {
+			existing.setPriceYearly(price); changed = true;
+		}
+		if (existing.getPropertyLimit() == null || existing.getPropertyLimit() != propertyLimit) {
+			existing.setPropertyLimit(propertyLimit); changed = true;
+		}
+		if (changed) {
+			planRepository.save(existing);
+			log.info("PlanSeeder - synced plan {} (priceYearly={}, propertyLimit={})", name, price, propertyLimit);
+		}
 	}
 
 	private void seedFeatures() {
-		// All feature keys with their per-plan defaults. Edit the value
-		// triples here to change the tier matrix.
-		Map<String, boolean[]> defaults = Map.of(
-			//                            BASIC,  DELUX, PREMIUM
-			BUY_SELL,         new boolean[] { true,  true,  true  },
-			RENT_PG,          new boolean[] { true,  true,  true  },
-			EMI_CALCULATOR,   new boolean[] { true,  true,  true  },
-			JOURNEY,          new boolean[] { true,  true,  true  },
-			BANK_LOANS,       new boolean[] { false, true,  true  },
-			DOCUMENTATION,    new boolean[] { false, true,  true  },
-			POST_PROPERTY,    new boolean[] { false, true,  true  },
-			POST_REQUIREMENT, new boolean[] { false, false, true  }
-		);
+		// All feature keys with their per-plan defaults.
+		// LinkedHashMap preserves declared order for readable logs.
+		Map<String, boolean[]> defaults = new LinkedHashMap<>();
+		//                              BASIC, DELUX, PREMIUM
+		defaults.put(BUY_SELL,         new boolean[] { true,  true,  true  });
+		defaults.put(RENT_PG,          new boolean[] { true,  true,  true  });
+		defaults.put(EMI_CALCULATOR,   new boolean[] { true,  true,  true  });
+		defaults.put(JOURNEY,          new boolean[] { true,  true,  true  });
+		defaults.put(BANK_LOANS,       new boolean[] { false, true,  true  });
+		defaults.put(POST_PROPERTY,    new boolean[] { false, true,  true  });
+		defaults.put(POST_REQUIREMENT, new boolean[] { false, false, true  });
+		// Documentation is a PREMIUM-only feature.
+		defaults.put(DOCUMENTATION,    new boolean[] { false, false, true  });
 
 		MasterEnums.PackageEnum[] plans = {
 			MasterEnums.PackageEnum.BASIC,
@@ -90,9 +113,20 @@ public class PlanSeeder implements CommandLineRunner {
 
 	private void upsertFeature(MasterEnums.PackageEnum plan, String key, boolean enabled) {
 		List<PlanFeature> existing = planFeatureRepository.findByPlanName(plan);
-		boolean present = existing.stream().anyMatch(f -> key.equals(f.getFeatureKey()));
-		if (present) return;
-		planFeatureRepository.save(new PlanFeature(plan, key, enabled));
-		log.info("PlanSeeder - inserted feature {} for plan {} = {}", key, plan, enabled);
+		PlanFeature row = existing.stream()
+			.filter(f -> key.equals(f.getFeatureKey()))
+			.findFirst()
+			.orElse(null);
+
+		if (row == null) {
+			planFeatureRepository.save(new PlanFeature(plan, key, enabled));
+			log.info("PlanSeeder - inserted feature {} for plan {} = {}", key, plan, enabled);
+			return;
+		}
+		if (!Boolean.valueOf(enabled).equals(row.getEnabled())) {
+			row.setEnabled(enabled);
+			planFeatureRepository.save(row);
+			log.info("PlanSeeder - synced feature {} for plan {} -> {}", key, plan, enabled);
+		}
 	}
 }

@@ -13,6 +13,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.api.prop.PropertyLimitExceededException;
+
 import io.jsonwebtoken.JwtException;
 
 @RestControllerAdvice
@@ -41,6 +43,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+    }
+
+    /**
+     * Plan-limit violations are surfaced as HTTP 402 (Payment Required) with
+     * the current plan, limit and count so the mobile client can render a
+     * targeted upgrade prompt instead of a generic error.
+     */
+    @ExceptionHandler(PropertyLimitExceededException.class)
+    public ResponseEntity<Map<String, Object>> handlePropertyLimit(PropertyLimitExceededException ex) {
+        log.warn("Property limit exceeded: plan={} count={} limit={}",
+                ex.getPlanName(), ex.getCurrentCount(), ex.getLimit());
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", ex.getMessage());
+        body.put("planName", ex.getPlanName());
+        body.put("limit", ex.getLimit());
+        body.put("currentCount", ex.getCurrentCount());
+        body.put("code", "PROPERTY_LIMIT_EXCEEDED");
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(body);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

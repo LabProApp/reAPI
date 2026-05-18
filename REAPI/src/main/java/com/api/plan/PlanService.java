@@ -47,6 +47,17 @@ public class PlanService {
 				.orElse(0.0);
 	}
 
+	/**
+	 * Max number of property listings the plan allows. 0 = posting blocked.
+	 * Unknown / legacy plans (REGULAR, ELITE) fall back to BASIC.
+	 */
+	public int getPropertyLimit(MasterEnums.PackageEnum plan) {
+		MasterEnums.PackageEnum effective = normalize(plan);
+		return planRepository.findByPlanName(effective)
+				.map(Plan::getPropertyLimit)
+				.orElse(0);
+	}
+
 	private MasterEnums.PackageEnum normalize(MasterEnums.PackageEnum plan) {
 		if (plan == null) return MasterEnums.PackageEnum.BASIC;
 		switch (plan) {

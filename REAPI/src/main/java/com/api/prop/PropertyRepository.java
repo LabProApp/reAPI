@@ -10,7 +10,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, Long> {
 
-	
+	/** Count of properties posted by this user, used to enforce plan limits. */
+	long countByPostedByUser(Long postedByUser);
+
+
 	@Query("""
 			    SELECT p FROM Property p
 			    WHERE (:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%')))

@@ -33,6 +33,9 @@ public class UserDto extends BaseDto {
 	/** Annual price (INR) of the active plan; 0 for BASIC. Read-only — sourced from the plans table. */
 	private Double planPriceYearly;
 
+	/** Max number of property listings the user can post on their plan. 0 for BASIC. Read-only. */
+	private Integer planPropertyLimit;
+
 	/** Feature flags the client uses to gate UI (e.g. {@code buy_sell}, {@code bank_loans}). Read-only. */
 	private Map<String, Boolean> featureFlags;
 
@@ -166,6 +169,16 @@ public class UserDto extends BaseDto {
 
 	public void setPlanPriceYearly(Double planPriceYearly) {
 		this.planPriceYearly = planPriceYearly;
+	}
+
+
+	public Integer getPlanPropertyLimit() {
+		return planPropertyLimit;
+	}
+
+
+	public void setPlanPropertyLimit(Integer planPropertyLimit) {
+		this.planPropertyLimit = planPropertyLimit;
 	}
 
 

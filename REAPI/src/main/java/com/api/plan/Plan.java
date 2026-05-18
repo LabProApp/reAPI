@@ -42,12 +42,22 @@ public class Plan extends BaseEntity {
 	@Column(name = "price_yearly", nullable = false)
 	private Double priceYearly;
 
+	/**
+	 * Maximum number of property listings a user on this plan may post.
+	 * 0 means no posting allowed; the {@code post_property} feature flag
+	 * still mirrors this (false when limit == 0) for cheap UI gating.
+	 */
+	@Column(name = "property_limit", nullable = false)
+	private Integer propertyLimit = 0;
+
 	public Plan() {}
 
-	public Plan(MasterEnums.PackageEnum planName, String displayName, Double priceYearly) {
+	public Plan(MasterEnums.PackageEnum planName, String displayName, Double priceYearly,
+			Integer propertyLimit) {
 		this.planName = planName;
 		this.displayName = displayName;
 		this.priceYearly = priceYearly;
+		this.propertyLimit = propertyLimit;
 	}
 
 	public Long getId() { return id; }
@@ -61,4 +71,7 @@ public class Plan extends BaseEntity {
 
 	public Double getPriceYearly() { return priceYearly; }
 	public void setPriceYearly(Double priceYearly) { this.priceYearly = priceYearly; }
+
+	public Integer getPropertyLimit() { return propertyLimit; }
+	public void setPropertyLimit(Integer propertyLimit) { this.propertyLimit = propertyLimit; }
 }

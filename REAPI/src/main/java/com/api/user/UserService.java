@@ -69,6 +69,7 @@ public class UserService {
 	private UserDto withPlanInfo(UserDto dto, User user) {
 		MasterEnums.PackageEnum pkg = user.getUserPackage();
 		dto.setPlanPriceYearly(planService.getPriceYearly(pkg));
+		dto.setPlanPropertyLimit(planService.getPropertyLimit(pkg));
 		dto.setFeatureFlags(planService.getFeatureFlags(pkg));
 		return dto;
 	}

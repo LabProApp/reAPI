@@ -35,6 +35,7 @@ public class PlanController {
 				p.getPlanName(),
 				p.getDisplayName(),
 				p.getPriceYearly(),
+				p.getPropertyLimit(),
 				planService.getFeatureFlags(p.getPlanName())
 			))
 			.collect(Collectors.toList());
@@ -49,6 +50,7 @@ public class PlanController {
 				p.getPlanName(),
 				p.getDisplayName(),
 				p.getPriceYearly(),
+				p.getPropertyLimit(),
 				planService.getFeatureFlags(p.getPlanName())
 			)))
 			.orElseGet(() -> ResponseEntity.notFound().build());
