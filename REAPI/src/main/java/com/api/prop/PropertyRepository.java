@@ -13,6 +13,9 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 	/** Count of properties posted by this user, used to enforce plan limits. */
 	long countByPostedByUser(Long postedByUser);
 
+	/** Used by the admin stats endpoint to split listings by SALE vs RENT. */
+	long countByRentOrSaleIgnoreCase(String rentOrSale);
+
 
 	@Query("""
 			    SELECT p FROM Property p
