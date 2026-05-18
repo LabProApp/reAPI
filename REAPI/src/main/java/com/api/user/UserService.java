@@ -18,6 +18,7 @@ import java.util.Map;
 import com.api.enums.MasterEnums;
 import com.api.notifications.CommService;
 import com.api.notifications.NotificationService;
+import com.api.plan.PlanService;
 import com.api.prop.Property;
 import com.api.prop.PropertyDto;
 import com.api.prop.PropertyRepository;
@@ -40,13 +41,14 @@ public class UserService {
 	private final ModelMapper mapper;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
+	private final PlanService planService;
 
 
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
 			PropertyService propertyService,
 			UserPropertyRelationRepository propertyRelationRepository, CommService commService,
 			NotificationService notificationService, ModelMapper mapper,
-			PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+			PasswordEncoder passwordEncoder, JwtUtil jwtUtil, PlanService planService) {
 		this.userRepository = userRepository;
 		this.propertyRepository = propertyRepository;
 		this.propertyService = propertyService;
@@ -56,6 +58,19 @@ public class UserService {
 		this.mapper = mapper;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtUtil = jwtUtil;
+		this.planService = planService;
+	}
+
+	/**
+	 * Decorates a {@link UserDto} with the plan price and feature flag map
+	 * derived from {@link User#getUserPackage()}. Called on every outbound
+	 * profile/login response so the client can gate its UI in one round-trip.
+	 */
+	private UserDto withPlanInfo(UserDto dto, User user) {
+		MasterEnums.PackageEnum pkg = user.getUserPackage();
+		dto.setPlanPriceYearly(planService.getPriceYearly(pkg));
+		dto.setFeatureFlags(planService.getFeatureFlags(pkg));
+		return dto;
 	}
 
 	// ---------------- REGISTER ----------------
@@ -84,6 +99,10 @@ public class UserService {
 		if (user.getUserRole() == null) {
 			user.setUserRole(MasterEnums.UserRoleEnum.CLIENT);
 		}
+		// Every new signup starts on the free BASIC plan.
+		if (user.getUserPackage() == null) {
+			user.setUserPackage(MasterEnums.PackageEnum.BASIC);
+		}
 		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
 		if (user.getPassword() != null) {
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -107,7 +126,7 @@ public class UserService {
 			log.error("signup - Failed to send OTP for identifier={}: {}", identifier, e.getMessage(), e);
 		}
 		log.info("signup - User registered successfully with id={}", user.getId());
-		return mapper.map(user, UserDto.class);
+		return withPlanInfo(mapper.map(user, UserDto.class), user);
 	}
 
 	
@@ -215,7 +234,7 @@ public class UserService {
 
 		String role = user.getUserRole() != null ? user.getUserRole().name() : "CLIENT";
 		String token = jwtUtil.generateToken(user.getId(), identifier, role);
-		UserDto responseDto = mapper.map(user, UserDto.class);
+		UserDto responseDto = withPlanInfo(mapper.map(user, UserDto.class), user);
 		log.info("login - Successful login for userId={}", user.getId());
 		return ResponseEntity.ok(new LoginResponse(token, responseDto));
 	}
@@ -227,15 +246,15 @@ public class UserService {
 		Optional<User> userOpt = emailOrMobile.contains("@") ? userRepository.findByEmail(emailOrMobile)
 				: userRepository.findByMobile(emailOrMobile);
 
-		return userOpt.map(user -> mapper.map(user, UserDto.class))
+		return userOpt.map(user -> withPlanInfo(mapper.map(user, UserDto.class), user))
 				.orElseThrow(() -> new IllegalArgumentException("User not found"));
 	}
 
-	
+
 	public UserDto getProfilebyUserId(Long userId) {
 		Optional<User> userOpt = userRepository.findById(userId);
 
-		return userOpt.map(user -> mapper.map(user, UserDto.class))
+		return userOpt.map(user -> withPlanInfo(mapper.map(user, UserDto.class), user))
 				.orElseThrow(() -> new IllegalArgumentException("User not found"));
 	}
 
@@ -258,7 +277,7 @@ public class UserService {
 			updated.setEmail(userDto.getEmail());
 
 		userRepository.save(updated);
-		return mapper.map(updated, UserDto.class);
+		return withPlanInfo(mapper.map(updated, UserDto.class), updated);
 	}
 
 	// ---------------- RESET PASSWORD ----------------

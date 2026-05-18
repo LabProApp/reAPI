@@ -1,6 +1,7 @@
 package com.api.user;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import com.api.commons.BaseDto;
 import com.api.enums.MasterEnums;
@@ -27,7 +28,13 @@ public class UserDto extends BaseDto {
 
 	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
 
-	private MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
+	private MasterEnums.PackageEnum userPackage; // BASIC / DELUX / PREMIUM (legacy: REGULAR / ELITE)
+
+	/** Annual price (INR) of the active plan; 0 for BASIC. Read-only — sourced from the plans table. */
+	private Double planPriceYearly;
+
+	/** Feature flags the client uses to gate UI (e.g. {@code buy_sell}, {@code bank_loans}). Read-only. */
+	private Map<String, Boolean> featureFlags;
 
 	
 	public Long getId() {
@@ -146,9 +153,29 @@ public class UserDto extends BaseDto {
 		return isVerified;
 	}
 
-	
+
 	public void setIsVerified(Boolean isVerified) {
 		this.isVerified = isVerified;
+	}
+
+
+	public Double getPlanPriceYearly() {
+		return planPriceYearly;
+	}
+
+
+	public void setPlanPriceYearly(Double planPriceYearly) {
+		this.planPriceYearly = planPriceYearly;
+	}
+
+
+	public Map<String, Boolean> getFeatureFlags() {
+		return featureFlags;
+	}
+
+
+	public void setFeatureFlags(Map<String, Boolean> featureFlags) {
+		this.featureFlags = featureFlags;
 	}
 
 }

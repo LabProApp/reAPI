@@ -118,14 +118,20 @@ public final class MasterEnums implements BaseEnum {
 	
 	@Getter
 	public enum PackageEnum {
-		
-		REGULAR,
-		
+
+		/** Free tier — every signup defaults to this. */
+		BASIC,
+
+		/** ₹9,999 / year tier. */
+		DELUX,
+
+		/** ₹19,999 / year tier. */
 		PREMIUM,
-		
-		ELITE,
-		
-		DELUX;
+
+		// Legacy values kept for backwards compatibility with existing rows.
+		REGULAR,
+
+		ELITE;
 
 	}
 
