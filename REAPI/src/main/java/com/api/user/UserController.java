@@ -122,7 +122,7 @@ public class UserController {
 	@PostMapping("/{userId}/plan")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<UserDto> changePlan(@PathVariable Long userId,
-			@RequestBody PlanChangeRequest body) {
+			@RequestBody AdminPlanAssignment body) {
 		log.info("POST /api/user/{}/plan - plan={} years={} reason='{}'",
 				userId, body.getPlan(), body.getDurationYears(), body.getReason());
 		if (body.getPlan() == null) {
