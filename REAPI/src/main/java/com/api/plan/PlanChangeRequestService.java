@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.api.enums.MasterEnums;
+import com.api.notifications.CommService;
+import com.api.user.User;
+import com.api.user.UserRepository;
 import com.api.user.UserService;
 
 /**
@@ -25,10 +28,15 @@ public class PlanChangeRequestService {
 
 	private final PlanChangeRequestRepository repository;
 	private final UserService userService;
+	private final UserRepository userRepository;
+	private final CommService commService;
 
-	public PlanChangeRequestService(PlanChangeRequestRepository repository, UserService userService) {
+	public PlanChangeRequestService(PlanChangeRequestRepository repository,
+			UserService userService, UserRepository userRepository, CommService commService) {
 		this.repository = repository;
 		this.userService = userService;
+		this.userRepository = userRepository;
+		this.commService = commService;
 	}
 
 	/**
@@ -78,10 +86,17 @@ public class PlanChangeRequestService {
 			.toList();
 	}
 
-	/** Admin approves a PENDING request, applying the requested plan to the user. */
+	/**
+	 * Admin approves a PENDING request, applying the requested plan to the user.
+	 *
+	 * <p>Uses a pessimistic write lock on the request row so two admins
+	 * approving the same request simultaneously serialise — the second one
+	 * waits, sees the row in APPROVED state, and is rejected by the
+	 * not-PENDING guard.</p>
+	 */
 	@Transactional
 	public PlanChangeRequestDto approve(Long requestId, Long adminUserId, Integer durationYears) {
-		PlanChangeRequest req = loadPending(requestId);
+		PlanChangeRequest req = loadPendingForUpdate(requestId);
 		userService.changePlan(req.getUserId(), req.getRequestedPlan(), durationYears,
 				"Approved plan-change request #" + req.getId());
 		req.setStatus(PlanChangeRequestStatus.APPROVED);
@@ -90,13 +105,14 @@ public class PlanChangeRequestService {
 		PlanChangeRequest saved = repository.save(req);
 		log.info("approve - requestId={} userId={} plan={} adminUserId={}",
 				saved.getId(), saved.getUserId(), saved.getRequestedPlan(), adminUserId);
+		notifyApproved(saved);
 		return PlanChangeRequestDto.from(saved);
 	}
 
 	/** Admin rejects a PENDING request with a reason. */
 	@Transactional
 	public PlanChangeRequestDto reject(Long requestId, Long adminUserId, String reason) {
-		PlanChangeRequest req = loadPending(requestId);
+		PlanChangeRequest req = loadPendingForUpdate(requestId);
 		req.setStatus(PlanChangeRequestStatus.REJECTED);
 		req.setRejectionReason(trim(reason));
 		req.setReviewedAt(LocalDateTime.now());
@@ -104,13 +120,14 @@ public class PlanChangeRequestService {
 		PlanChangeRequest saved = repository.save(req);
 		log.info("reject - requestId={} userId={} reason='{}' adminUserId={}",
 				saved.getId(), saved.getUserId(), reason, adminUserId);
+		notifyRejected(saved);
 		return PlanChangeRequestDto.from(saved);
 	}
 
 	/** A user cancels their own PENDING request. */
 	@Transactional
 	public PlanChangeRequestDto cancel(Long requestId, Long userId) {
-		PlanChangeRequest req = repository.findById(requestId)
+		PlanChangeRequest req = repository.findByIdForUpdate(requestId)
 			.orElseThrow(() -> new IllegalArgumentException("Request not found: " + requestId));
 		if (!req.getUserId().equals(userId)) {
 			throw new IllegalArgumentException("Not allowed to cancel another user's request");
@@ -128,13 +145,80 @@ public class PlanChangeRequestService {
 
 	// ── helpers ──────────────────────────────────────────────────────────────
 
-	private PlanChangeRequest loadPending(Long requestId) {
-		PlanChangeRequest req = repository.findById(requestId)
+	private PlanChangeRequest loadPendingForUpdate(Long requestId) {
+		PlanChangeRequest req = repository.findByIdForUpdate(requestId)
 			.orElseThrow(() -> new IllegalArgumentException("Request not found: " + requestId));
 		if (req.getStatus() != PlanChangeRequestStatus.PENDING) {
 			throw new IllegalArgumentException("Request is already " + req.getStatus());
 		}
 		return req;
+	}
+
+	/**
+	 * Best-effort approval notification on both channels. Wrapped in a
+	 * try/catch per channel so a flaky Twilio / SMTP doesn't roll back the
+	 * approval transaction — the plan is already applied and the row is
+	 * APPROVED whatever happens here.
+	 */
+	private void notifyApproved(PlanChangeRequest req) {
+		User user = userRepository.findById(req.getUserId()).orElse(null);
+		if (user == null) {
+			log.warn("notifyApproved - user not found, skipping (userId={})", req.getUserId());
+			return;
+		}
+		final String plan = req.getRequestedPlan() == null ? "" : req.getRequestedPlan().name();
+		final String subject = "Your KeyBricks " + plan + " plan is active";
+		final String body =
+			"Hi " + safeName(user) + ",\n\n" +
+			"Your request for the " + plan + " plan has been approved and is now active. " +
+			"Open the app to start using the new features.\n\n" +
+			"— KeyBricks";
+		safeEmail(user.getEmail(), body, subject);
+		safeSms(user.getMobile(), "KeyBricks: Your " + plan + " plan is active. Open the app to use the new features.");
+	}
+
+	private void notifyRejected(PlanChangeRequest req) {
+		User user = userRepository.findById(req.getUserId()).orElse(null);
+		if (user == null) {
+			log.warn("notifyRejected - user not found, skipping (userId={})", req.getUserId());
+			return;
+		}
+		final String plan = req.getRequestedPlan() == null ? "" : req.getRequestedPlan().name();
+		final String reasonLine = (req.getRejectionReason() != null && !req.getRejectionReason().isBlank())
+				? "Reason: " + req.getRejectionReason() + "\n\n"
+				: "";
+		final String subject = "Update on your KeyBricks plan request";
+		final String body =
+			"Hi " + safeName(user) + ",\n\n" +
+			"Your request for the " + plan + " plan was not approved.\n\n" +
+			reasonLine +
+			"Reach out to support if you'd like more details.\n\n" +
+			"— KeyBricks";
+		safeEmail(user.getEmail(), body, subject);
+		safeSms(user.getMobile(), "KeyBricks: Your " + plan + " plan request was not approved.");
+	}
+
+	private void safeEmail(String to, String body, String subject) {
+		if (to == null || to.isBlank()) return;
+		try {
+			commService.sendEmail(to, body, subject);
+		} catch (Exception e) {
+			log.warn("plan-change email failed to {}: {}", to, e.getMessage());
+		}
+	}
+
+	private void safeSms(String mobile, String message) {
+		if (mobile == null || mobile.isBlank()) return;
+		try {
+			commService.sendSMSMessage(mobile, message);
+		} catch (Exception e) {
+			log.warn("plan-change SMS failed to {}: {}", mobile, e.getMessage());
+		}
+	}
+
+	private String safeName(User user) {
+		String n = user.getName();
+		return (n == null || n.isBlank()) ? "there" : n;
 	}
 
 	private String trim(String s) {

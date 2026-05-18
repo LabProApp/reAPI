@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.api.enums.MasterEnums;
@@ -39,6 +40,7 @@ import com.api.enums.MasterEnums;
  * </ul>
  */
 @Component
+@Order(10) // Runs before com.api.commons.DataMigrationRunner (@Order(100))
 public class PlanSeeder implements CommandLineRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(PlanSeeder.class);

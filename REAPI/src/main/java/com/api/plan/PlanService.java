@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.api.enums.MasterEnums;
@@ -15,6 +17,8 @@ import com.api.enums.MasterEnums;
  */
 @Service
 public class PlanService {
+
+	private static final Logger log = LoggerFactory.getLogger(PlanService.class);
 
 	private final PlanRepository planRepository;
 	private final PlanFeatureRepository planFeatureRepository;
@@ -78,6 +82,10 @@ public class PlanService {
 				// customers keep their features until they're migrated in SQL.
 				return MasterEnums.PackageEnum.PREMIUM;
 			default:
+				// We added a new PackageEnum value but forgot to map it here.
+				// Loud-log so QA notices; fall back to BASIC to stay safe.
+				log.warn("PlanService.normalize - unmapped plan value {} — falling back to BASIC. "
+						+ "Add an explicit case for this value.", plan);
 				return MasterEnums.PackageEnum.BASIC;
 		}
 	}

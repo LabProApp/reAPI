@@ -59,6 +59,14 @@ public class PropertyService {
 	 * posted as many properties as their plan allows. Posting on behalf of
 	 * a missing user / unknown plan is treated as BASIC (limit 0) and
 	 * rejected.
+	 *
+	 * <p><b>Downgrade behavior (documented):</b> when a user's subscription
+	 * expires and they're lazily downgraded to BASIC (limit 0) by
+	 * {@link com.api.user.User#effectivePackage()}, their <em>existing</em>
+	 * property listings stay live in search results — only <em>new</em>
+	 * inserts are blocked here. This is intentional so a 250-listing
+	 * DELUX user whose card declines doesn't lose their entire inventory
+	 * overnight; renewing reinstates the cap and they can post again.</p>
 	 */
 	private void enforcePostingLimit(Long userId) {
 		if (userId == null) {
