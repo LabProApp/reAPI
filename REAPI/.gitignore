@@ -1,2 +1,9 @@
 /bin/
 /target/
+
+# Real secrets — never commit. The .example template stays tracked.
+secret.properties
+
+# Timestamped backups created by replaceproperties.sh / generate-jwt-secret.sh
+*.bak
+*.bak.*
