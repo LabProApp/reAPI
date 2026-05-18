@@ -23,17 +23,19 @@ import java.util.List;
 @EnableMethodSecurity // turns on @PreAuthorize for ROLE_ADMIN checks
 public class SecurityConfig {
 
-	private final JwtAuthFilter jwtAuthFilter;
-
 	@Value("${cors.allowed-origins:*}")
 	private String allowedOrigins;
 
-	public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-		this.jwtAuthFilter = jwtAuthFilter;
-	}
-
+	/**
+	 * {@link JwtAuthFilter} is intentionally injected as a method parameter
+	 * (not via the constructor) so its resolution is deferred until this
+	 * bean factory method actually runs. With {@code @EnableMethodSecurity}
+	 * enabled, eagerly wiring it through the constructor can race with
+	 * Spring Security's method-security infrastructure and surface as an
+	 * {@code UnsatisfiedDependencyException} on the filter.
+	 */
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
 		http
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(csrf -> csrf.disable())
