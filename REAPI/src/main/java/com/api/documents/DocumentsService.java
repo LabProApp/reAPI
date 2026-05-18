@@ -7,6 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -18,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.api.enums.MasterEnums;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
@@ -42,7 +47,27 @@ public class DocumentsService {
 	private final S3Service s3Service;
 	private final ModelMapper mapper;
 
-	
+	// Bounded pool for parallel S3 uploads. Daemon threads so they don't block JVM exit.
+	private final ExecutorService uploadExecutor = Executors.newFixedThreadPool(8, r -> {
+		Thread t = new Thread(r);
+		t.setName("s3-upload-" + t.getId());
+		t.setDaemon(true);
+		return t;
+	});
+
+	@PreDestroy
+	void shutdownExecutor() {
+		uploadExecutor.shutdown();
+		try {
+			if (!uploadExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+				uploadExecutor.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			uploadExecutor.shutdownNow();
+		}
+	}
+
 	public DocumentsService(DocumentRepository documentsRepository, S3Service s3Service, ModelMapper mapper) {
 		this.documentsRepository = documentsRepository;
 		this.s3Service = s3Service;
@@ -54,6 +79,7 @@ public class DocumentsService {
 			List<String> titles, List<String> captions, Long uploadedBy) throws IOException {
 		log.info("uploadDocuments - Uploading {} file(s) for objectType={}, objectId={}", files.size(), objectType, objectId);
 
+		// Validate up front so we don't start uploads we then have to roll back.
 		for (MultipartFile file : files) {
 			if (file.getSize() > MAX_FILE_SIZE_BYTES) {
 				throw new IllegalArgumentException(
@@ -67,24 +93,48 @@ public class DocumentsService {
 		}
 
 		boolean requiresVerification = CUSTOMER_UPLOAD_TYPES.contains(objectType.toUpperCase());
-		List<DocumentDto> dtoList = new ArrayList<>();
+		String folder = objectType.toUpperCase();
 
+		// Phase 1 — upload every file to S3 in parallel.
+		List<CompletableFuture<String>> futures = new ArrayList<>(files.size());
+		for (MultipartFile file : files) {
+			futures.add(CompletableFuture.supplyAsync(() -> {
+				try {
+					return s3Service.uploadFile(file, folder);
+				} catch (IOException e) {
+					throw new RuntimeException("S3 upload failed for " + file.getOriginalFilename(), e);
+				}
+			}, uploadExecutor));
+		}
+
+		List<String> keys = new ArrayList<>(files.size());
+		try {
+			for (CompletableFuture<String> f : futures) keys.add(f.join());
+		} catch (RuntimeException e) {
+			// One upload failed — clean up the rest so we don't leak S3 objects.
+			for (CompletableFuture<String> f : futures) {
+				if (f.isDone() && !f.isCompletedExceptionally()) {
+					try { s3Service.deleteFile(f.get()); } catch (Exception ignore) { }
+				}
+			}
+			throw e;
+		}
+
+		// Phase 2 — build entities and persist in one batch insert.
+		List<Documents> entities = new ArrayList<>(files.size());
 		for (int i = 0; i < files.size(); i++) {
 			MultipartFile file = files.get(i);
+			String key = keys.get(i);
 			String title = (titles != null && titles.size() > i) ? titles.get(i) : null;
 			String caption = (captions != null && captions.size() > i) ? captions.get(i) : null;
 			String sanitizedFilename = file.getOriginalFilename() != null
 					? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "") : "file";
-			String docType = DocTypeDetector.detect(file.getContentType());
-			log.debug("uploadDocuments - file[{}]: name={}, title={}, docType={}", i, file.getOriginalFilename(), title, docType);
-
-			String key = s3Service.uploadFile(file, objectType.toUpperCase());
 
 			Documents doc = new Documents();
 			doc.setS3key(key);
 			doc.setFilename(sanitizedFilename);
 			doc.setTitle(title);
-			doc.setDocType(docType);
+			doc.setDocType(DocTypeDetector.detect(file.getContentType()));
 			doc.setCaption(caption);
 			doc.setObjectType(objectType);
 			doc.setObjectId(objectId);
@@ -92,15 +142,14 @@ public class DocumentsService {
 			doc.setDocumentStatus(requiresVerification
 					? MasterEnums.DocumentStatus.NOT_VERIFIED
 					: MasterEnums.DocumentStatus.VERIFIED);
-
-			Documents saved = documentsRepository.save(doc);
-			log.info("uploadDocuments - Saved doc id={}, title={}, key={}", saved.getId(), title, key);
-			dtoList.add(mapper.map(saved, DocumentDto.class));
+			entities.add(doc);
 		}
 
-		log.info("uploadDocuments - Successfully uploaded {} document(s) for objectType={}, objectId={}",
-				dtoList.size(), objectType, objectId);
-		return dtoList;
+		List<Documents> saved = documentsRepository.saveAll(entities);
+		log.info("uploadDocuments - Saved {} document(s) for objectType={}, objectId={}",
+				saved.size(), objectType, objectId);
+
+		return saved.stream().map(d -> mapper.map(d, DocumentDto.class)).collect(Collectors.toList());
 	}
 
 	

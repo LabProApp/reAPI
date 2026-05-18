@@ -48,9 +48,14 @@ public class ClientLeadService {
 	public ClientLeadDTO createLead(ClientLeadDTO dto) {
 		log.info("createLead - leadType={}, userId={}, propertyId={}", dto.getLeadType(), dto.getUserId(), dto.getPropertyId());
 
-		if (dto.getUserId() != null && dto.getPropertyId() != null
-				&& repository.existsByUserIdAndPropertyId(dto.getUserId(), dto.getPropertyId())) {
-			throw new RuntimeException("Lead already exists for this customer and property");
+		// Duplicate detection — return the existing lead (with a friendly flag) instead of erroring out.
+		ClientLead existing = findDuplicate(dto);
+		if (existing != null) {
+			log.info("createLead - duplicate inquiry detected, returning existing lead id={}", existing.getId());
+			ClientLeadDTO out = mapper.map(existing, ClientLeadDTO.class);
+			out.setInquiryAlreadySent(true);
+			out.setResponseMessage("Inquiry already sent");
+			return out;
 		}
 
 		ClientLead entity = mapper.map(dto, ClientLead.class);
@@ -179,6 +184,19 @@ public class ClientLeadService {
 	private ClientLead getEntityById(Long id) {
 		return repository.findById(id).orElseThrow(() ->
 				new RuntimeException("Lead not found with id: " + id));
+	}
+
+	// Returns the existing lead if the same inquiry has already been submitted,
+	// otherwise null. Match precedence: (userId + propertyId) > (mobile + propertyId).
+	private ClientLead findDuplicate(ClientLeadDTO dto) {
+		if (dto.getPropertyId() == null) return null;
+		if (dto.getUserId() != null) {
+			return repository.findByUserIdAndPropertyId(dto.getUserId(), dto.getPropertyId()).orElse(null);
+		}
+		if (dto.getMobile() != null && !dto.getMobile().isBlank()) {
+			return repository.findFirstByMobileAndPropertyId(dto.getMobile(), dto.getPropertyId()).orElse(null);
+		}
+		return null;
 	}
 
 	

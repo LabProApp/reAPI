@@ -105,6 +105,11 @@ public class ClientLeadDTO extends BaseDto {
 
 	private boolean sendWhatsApp;
 
+	// ─── Response flag (set when a duplicate inquiry was detected) ───────────
+
+	private boolean inquiryAlreadySent;
+	private String responseMessage;
+
 	// ─── Getters & Setters ────────────────────────────────────────────────────
 
 	
@@ -359,6 +364,14 @@ public class ClientLeadDTO extends BaseDto {
 
 	
 	public boolean isSendWhatsApp() { return sendWhatsApp; }
-	
+
 	public void setSendWhatsApp(boolean sendWhatsApp) { this.sendWhatsApp = sendWhatsApp; }
+
+	public boolean isInquiryAlreadySent() { return inquiryAlreadySent; }
+
+	public void setInquiryAlreadySent(boolean inquiryAlreadySent) { this.inquiryAlreadySent = inquiryAlreadySent; }
+
+	public String getResponseMessage() { return responseMessage; }
+
+	public void setResponseMessage(String responseMessage) { this.responseMessage = responseMessage; }
 }

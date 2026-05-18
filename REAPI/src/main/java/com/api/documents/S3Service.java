@@ -3,6 +3,7 @@ package com.api.documents;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,14 @@ public class S3Service {
 
 	private static final Logger log = LoggerFactory.getLogger(S3Service.class);
 
+	// Presigned URL TTL on S3, and a slightly shorter cache TTL so we never return
+	// an about-to-expire URL.
+	private static final Duration PRESIGN_TTL = Duration.ofMinutes(15);
+	private static final long CACHE_TTL_MS   = 10 * 60 * 1000L; // 10 minutes
+
+	private record CachedUrl(String url, long expiresAtMs) { }
+	private final ConcurrentHashMap<String, CachedUrl> urlCache = new ConcurrentHashMap<>();
+
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 	@Value("${aws.s3.region}")
@@ -29,7 +38,6 @@ public class S3Service {
 	private final S3Client s3Client;
 	private final S3Presigner s3Presigner;
 
-	
 	public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
 		this.s3Client = s3Client;
 		this.s3Presigner = s3Presigner;
@@ -71,20 +79,31 @@ public class S3Service {
 		log.info("deleteFile - Deleting S3 object bucket={}, key={}", bucketName, key);
 		DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(key).build();
 		s3Client.deleteObject(deleteObjectRequest);
+		urlCache.remove(key); // invalidate any cached presigned URL
 		log.info("deleteFile - S3 object deleted key={}", key);
 	}
 
-	
 	public String generatePresignedUrl(String key) {
 		if (key == null || key.isBlank()) {
 			log.warn("generatePresignedUrl - Rejected: S3 key is null or blank");
 			throw new IllegalArgumentException("S3 key is required to generate presigned URL");
 		}
-		log.debug("generatePresignedUrl - Generating presigned URL for key={}", key);
+
+		long now = System.currentTimeMillis();
+		CachedUrl cached = urlCache.get(key);
+		if (cached != null && cached.expiresAtMs() > now) {
+			return cached.url();
+		}
+
 		GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(key).build();
-		String url = s3Presigner.presignGetObject(p -> p.signatureDuration(Duration.ofMinutes(15)).getObjectRequest(request))
+		String url = s3Presigner.presignGetObject(p -> p.signatureDuration(PRESIGN_TTL).getObjectRequest(request))
 				.url().toString();
-		log.debug("generatePresignedUrl - Presigned URL generated for key={}", key);
+		urlCache.put(key, new CachedUrl(url, now + CACHE_TTL_MS));
+
+		// Opportunistic cleanup: if the cache balloons, prune expired entries.
+		if (urlCache.size() > 5000) {
+			urlCache.entrySet().removeIf(e -> e.getValue().expiresAtMs() <= now);
+		}
 		return url;
 	}
 }
