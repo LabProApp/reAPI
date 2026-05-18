@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -115,6 +116,21 @@ public class UserController {
 		UserDto updatedUser = userService.updateProfile(userDto);
 		log.info("PUT /api/user/update - Profile updated for userId={}", updatedUser.getId());
 		return ResponseEntity.ok(updatedUser);
+	}
+
+	@Operation(summary = "ADMIN: assign or extend a user's paid subscription")
+	@PostMapping("/{userId}/plan")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<UserDto> changePlan(@PathVariable Long userId,
+			@RequestBody PlanChangeRequest body) {
+		log.info("POST /api/user/{}/plan - plan={} years={} reason='{}'",
+				userId, body.getPlan(), body.getDurationYears(), body.getReason());
+		if (body.getPlan() == null) {
+			return ResponseEntity.badRequest().build();
+		}
+		UserDto updated = userService.changePlan(userId, body.getPlan(),
+				body.getDurationYears(), body.getReason());
+		return ResponseEntity.ok(updated);
 	}
 
 	@Operation(summary = "Toggle property favourite for user")

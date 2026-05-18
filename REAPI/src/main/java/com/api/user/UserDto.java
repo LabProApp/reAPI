@@ -36,6 +36,12 @@ public class UserDto extends BaseDto {
 	/** Max number of property listings the user can post on their plan. 0 for BASIC. Read-only. */
 	private Integer planPropertyLimit;
 
+	/** When the current paid subscription started; null for BASIC users. Read-only. */
+	private LocalDateTime subscriptionStartAt;
+
+	/** When the current paid subscription expires; null for indefinite. Read-only. */
+	private LocalDateTime subscriptionEndAt;
+
 	/** Feature flags the client uses to gate UI (e.g. {@code buy_sell}, {@code bank_loans}). Read-only. */
 	private Map<String, Boolean> featureFlags;
 
@@ -179,6 +185,26 @@ public class UserDto extends BaseDto {
 
 	public void setPlanPropertyLimit(Integer planPropertyLimit) {
 		this.planPropertyLimit = planPropertyLimit;
+	}
+
+
+	public LocalDateTime getSubscriptionStartAt() {
+		return subscriptionStartAt;
+	}
+
+
+	public void setSubscriptionStartAt(LocalDateTime subscriptionStartAt) {
+		this.subscriptionStartAt = subscriptionStartAt;
+	}
+
+
+	public LocalDateTime getSubscriptionEndAt() {
+		return subscriptionEndAt;
+	}
+
+
+	public void setSubscriptionEndAt(LocalDateTime subscriptionEndAt) {
+		this.subscriptionEndAt = subscriptionEndAt;
 	}
 
 

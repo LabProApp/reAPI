@@ -15,21 +15,28 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import com.api.enums.MasterEnums;
 
 /**
- * Seeds (and keeps in sync) the {@code plans} and {@code plan_features}
- * tables on startup.
+ * Seeds (and optionally keeps in sync) the {@code plans} and
+ * {@code plan_features} tables on startup.
  *
- * <p><b>Sync semantics:</b> The hardcoded defaults below are treated as the
- * canonical source of truth. On every boot the seeder writes them through:
- * missing rows are inserted, and existing rows whose value differs from
- * the canonical default are <em>updated</em>. This means edits made
- * directly in the DB will be overwritten on next restart — which is the
- * trade-off we want while the tier matrix is still being iterated on.</p>
+ * <p><b>Modes (controlled by {@code app.plan.seeder.sync}):</b>
+ * <ul>
+ *   <li><b>false</b> (default) — Insert-only. Missing rows are inserted
+ *       with the canonical defaults; existing rows are left untouched so
+ *       ops can edit prices / flags directly in the DB without the
+ *       seeder undoing the change on next boot. <strong>Use this in
+ *       production.</strong></li>
+ *   <li><b>true</b> — Sync. Existing rows whose value differs from the
+ *       canonical default are <em>updated</em>. Use during development
+ *       when you're iterating on the tier matrix and want changes here
+ *       to flow through to existing seeded rows.</li>
+ * </ul>
  */
 @Component
 public class PlanSeeder implements CommandLineRunner {
@@ -39,6 +46,9 @@ public class PlanSeeder implements CommandLineRunner {
 	private final PlanRepository planRepository;
 	private final PlanFeatureRepository planFeatureRepository;
 
+	@Value("${app.plan.seeder.sync:false}")
+	private boolean syncMode;
+
 	public PlanSeeder(PlanRepository planRepository, PlanFeatureRepository planFeatureRepository) {
 		this.planRepository = planRepository;
 		this.planFeatureRepository = planFeatureRepository;
@@ -46,6 +56,7 @@ public class PlanSeeder implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
+		log.info("PlanSeeder - starting (syncMode={})", syncMode);
 		seedPlans();
 		seedFeatures();
 	}
@@ -65,6 +76,8 @@ public class PlanSeeder implements CommandLineRunner {
 			log.info("PlanSeeder - inserted plan {} ({} INR/yr, propertyLimit={})", name, price, propertyLimit);
 			return;
 		}
+		if (!syncMode) return;
+
 		boolean changed = false;
 		if (!displayName.equals(existing.getDisplayName())) {
 			existing.setDisplayName(displayName); changed = true;
@@ -123,6 +136,8 @@ public class PlanSeeder implements CommandLineRunner {
 			log.info("PlanSeeder - inserted feature {} for plan {} = {}", key, plan, enabled);
 			return;
 		}
+		if (!syncMode) return;
+
 		if (!Boolean.valueOf(enabled).equals(row.getEnabled())) {
 			row.setEnabled(enabled);
 			planFeatureRepository.save(row);

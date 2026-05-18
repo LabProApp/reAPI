@@ -66,8 +66,12 @@ public class PropertyService {
 				"Posting user is required.",
 				"BASIC", 0, 0);
 		}
-		User user = userRepository.findById(userId).orElse(null);
-		MasterEnums.PackageEnum pkg = user != null ? user.getUserPackage() : null;
+		// Pessimistic lock on the user row serialises concurrent posts by the
+		// same user so two parallel requests can't both slip past the count
+		// check at limit-1. The lock is released when the surrounding
+		// @Transactional addProperty() commits.
+		User user = userRepository.findByIdForUpdate(userId).orElse(null);
+		MasterEnums.PackageEnum pkg = user != null ? user.effectivePackage() : null;
 		int limit = planService.getPropertyLimit(pkg);
 		long current = repository.countByPostedByUser(userId);
 		String planName = pkg != null ? pkg.name() : "BASIC";

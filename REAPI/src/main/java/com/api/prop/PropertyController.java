@@ -39,8 +39,16 @@ public class PropertyController {
 	@Operation(summary = "Add a new property listing")
 	@PostMapping("/add")
 	public ResponseEntity<PropertyDto> addProperty(@Valid @RequestBody PropertyDto propertyDto) {
-		log.info("POST /api/property/add - Adding property: title={}, city={}, type={}",
-				propertyDto.getTitle(), propertyDto.getCity(), propertyDto.getType());
+		// Force postedByUser to the JWT subject so a client can't pass someone
+		// else's userId to have their plan limit checked.
+		Long jwtUserId = com.api.security.AuthUtils.currentUserId();
+		if (jwtUserId == null) {
+			return ResponseEntity.status(401).build();
+		}
+		propertyDto.setPostedByUser(jwtUserId);
+
+		log.info("POST /api/property/add - userId={} title={} city={} type={}",
+				jwtUserId, propertyDto.getTitle(), propertyDto.getCity(), propertyDto.getType());
 		PropertyDto savedProperty = service.addProperty(propertyDto);
 		log.info("POST /api/property/add - Property created with id={}", savedProperty.getId());
 		return ResponseEntity.ok(savedProperty);

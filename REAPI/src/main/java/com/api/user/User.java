@@ -53,7 +53,17 @@ public class User extends BaseEntity {
 	private MasterEnums.UserRoleEnum userRole; // e.g., "CUSTOMER", "ADMIN", "AGENT","OWNER"
 
 	@Enumerated(EnumType.STRING)
-	private  MasterEnums.PackageEnum userPackage; // e.g., "Free", "Premium", "Gold"
+	private  MasterEnums.PackageEnum userPackage; // BASIC / DELUX / PREMIUM (legacy: REGULAR / ELITE)
+
+	/** When the current paid subscription started. {@code null} for BASIC users. */
+	private LocalDateTime subscriptionStartAt;
+
+	/**
+	 * When the current paid subscription expires. {@code null} = no expiry
+	 * (BASIC or admin-granted indefinite). When set in the past,
+	 * {@link #effectivePackage()} downgrades the user to BASIC on the fly.
+	 */
+	private LocalDateTime subscriptionEndAt;
 
 	//@JsonManagedReference(value = "user-userrelation")
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -215,9 +225,50 @@ public class User extends BaseEntity {
 		return relatedUserRelations;
 	}
 
-	
+
 	public void setRelatedUserRelations(List<UserRelation> relatedUserRelations) {
 		this.relatedUserRelations = relatedUserRelations;
+	}
+
+
+	public LocalDateTime getSubscriptionStartAt() {
+		return subscriptionStartAt;
+	}
+
+
+	public void setSubscriptionStartAt(LocalDateTime subscriptionStartAt) {
+		this.subscriptionStartAt = subscriptionStartAt;
+	}
+
+
+	public LocalDateTime getSubscriptionEndAt() {
+		return subscriptionEndAt;
+	}
+
+
+	public void setSubscriptionEndAt(LocalDateTime subscriptionEndAt) {
+		this.subscriptionEndAt = subscriptionEndAt;
+	}
+
+
+	/**
+	 * Returns the plan the user is actually entitled to right now.
+	 *
+	 * <p>If their {@link #subscriptionEndAt} has passed they get BASIC,
+	 * even if {@code userPackage} still reads DELUX/PREMIUM (lazy
+	 * downgrade — no scheduled job required). Callers should use this
+	 * everywhere instead of {@link #getUserPackage()} when deciding
+	 * what features to expose.</p>
+	 */
+	public MasterEnums.PackageEnum effectivePackage() {
+		MasterEnums.PackageEnum pkg = userPackage;
+		if (pkg == null) return MasterEnums.PackageEnum.BASIC;
+		if (subscriptionEndAt != null
+				&& subscriptionEndAt.isBefore(LocalDateTime.now())
+				&& pkg != MasterEnums.PackageEnum.BASIC) {
+			return MasterEnums.PackageEnum.BASIC;
+		}
+		return pkg;
 	}
 
 }

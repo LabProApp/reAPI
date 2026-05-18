@@ -58,6 +58,11 @@ public class PlanService {
 				.orElse(0);
 	}
 
+	/**
+	 * Maps any stored plan value to one of the three canonical tiers.
+	 * Explicit mapping for legacy values so existing customers don't
+	 * silently lose features.
+	 */
 	private MasterEnums.PackageEnum normalize(MasterEnums.PackageEnum plan) {
 		if (plan == null) return MasterEnums.PackageEnum.BASIC;
 		switch (plan) {
@@ -65,8 +70,14 @@ public class PlanService {
 			case DELUX:
 			case PREMIUM:
 				return plan;
+			case REGULAR:
+				// REGULAR was the old free tier — equivalent to BASIC today.
+				return MasterEnums.PackageEnum.BASIC;
+			case ELITE:
+				// ELITE was the old top tier — promote to PREMIUM so paying
+				// customers keep their features until they're migrated in SQL.
+				return MasterEnums.PackageEnum.PREMIUM;
 			default:
-				// Legacy REGULAR / ELITE rows — treat as free tier.
 				return MasterEnums.PackageEnum.BASIC;
 		}
 	}
