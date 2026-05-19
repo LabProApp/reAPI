@@ -1,106 +1,66 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  redeploy.sh — one-command redeploy for the REAPI backend
-# ----------------------------------------------------------------------------
-#  Runs end-to-end:
-#    1. mvn clean package -DskipTests              (build the jar)
-#    2. ./replaceproperties.sh                     (regen target/application.properties)
-#    3. sudo systemctl restart <SERVICE>           (bounce the service)
-#    4. sudo journalctl -u <SERVICE> -n 100 -f     (tail logs until Ctrl-C)
+#  redeploy.sh — build, render properties, restart service.
 #
-#  Usage:
-#    ./redeploy.sh                                 # full cycle
-#    ./redeploy.sh --skip-build                    # reuse existing target/*.jar
-#    ./redeploy.sh --no-tail                       # don't follow logs after restart
-#    ./redeploy.sh --service my-svc                # override the systemd unit name
-#    ./redeploy.sh -h
+#  Prereqs (one-time):
+#    1. Copy secret.properties.example to secret.properties and fill in
+#       every value (DB, AWS, Twilio, JWT_SECRET, etc.).
+#    2. A systemd unit named 'keybricks' (override via $KEYBRICKS_SERVICE).
 #
-#  Service name resolution order:
-#    --service NAME flag  >  $KEYBRICKS_SERVICE env var  >  "keybricks"
+#  Run:
+#    ./redeploy.sh
 # ============================================================================
 
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE="${KEYBRICKS_SERVICE:-keybricks}"
-SKIP_BUILD=0
-NO_TAIL=0
-
-# ── arg parsing ─────────────────────────────────────────────────────────────
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --skip-build)    SKIP_BUILD=1; shift ;;
-    --no-tail)       NO_TAIL=1; shift ;;
-    -s|--service)    SERVICE="$2"; shift 2 ;;
-    -h|--help)
-      sed -n '3,/^# ==/p' "$0" | sed 's/^# \{0,1\}//' | sed '$d'
-      exit 0
-      ;;
-    *)
-      echo "Unknown flag: $1" >&2
-      echo "Run with -h for usage." >&2
-      exit 2
-      ;;
-  esac
-done
-
 cd "$DIR"
 
-# ── helpers ─────────────────────────────────────────────────────────────────
-step()  { printf '\n\033[1;34m▶ %s\033[0m\n' "$*"; }
-ok()    { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
-fail()  { printf '\033[1;31m✗ %s\033[0m\n' "$*" >&2; }
+SOURCE="$DIR/application.properties"
+SECRETS="$DIR/secret.properties"
+OUT="$DIR/target/application.properties"
+SERVICE="${KEYBRICKS_SERVICE:-keybricks}"
+
+[[ -f "$SOURCE"  ]] || { echo "[error] $SOURCE missing"  >&2; exit 1; }
+[[ -f "$SECRETS" ]] || { echo "[error] $SECRETS missing — copy from .example and fill in" >&2; exit 1; }
+chmod 600 "$SECRETS" 2>/dev/null || true
 
 # ── 1. Build ────────────────────────────────────────────────────────────────
-if [[ "$SKIP_BUILD" == "0" ]]; then
-  step "Build  —  mvn clean package -DskipTests"
-  if ! command -v mvn >/dev/null 2>&1; then
-    fail "mvn not on PATH. Install Maven or rerun with --skip-build."
-    exit 1
-  fi
-  mvn clean package -DskipTests
-  ok "build complete"
-else
-  step "Build skipped (--skip-build)"
-fi
+echo "▶ Build  (mvn clean package -DskipTests)"
+mvn clean package -DskipTests
 
-# ── 2. Verify jar landed in target/ ─────────────────────────────────────────
-JAR="$(ls -t target/realestate-api-*.jar 2>/dev/null | head -n1 || true)"
-if [[ -z "$JAR" ]]; then
-  fail "No jar found in target/ — did the build succeed?"
-  exit 1
-fi
-ok "jar    $JAR"
+# ── 2. Substitute secret.properties → target/application.properties ─────────
+echo "▶ Render target/application.properties"
+SED_PROG="$(mktemp)"
+trap 'rm -f "$SED_PROG"' EXIT
+while IFS= read -r line || [[ -n "$line" ]]; do
+  line="${line%$'\r'}"
+  line="${line#"${line%%[![:space:]]*}"}"
+  [[ -z "$line" || "${line:0:1}" == "#" ]] && continue
+  key="${line%%=*}"
+  val="${line#*=}"
+  key="${key//[[:space:]]/}"
+  [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+  # Escape sed-special chars in the replacement value.
+  esc="$(printf '%s' "$val" | sed -e 's/[\\&|]/\\&/g')"
+  # ${KEY:default} first (longer match) then ${KEY}.
+  printf 's|\\${%s:[^}]*}|%s|g\n' "$key" "$esc" >> "$SED_PROG"
+  printf 's|\\${%s}|%s|g\n'        "$key" "$esc" >> "$SED_PROG"
+done < "$SECRETS"
 
-# ── 3. Render application.properties into target/ ───────────────────────────
-step "Prepare  —  ./replaceproperties.sh"
-./replaceproperties.sh
-[[ -f target/application.properties ]] || {
-  fail "target/application.properties missing after replaceproperties.sh"; exit 1; }
-ok "config $DIR/target/application.properties"
+mkdir -p "$DIR/target"
+sed -f "$SED_PROG" "$SOURCE" > "$OUT"
+chmod 644 "$OUT"
+echo "  → $OUT"
 
-# ── 4. Restart systemd service ──────────────────────────────────────────────
-step "Restart  —  systemctl restart $SERVICE"
+# ── 3. Restart service ──────────────────────────────────────────────────────
+echo "▶ Restart $SERVICE"
 sudo systemctl restart "$SERVICE"
-
-# Give the service a moment, then verify it's still up.
 sleep 2
-if sudo systemctl is-active --quiet "$SERVICE"; then
-  ok "$SERVICE is active"
-else
-  fail "$SERVICE failed to start. Dumping status:"
+if ! sudo systemctl is-active --quiet "$SERVICE"; then
+  echo "[error] $SERVICE failed to start" >&2
   sudo systemctl status "$SERVICE" --no-pager || true
-  echo
-  echo "Recent logs:"
-  sudo journalctl -u "$SERVICE" -n 80 --no-pager || true
   exit 1
 fi
 
-# ── 5. Tail logs ────────────────────────────────────────────────────────────
-if [[ "$NO_TAIL" == "1" ]]; then
-  ok "Skipping log tail (--no-tail). Watch with:  sudo journalctl -u $SERVICE -f"
-  exit 0
-fi
-
-step "Logs  —  journalctl -u $SERVICE -n 100 -f   (Ctrl-C to exit)"
-exec sudo journalctl -u "$SERVICE" -n 100 -f --no-pager
+echo "✓ Deployed."
