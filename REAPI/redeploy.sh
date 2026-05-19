@@ -5,7 +5,7 @@
 #  Prereqs (one-time):
 #    1. Copy secret.properties.example to secret.properties and fill in
 #       every value (DB, AWS, Twilio, JWT_SECRET, etc.).
-#    2. A systemd unit named 'keybricks' (override via $KEYBRICKS_SERVICE).
+#    2. A systemd unit named 'realestate-api' (override via $KEYBRICKS_SERVICE).
 #
 #  Run:
 #    ./redeploy.sh
@@ -19,7 +19,7 @@ cd "$DIR"
 SOURCE="$DIR/application.properties"
 SECRETS="$DIR/secret.properties"
 OUT="$DIR/target/application.properties"
-SERVICE="${KEYBRICKS_SERVICE:-keybricks}"
+SERVICE="${KEYBRICKS_SERVICE:-realestate-api}"
 
 [[ -f "$SOURCE"  ]] || { echo "[error] $SOURCE missing"  >&2; exit 1; }
 [[ -f "$SECRETS" ]] || { echo "[error] $SECRETS missing — copy from .example and fill in" >&2; exit 1; }
