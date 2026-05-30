@@ -64,8 +64,8 @@ public class AdminController {
 		long total = userRepository.count();
 		dto.setTotalUsers(total);
 
-		long sale = propertyRepository.countByRentOrSaleIgnoreCase("SALE");
-		long rent = propertyRepository.countByRentOrSaleIgnoreCase("RENT");
+		long sale = propertyRepository.countByRentOrSale("SALE");
+		long rent = propertyRepository.countByRentOrSale("RENT");
 		dto.setPropertiesForSale(sale);
 		dto.setPropertiesForRent(rent);
 		dto.setTotalProperties(sale + rent);

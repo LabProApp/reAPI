@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,8 +14,10 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 	/** Count of properties posted by this user, used to enforce plan limits. */
 	long countByPostedByUser(Long postedByUser);
 
-	/** Used by the admin stats endpoint to split listings by SALE vs RENT. */
-	long countByRentOrSaleIgnoreCase(String rentOrSale);
+	/** Used by the admin stats endpoint to split listings by SALE vs RENT.
+	 *  Explicit @Query avoids Spring Data parsing "Or" in "rentOrSale" as a logical OR. */
+	@Query("SELECT COUNT(p) FROM Property p WHERE LOWER(p.rentOrSale) = LOWER(:rentOrSale)")
+	long countByRentOrSale(@Param("rentOrSale") String rentOrSale);
 
 
 	@Query("""
