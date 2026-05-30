@@ -46,13 +46,32 @@ public class DataMigrationRunner implements CommandLineRunner {
 		// Each step is wrapped so a single failure doesn't abort the whole
 		// app boot. A migration that can't apply now will be retried on
 		// next restart.
-		safeRun("legacy plan enums",      this::migrateLegacyPlanEnums);
-		safeRun("subscription backfill",  this::backfillSubscriptionWindow);
-		safeRun("post_requirement BASIC", this::movePostRequirementToBasic);
+		safeRun("enum columns → varchar",  this::convertEnumColumnsToVarchar);
+		safeRun("legacy plan enums",       this::migrateLegacyPlanEnums);
+		safeRun("subscription backfill",   this::backfillSubscriptionWindow);
+		safeRun("post_requirement BASIC",  this::movePostRequirementToBasic);
 		log.info("DataMigrationRunner - done");
 	}
 
 	// ── Steps ───────────────────────────────────────────────────────────────
+
+	/**
+	 * ddl-auto=update adds new enum constants to Java but never widens an
+	 * existing MySQL ENUM column. Convert any ENUM columns to VARCHAR so new
+	 * values can be stored and old rows can be updated. Safe to re-run — MySQL
+	 * is a no-op if the column is already VARCHAR.
+	 */
+	private void convertEnumColumnsToVarchar() {
+		// user_package was seeded as ENUM('REGULAR','ELITE'); new values BASIC/
+		// DELUX/PREMIUM were added later and are not in the MySQL ENUM definition.
+		jdbc.execute("ALTER TABLE users MODIFY COLUMN user_package VARCHAR(50)");
+
+		// client_lead enum columns carry the same risk for new InquiryType / LeadStatus values.
+		jdbc.execute("ALTER TABLE client_lead MODIFY COLUMN lead_type VARCHAR(50)");
+		jdbc.execute("ALTER TABLE client_lead MODIFY COLUMN status VARCHAR(30)");
+
+		log.info("DataMigrationRunner - enum columns converted to varchar");
+	}
 
 	/** REGULAR -> BASIC, ELITE -> PREMIUM, NULL -> BASIC on the users table. */
 	private void migrateLegacyPlanEnums() {
