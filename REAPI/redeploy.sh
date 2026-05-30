@@ -16,9 +16,9 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
-SOURCE="$DIR/application.properties"
+SOURCE="$DIR/src/main/resources/application.properties"
 SECRETS="$DIR/secret.properties"
-OUT="$DIR/target/application.properties"
+OUT="$DIR/application.properties"
 SERVICE="${KEYBRICKS_SERVICE:-realestate-api}"
 
 [[ -f "$SOURCE"  ]] || { echo "[error] $SOURCE missing"  >&2; exit 1; }
@@ -29,8 +29,8 @@ chmod 600 "$SECRETS" 2>/dev/null || true
 echo "▶ Build  (mvn clean package -DskipTests)"
 mvn clean package -DskipTests
 
-# ── 2. Substitute secret.properties → target/application.properties ─────────
-echo "▶ Render target/application.properties"
+# ── 2. Substitute secret.properties → application.properties ────────────────
+echo "▶ Render application.properties"
 SED_PROG="$(mktemp)"
 trap 'rm -f "$SED_PROG"' EXIT
 while IFS= read -r line || [[ -n "$line" ]]; do
@@ -48,7 +48,6 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   printf 's|\\${%s}|%s|g\n'        "$key" "$esc" >> "$SED_PROG"
 done < "$SECRETS"
 
-mkdir -p "$DIR/target"
 sed -f "$SED_PROG" "$SOURCE" > "$OUT"
 chmod 644 "$OUT"
 echo "  → $OUT"

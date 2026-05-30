@@ -3,6 +3,8 @@
 
 # Real secrets — never commit. The .example template stays tracked.
 secret.properties
+# Rendered application.properties (contains substituted secrets from secret.properties)
+application.properties
 
 # Timestamped backups created by replaceproperties.sh / generate-jwt-secret.sh
 *.bak
