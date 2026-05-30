@@ -38,6 +38,24 @@ public class DbColumnMigration implements ApplicationRunner {
         runSql("ALTER TABLE client_lead MODIFY COLUMN status VARCHAR(30)",
                "client_lead.status → VARCHAR(30)");
 
+        // property.rent was the original column name; Spring naming strategy now maps
+        // the rentOrSale field to rent_or_sale. Rename so Hibernate validation passes.
+        runSql("ALTER TABLE property RENAME COLUMN rent TO rent_or_sale",
+               "property.rent → rent_or_sale");
+
+        // idx_property_posted_by_user was created with column 'postedByUser' (Java field
+        // name) instead of the actual DB column 'posted_by_user_id'. Drop and recreate.
+        runSql("ALTER TABLE property DROP INDEX idx_property_posted_by_user",
+               "drop idx_property_posted_by_user (wrong column)");
+        runSql("ALTER TABLE property ADD INDEX idx_property_posted_by_user (posted_by_user_id)",
+               "create idx_property_posted_by_user on posted_by_user_id");
+
+        // Same issue for the rentOrSale index — column name is rent_or_sale, not rentOrSale.
+        runSql("ALTER TABLE property DROP INDEX idx_property_rent_or_sale",
+               "drop idx_property_rent_or_sale (wrong column)");
+        runSql("ALTER TABLE property ADD INDEX idx_property_rent_or_sale (rent_or_sale)",
+               "create idx_property_rent_or_sale on rent_or_sale");
+
         log.info("DbColumnMigration: done");
     }
 

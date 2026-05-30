@@ -37,8 +37,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "property", indexes = {
 	@Index(name = "idx_property_city", columnList = "city"),
 	@Index(name = "idx_property_type", columnList = "type"),
-	@Index(name = "idx_property_rent_or_sale", columnList = "rentOrSale"),
-	@Index(name = "idx_property_posted_by_user", columnList = "postedByUser"),
+	@Index(name = "idx_property_rent_or_sale", columnList = "rent_or_sale"),
+	@Index(name = "idx_property_posted_by_user", columnList = "posted_by_user_id"),
 	@Index(name = "idx_property_price", columnList = "price")
 })
 public class Property extends BaseEntity {
