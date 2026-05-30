@@ -46,7 +46,8 @@ public class DataMigrationRunner implements CommandLineRunner {
 		// Each step is wrapped so a single failure doesn't abort the whole
 		// app boot. A migration that can't apply now will be retried on
 		// next restart.
-		safeRun("enum columns → varchar",  this::convertEnumColumnsToVarchar);
+		safeRun("enum columns → varchar",   this::convertEnumColumnsToVarchar);
+		safeRun("fix indexes",             this::fixIndexes);
 		safeRun("legacy plan enums",       this::migrateLegacyPlanEnums);
 		safeRun("subscription backfill",   this::backfillSubscriptionWindow);
 		safeRun("post_requirement BASIC",  this::movePostRequirementToBasic);
@@ -54,6 +55,20 @@ public class DataMigrationRunner implements CommandLineRunner {
 	}
 
 	// ── Steps ───────────────────────────────────────────────────────────────
+
+	/**
+	 * Drops and recreates indexes whose column references were wrong (Java field
+	 * names used instead of DB column names). ddl-auto=update won't fix these
+	 * because the index already exists under the wrong name.
+	 */
+	private void fixIndexes() {
+		// client_lead: brokerId → broker_id, propertyOwnerId → property_owner_id
+		jdbc.execute("ALTER TABLE client_lead DROP INDEX idx_client_lead_broker_id");
+		jdbc.execute("ALTER TABLE client_lead ADD  INDEX idx_client_lead_broker_id (broker_id)");
+		jdbc.execute("ALTER TABLE client_lead DROP INDEX idx_client_lead_owner_id");
+		jdbc.execute("ALTER TABLE client_lead ADD  INDEX idx_client_lead_owner_id (property_owner_id)");
+		log.info("DataMigrationRunner - client_lead indexes rebuilt on correct columns");
+	}
 
 	/**
 	 * ddl-auto=update adds new enum constants to Java but never widens an

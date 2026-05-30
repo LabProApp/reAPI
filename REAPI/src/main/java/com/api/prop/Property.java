@@ -35,11 +35,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Table(name = "property", indexes = {
-	@Index(name = "idx_property_city", columnList = "city"),
-	@Index(name = "idx_property_type", columnList = "type"),
-	@Index(name = "idx_property_rent_or_sale", columnList = "rent_or_sale"),
+	@Index(name = "idx_property_city",           columnList = "city"),
+	@Index(name = "idx_property_type",           columnList = "type"),
+	@Index(name = "idx_property_category",       columnList = "category"),
+	@Index(name = "idx_property_rent_or_sale",   columnList = "rent_or_sale"),
 	@Index(name = "idx_property_posted_by_user", columnList = "posted_by_user_id"),
-	@Index(name = "idx_property_price", columnList = "price")
+	@Index(name = "idx_property_price",          columnList = "price"),
+	@Index(name = "idx_property_post_date",      columnList = "post_date"),
+	@Index(name = "idx_property_status",         columnList = "property_status"),
+	// Composite covering the most common public search: city + listing type + price range
+	@Index(name = "idx_property_city_rent_price", columnList = "city, rent_or_sale, price")
 })
 public class Property extends BaseEntity {
 

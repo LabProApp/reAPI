@@ -12,13 +12,18 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-
-@Table(name = "documents")
+@Table(name = "documents", indexes = {
+	// Covers every bulk fetch of documents for a set of objects (property listings, users, etc.)
+	@Index(name = "idx_documents_object_type_id", columnList = "object_type, object_id"),
+	@Index(name = "idx_documents_status",         columnList = "document_status"),
+	@Index(name = "idx_documents_uploaded_by",    columnList = "uploaded_by")
+})
 public class Documents extends BaseEntity {
 
 	@Id

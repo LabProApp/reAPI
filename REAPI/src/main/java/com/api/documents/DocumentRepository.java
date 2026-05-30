@@ -11,13 +11,13 @@ import com.api.enums.MasterEnums;
 public interface DocumentRepository extends JpaRepository<Documents, Long> {
 
 	
-	List<Documents> findByObjectTypeIgnoreCaseAndObjectId(String objectType, Long objectId);
+	List<Documents> findByObjectTypeAndObjectId(String objectType, Long objectId);
 
 	
-	List<Documents> findByObjectTypeIgnoreCaseAndObjectIdIn(String objectType, List<Long> objectIds);
+	List<Documents> findByObjectTypeAndObjectIdIn(String objectType, List<Long> objectIds);
 
 	
-	List<Documents> findByObjectTypeIgnoreCaseAndObjectIdAndDocumentStatus(
+	List<Documents> findByObjectTypeAndObjectIdAndDocumentStatus(
 			String objectType, Long objectId, MasterEnums.DocumentStatus documentStatus);
 
 	

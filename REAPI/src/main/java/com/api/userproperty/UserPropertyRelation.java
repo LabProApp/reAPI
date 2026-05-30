@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -29,8 +30,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "user_property_relation", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id",
-		"property_id" }))
+@Table(name = "user_property_relation",
+	uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "property_id" }),
+	indexes = {
+		// Covers findByUserIdAndInquiryTrue / findByUserIdAndFavouriteTrue
+		@Index(name = "idx_upr_user_inquiry",   columnList = "user_id, inquiry"),
+		@Index(name = "idx_upr_user_favourite", columnList = "user_id, favourite"),
+		// Covers reverse lookup: all users who interacted with a given property
+		@Index(name = "idx_upr_property_id",    columnList = "property_id")
+	})
 public class UserPropertyRelation extends BaseEntity {
 
 	@Id

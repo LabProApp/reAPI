@@ -22,11 +22,12 @@ import jakarta.persistence.UniqueConstraint;
 @Table(name = "client_lead",
 	uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "property_id" }),
 	indexes = {
-		@Index(name = "idx_client_lead_user_id", columnList = "user_id"),
+		@Index(name = "idx_client_lead_user_id",     columnList = "user_id"),
 		@Index(name = "idx_client_lead_property_id", columnList = "property_id"),
-		@Index(name = "idx_client_lead_broker_id", columnList = "brokerId"),
-		@Index(name = "idx_client_lead_owner_id", columnList = "propertyOwnerId"),
-		@Index(name = "idx_client_lead_status", columnList = "status")
+		@Index(name = "idx_client_lead_broker_id",   columnList = "broker_id"),
+		@Index(name = "idx_client_lead_owner_id",    columnList = "property_owner_id"),
+		@Index(name = "idx_client_lead_status",      columnList = "status"),
+		@Index(name = "idx_client_lead_mobile",      columnList = "mobile")
 	})
 public class ClientLead extends BaseEntity {
 

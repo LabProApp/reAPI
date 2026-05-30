@@ -190,7 +190,7 @@ public class DocumentsService {
 	// Get all documents by objectType and objectId
 	public List<DocumentDto> getDocumentsByObject(String objectType, Long objectId) {
 		log.info("getDocumentsByObject - Fetching documents for objectType={}, objectId={}", objectType, objectId);
-		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
+		List<Documents> docs = documentsRepository.findByObjectTypeAndObjectId(objectType, objectId);
 		log.debug("getDocumentsByObject - Found {} documents", docs.size());
 		return docs.stream().map(doc -> mapWithPresignedUrl(doc, new DocumentDto())).collect(Collectors.toList());
 	}
@@ -201,7 +201,7 @@ public class DocumentsService {
 		if (objectType == null || objectId == null) {
 			return Collections.emptyList();
 		}
-		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectId(objectType, objectId);
+		List<Documents> docs = documentsRepository.findByObjectTypeAndObjectId(objectType, objectId);
 		if (docs.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -219,7 +219,7 @@ public class DocumentsService {
 		if (objectType == null || objectIds == null || objectIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
-		List<Documents> docs = documentsRepository.findByObjectTypeIgnoreCaseAndObjectIdIn(objectType, objectIds);
+		List<Documents> docs = documentsRepository.findByObjectTypeAndObjectIdIn(objectType, objectIds);
 		return docs.stream().collect(Collectors.groupingBy(
 			Documents::getObjectId,
 			Collectors.mapping(doc -> {
@@ -269,7 +269,7 @@ public class DocumentsService {
 			MasterEnums.DocumentStatus status) {
 		log.info("getDocumentsByObjectAndStatus - objectType={}, objectId={}, status={}", objectType, objectId, status);
 		List<Documents> docs = documentsRepository
-				.findByObjectTypeIgnoreCaseAndObjectIdAndDocumentStatus(objectType, objectId, status);
+				.findByObjectTypeAndObjectIdAndDocumentStatus(objectType, objectId, status);
 		log.info("getDocumentsByObjectAndStatus - Found {} documents", docs.size());
 		return docs.stream().map(doc -> mapWithPresignedUrl(doc, new DocumentDto())).collect(Collectors.toList());
 	}
