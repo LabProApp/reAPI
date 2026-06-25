@@ -56,6 +56,7 @@ public class SecurityConfig {
 					"/api/user/verifyOtp",
 					"/api/user/resend-otp",
 					"/api/user/reset-password",
+					"/api/version/check",   // public — called on every app launch
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
 					"/swagger-ui.html"

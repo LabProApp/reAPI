@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.prop.PropertyDto;
+import com.api.security.AuthUtils;
 import com.api.userproperty.UserPropertyRelationDto;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -135,37 +136,57 @@ public class UserController {
 
 	@Operation(summary = "Toggle property favourite for user")
 	@PostMapping("/{userId}/favourite/{propertyId}")
-	public Long markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
+	public ResponseEntity<Long> markFavourite(@PathVariable Long userId, @PathVariable Long propertyId) {
+		Long jwtUserId = AuthUtils.currentUserId();
+		if (jwtUserId == null || !jwtUserId.equals(userId)) {
+			log.warn("POST /api/user/{}/favourite/{} - Forbidden: jwtUserId={}", userId, propertyId, jwtUserId);
+			return ResponseEntity.status(403).build();
+		}
 		log.info("POST /api/user/{}/favourite/{} - Toggling favourite", userId, propertyId);
 		Long result = userService.markFavourite(userId, propertyId);
 		log.info("POST /api/user/{}/favourite/{} - Favourite toggled", userId, propertyId);
-		return result;
+		return ResponseEntity.ok(result);
 	}
 
 	@Operation(summary = "Toggle property inquiry for user")
 	@PostMapping("/{userId}/interest/{propertyId}")
-	public Long markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
+	public ResponseEntity<Long> markInterested(@PathVariable Long userId, @PathVariable Long propertyId) {
+		Long jwtUserId = AuthUtils.currentUserId();
+		if (jwtUserId == null || !jwtUserId.equals(userId)) {
+			log.warn("POST /api/user/{}/interest/{} - Forbidden: jwtUserId={}", userId, propertyId, jwtUserId);
+			return ResponseEntity.status(403).build();
+		}
 		log.info("POST /api/user/{}/interest/{} - Toggling interest", userId, propertyId);
 		Long result = userService.markInterested(userId, propertyId);
 		log.info("POST /api/user/{}/interest/{} - Interest toggled", userId, propertyId);
-		return result;
+		return ResponseEntity.ok(result);
 	}
 
 	@Operation(summary = "Get user's favourite properties")
 	@GetMapping("/{userId}/favourites")
-	public List<PropertyDto> getFavouriteProperties(@PathVariable Long userId) {
+	public ResponseEntity<List<PropertyDto>> getFavouriteProperties(@PathVariable Long userId) {
+		Long jwtUserId = AuthUtils.currentUserId();
+		if (jwtUserId == null || !jwtUserId.equals(userId)) {
+			log.warn("GET /api/user/{}/favourites - Forbidden: jwtUserId={}", userId, jwtUserId);
+			return ResponseEntity.status(403).build();
+		}
 		log.info("GET /api/user/{}/favourites - Fetching favourites", userId);
 		List<PropertyDto> favourites = userService.getFavouriteProperties(userId);
 		log.info("GET /api/user/{}/favourites - Returned {} favourites", userId, favourites.size());
-		return favourites;
+		return ResponseEntity.ok(favourites);
 	}
 
 	@Operation(summary = "Get user's inquired properties")
 	@GetMapping("/{userId}/inqueries")
-	public List<PropertyDto> getInquiredProperties(@PathVariable Long userId) {
+	public ResponseEntity<List<PropertyDto>> getInquiredProperties(@PathVariable Long userId) {
+		Long jwtUserId = AuthUtils.currentUserId();
+		if (jwtUserId == null || !jwtUserId.equals(userId)) {
+			log.warn("GET /api/user/{}/inqueries - Forbidden: jwtUserId={}", userId, jwtUserId);
+			return ResponseEntity.status(403).build();
+		}
 		log.info("GET /api/user/{}/inqueries - Fetching inquired properties", userId);
 		List<PropertyDto> inquired = userService.getInquiredProperties(userId);
 		log.info("GET /api/user/{}/inqueries - Returned {} inquired properties", userId, inquired.size());
-		return inquired;
+		return ResponseEntity.ok(inquired);
 	}
 }

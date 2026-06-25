@@ -1,6 +1,7 @@
 package com.api.prop;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -245,14 +247,48 @@ public class PropertyService {
 			String postedBy, String constructionStatus, String currency, String location, Double minPrice,
 			Double maxPrice, Integer minBedrooms, Integer maxBedrooms, Integer minBathrooms, Integer maxBathrooms,
 			Double minArea, Double maxArea, String amenity, String rentOrSale, LocalDateTime postDate,
-			Long postedByUser) {
+			Long postedByUser, String state, String furnishing, String ownershipType, String preferredTenants,
+			String availability, int page, int size) {
 
 		String searchLocation = (location != null && !location.trim().isEmpty()) ? location.trim().toLowerCase() : null;
-		String cityFilter = (city != null && !city.trim().isEmpty()) ? city.trim().toLowerCase() : null;
+		String cityFilter   = (city  != null && !city.trim().isEmpty())  ? city.trim().toLowerCase()  : null;
+		String stateFilter  = (state != null && !state.trim().isEmpty()) ? state.trim().toLowerCase() : null;
 
-		List<Property> results = repository.searchAll(title, address, cityFilter, type, category, postedBy,
-				constructionStatus, currency, searchLocation, minPrice, maxPrice, minBedrooms, maxBedrooms,
-				minBathrooms, maxBathrooms, minArea, maxArea, amenity, rentOrSale, postDate, postedByUser);
+		// Multi-amenity: pass only the first token to the DB query for pre-filtering;
+		// any additional selected amenities are applied in-memory below (AND semantics).
+		String primaryAmenity = null;
+		List<String> extraAmenities = List.of();
+		if (amenity != null && !amenity.isBlank()) {
+			String[] parts = amenity.split(",");
+			primaryAmenity = parts[0].trim().isEmpty() ? null : parts[0].trim();
+			if (parts.length > 1) {
+				extraAmenities = Arrays.stream(parts, 1, parts.length)
+						.map(String::trim)
+						.filter(s -> !s.isEmpty())
+						.collect(Collectors.toList());
+			}
+		}
+
+		List<Property> results = repository.searchAll(title, address, cityFilter, stateFilter, type, category, postedBy,
+				constructionStatus, furnishing, ownershipType, preferredTenants, availability, currency,
+				searchLocation, minPrice, maxPrice, minBedrooms, maxBedrooms, minBathrooms, maxBathrooms,
+				minArea, maxArea, primaryAmenity, rentOrSale, postDate, postedByUser,
+				PageRequest.of(page, size));
+
+		// Apply remaining amenities in-memory (AND logic: property must contain all).
+		if (!extraAmenities.isEmpty()) {
+			results = results.stream().filter(p -> {
+				if (p.getAmenities() == null || p.getAmenities().isBlank()) return false;
+				String pa = p.getAmenities().toLowerCase();
+				return extraAmenities.stream().allMatch(a -> {
+					String la = a.toLowerCase();
+					return pa.equals(la)
+							|| pa.startsWith(la + ",")
+							|| pa.endsWith("," + la)
+							|| pa.contains("," + la + ",");
+				});
+			}).collect(Collectors.toList());
+		}
 
 		List<Long> ids = results.stream().map(Property::getId).collect(Collectors.toList());
 		Map<Long, List<DocumentminDto>> docsMap = documentsService.getminDocumentsByObjectIds("PROPERTY", ids);
