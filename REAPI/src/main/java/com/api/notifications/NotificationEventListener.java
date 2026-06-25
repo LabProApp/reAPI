@@ -64,6 +64,8 @@ public class NotificationEventListener {
         if (hasValue(event.getMobile())) {
             String smsBody = "Your " + APP + " OTP is: " + event.getOtp() + ". Valid for 10 minutes. Do not share.";
             dispatcher.sendSms("OTP", event.getName(), event.getMobile(), smsBody);
+            dispatcher.sendWhatsApp("OTP", event.getName(), event.getMobile(),
+                    WhatsAppTemplates.otp(event.getName(), event.getOtp(), event.getReason()));
         }
     }
 
@@ -88,6 +90,8 @@ public class NotificationEventListener {
         if (hasValue(event.getMobile())) {
             String smsBody = "Welcome to " + APP + ", " + event.getName() + "! Your account is active. Browse properties today.";
             dispatcher.sendSms("WELCOME", event.getName(), event.getMobile(), smsBody);
+            dispatcher.sendWhatsApp("WELCOME", event.getName(), event.getMobile(),
+                    WhatsAppTemplates.welcome(event.getName()));
         }
     }
 
@@ -112,6 +116,8 @@ public class NotificationEventListener {
         if (hasValue(event.getMobile())) {
             String smsBody = "Hi " + event.getName() + ", your " + APP + " password has been reset successfully.";
             dispatcher.sendSms("PASSWORD_RESET", event.getName(), event.getMobile(), smsBody);
+            dispatcher.sendWhatsApp("PASSWORD_RESET", event.getName(), event.getMobile(),
+                    WhatsAppTemplates.passwordResetSuccess(event.getName()));
         }
     }
 
@@ -125,7 +131,7 @@ public class NotificationEventListener {
         String templateName = "RENT".equalsIgnoreCase(event.getInquiryType()) ? "rent-interest" : "buy-interest";
         String inquiryLabel = "RENT".equalsIgnoreCase(event.getInquiryType()) ? "Rent" : "Buy";
 
-        // Customer confirmation
+        // Customer confirmation — email + SMS + WhatsApp
         if (hasValue(event.getCustomerEmail())) {
             String subject = "Your " + inquiryLabel + " Inquiry Confirmed | " + APP;
             dispatcher.sendHtmlEmail("PROPERTY_INQUIRY", event.getCustomerName(),
@@ -144,9 +150,12 @@ public class NotificationEventListener {
             String smsBody = "Hi " + event.getCustomerName() + ", your " + inquiryLabel + " inquiry for '"
                     + event.getPropertyTitle() + "' has been sent. Expect a call within 24hrs. - " + APP;
             dispatcher.sendSms("PROPERTY_INQUIRY", event.getCustomerName(), event.getCustomerMobile(), smsBody);
+            dispatcher.sendWhatsApp("PROPERTY_INQUIRY", event.getCustomerName(), event.getCustomerMobile(),
+                    WhatsAppTemplates.propertyInquiryCustomer(event.getCustomerName(),
+                            event.getPropertyTitle(), event.getPropertyCity(), event.getInquiryType()));
         }
 
-        // Agent/broker notification
+        // Agent/broker notification — email + WhatsApp
         if (hasValue(event.getAgentEmail())) {
             String agentSubject = "[" + APP + "] New " + inquiryLabel + " Inquiry – " + event.getCustomerName();
             dispatcher.sendHtmlEmail("PROPERTY_INQUIRY_AGENT", "Agent",
@@ -161,6 +170,21 @@ public class NotificationEventListener {
                         "inquiryType",   inquiryLabel,
                         "app",           APP
                     ));
+        }
+
+        if (hasValue(event.getAgentMobile())) {
+            dispatcher.sendWhatsApp("PROPERTY_INQUIRY_AGENT", "Agent", event.getAgentMobile(),
+                    WhatsAppTemplates.propertyInquiryAgent(event.getCustomerName(),
+                            event.getCustomerMobile(), event.getPropertyTitle(),
+                            event.getPropertyCity(), event.getInquiryType()));
+        }
+
+        // Owner — WhatsApp alert when different from agent
+        if (hasValue(event.getOwnerMobile())) {
+            dispatcher.sendWhatsApp("PROPERTY_INQUIRY_OWNER", "Owner", event.getOwnerMobile(),
+                    WhatsAppTemplates.propertyInquiryAgent(event.getCustomerName(),
+                            event.getCustomerMobile(), event.getPropertyTitle(),
+                            event.getPropertyCity(), event.getInquiryType()));
         }
     }
 
@@ -200,7 +224,11 @@ public class NotificationEventListener {
             dispatcher.sendSms("PROPERTY_SHARE", null, event.getRecipientMobile(), smsBody);
 
             if (event.isSendWhatsApp()) {
-                dispatcher.sendWhatsApp("PROPERTY_SHARE", null, event.getRecipientMobile(), smsBody);
+                dispatcher.sendWhatsApp("PROPERTY_SHARE", null, event.getRecipientMobile(),
+                        WhatsAppTemplates.propertyShare(event.getSenderName(), event.getPropertyTitle(),
+                                event.getPropertyCity(), event.getPropertyLocation(), event.getPrice(),
+                                event.getRentOrSale(), event.getBedrooms(), event.getType(),
+                                event.getContactNumber()));
             }
         }
     }

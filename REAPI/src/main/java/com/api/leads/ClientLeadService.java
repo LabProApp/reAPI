@@ -10,11 +10,13 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.api.enums.MasterEnums;
 import com.api.notifications.NotificationService;
+import com.api.notifications.events.LeadGeneratedEvent;
 import com.api.prop.PropertyRepository;
 import com.api.user.User;
 import com.api.user.UserRepository;
@@ -30,16 +32,18 @@ public class ClientLeadService {
 	private final PropertyRepository propertyRepository;
 	private final UserRepository userRepository;
 	private final NotificationService notificationService;
+	private final ApplicationEventPublisher eventPublisher;
 
-	
+
 	public ClientLeadService(ClientLeadRepository repository, ModelMapper mapper,
 			PropertyRepository propertyRepository, UserRepository userRepository,
-			NotificationService notificationService) {
+			NotificationService notificationService, ApplicationEventPublisher eventPublisher) {
 		this.repository = repository;
 		this.mapper = mapper;
 		this.propertyRepository = propertyRepository;
 		this.userRepository = userRepository;
 		this.notificationService = notificationService;
+		this.eventPublisher = eventPublisher;
 	}
 
 	// ─── Create ───────────────────────────────────────────────────────────────
@@ -85,13 +89,13 @@ public class ClientLeadService {
 		ClientLead saved = repository.save(entity);
 		log.info("createLead - Lead id={} created, type={}", saved.getId(), saved.getLeadType());
 
-		// Fire notifications async
+		// Fire notifications via event — NotificationEventListener handles routing
 		String[] brokerContact = resolveContact(saved.getBrokerId());
 		String[] ownerContact = resolveContact(saved.getPropertyOwnerId());
-		notificationService.notifyLeadCreated(saved,
+		eventPublisher.publishEvent(new LeadGeneratedEvent(saved,
 				brokerContact[0], brokerContact[1],
 				ownerContact[0], ownerContact[1],
-				dto.isSendWhatsApp());
+				dto.isSendWhatsApp()));
 
 		return mapper.map(saved, ClientLeadDTO.class);
 	}

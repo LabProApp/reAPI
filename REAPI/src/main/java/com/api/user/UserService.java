@@ -21,6 +21,7 @@ import com.api.notifications.CommService;
 import com.api.notifications.NotificationService;
 import com.api.notifications.events.OtpGeneratedEvent;
 import com.api.notifications.events.PasswordResetEvent;
+import com.api.notifications.events.PropertyInquiryEvent;
 import com.api.notifications.events.UserRegisteredEvent;
 import com.api.plan.PlanService;
 import com.api.prop.Property;
@@ -359,7 +360,17 @@ public class UserService {
 		relation.setInquiry(!isInterested);
 		relation.setInquiryDate(!isInterested ? LocalDateTime.now() : null);
 
-		UserPropertyRelation savedRelation = propertyRelationRepository.save(relation);
+		propertyRelationRepository.save(relation);
+
+		// Notify user and property owner only when marking interest ON
+		if (!isInterested) {
+			String[] ownerContact = resolveUserContact(property.getPostedByUser());
+			String inquiryType = "rent".equalsIgnoreCase(property.getRentOrSale()) ? "RENT" : "BUY";
+			eventPublisher.publishEvent(new PropertyInquiryEvent(
+					null, user.getName(), user.getEmail(), user.getMobile(),
+					property.getTitle(), property.getCity(), property.getPrice(),
+					null, "", "", ownerContact[0], ownerContact[1], inquiryType));
+		}
 
 		return propertyId;
 	}
@@ -429,8 +440,19 @@ public class UserService {
 
 	// ---------------- LOGOUT ----------------
 
-	
+
 	public ResponseEntity<String> logout() {
 		return ResponseEntity.ok("Logged out successfully!");
+	}
+
+	// ── Internal helpers ──────────────────────────────────────────────────────
+
+	private String[] resolveUserContact(Long userId) {
+		if (userId == null) return new String[]{"", ""};
+		return userRepository.findById(userId)
+				.map(u -> new String[]{
+						u.getEmail() != null ? u.getEmail() : "",
+						u.getMobile() != null ? u.getMobile() : ""})
+				.orElse(new String[]{"", ""});
 	}
 }
