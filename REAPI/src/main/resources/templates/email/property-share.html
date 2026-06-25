@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Property Shared With You</title>
+  <style>
+    body{margin:0;padding:0;background:#f4f6f8;font-family:'Segoe UI',Arial,sans-serif;color:#222;}
+    .wrapper{max-width:580px;margin:40px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+    .header{background:#5c35b5;padding:28px 32px;}
+    .header h1{margin:0;font-size:22px;color:#fff;}
+    .header p{margin:4px 0 0;font-size:13px;color:#d1c4e9;}
+    .body{padding:36px 32px;}
+    .share-intro{font-size:16px;color:#444;margin-bottom:20px;}
+    .prop-card{border:1.5px solid #ede7f6;border-radius:10px;overflow:hidden;margin:20px 0;}
+    .prop-header{background:#ede7f6;padding:16px 20px;}
+    .prop-header h2{margin:0;font-size:18px;color:#311b92;}
+    .prop-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+    .tag{background:#5c35b5;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+    .prop-body{padding:16px 20px;}
+    .prop-row{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #f3efff;font-size:14px;}
+    .prop-row:last-child{border-bottom:none;}
+    .prop-icon{font-size:16px;width:22px;}
+    .price-highlight{font-size:22px;font-weight:700;color:#5c35b5;margin:12px 0;}
+    .contact-box{background:#f3efff;border-radius:8px;padding:14px 18px;font-size:14px;margin-top:12px;}
+    .cta{text-align:center;margin:24px 0;}
+    .cta a{background:#5c35b5;color:#fff;text-decoration:none;padding:13px 32px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;}
+    .footer{background:#f4f6f8;padding:18px 32px;text-align:center;font-size:12px;color:#888;border-top:1px solid #e8eaed;}
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1 th:text="${app}">KeyBricks</h1>
+    <p>A property has been shared with you</p>
+  </div>
+  <div class="body">
+    <p class="share-intro">
+      Hi, <strong th:text="${senderName}">Your Friend</strong> thought you'd be interested in this property!
+    </p>
+
+    <div class="prop-card">
+      <div class="prop-header">
+        <h2 th:text="${propertyTitle}">Luxury 3BHK Apartment</h2>
+        <div class="prop-meta">
+          <span class="tag" th:text="${rentOrSale}">SALE</span>
+          <span class="tag" th:if="${bedrooms != ''}" th:text="${bedrooms} + ' BHK'">3 BHK</span>
+          <span class="tag" th:text="${propertyType}">Apartment</span>
+        </div>
+      </div>
+      <div class="prop-body">
+        <div class="prop-row">
+          <span class="prop-icon">📍</span>
+          <span th:text="${propertyLocation + ', ' + propertyCity}">Bandra, Mumbai</span>
+        </div>
+        <div class="price-highlight" th:text="${price}">₹1,20,00,000</div>
+        <div class="prop-row" th:if="${contactNumber != ''}">
+          <span class="prop-icon">📞</span>
+          <span>Contact: <strong th:text="${contactNumber}">9876543210</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a href="#">View on KeyBricks</a>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; <span th:text="${app}">KeyBricks</span> &mdash; This property was shared with you by <span th:text="${senderName}">a KeyBricks user</span>.
+  </div>
+</div>
+</body>
+</html>

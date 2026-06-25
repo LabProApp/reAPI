@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,9 @@ import java.util.Map;
 import com.api.enums.MasterEnums;
 import com.api.notifications.CommService;
 import com.api.notifications.NotificationService;
+import com.api.notifications.events.OtpGeneratedEvent;
+import com.api.notifications.events.PasswordResetEvent;
+import com.api.notifications.events.UserRegisteredEvent;
 import com.api.plan.PlanService;
 import com.api.prop.Property;
 import com.api.prop.PropertyDto;
@@ -38,6 +42,7 @@ public class UserService {
 	private final UserPropertyRelationRepository propertyRelationRepository;
 	private final CommService commService;
 	private final NotificationService notificationService;
+	private final ApplicationEventPublisher eventPublisher;
 	private final ModelMapper mapper;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
@@ -47,14 +52,15 @@ public class UserService {
 	public UserService(UserRepository userRepository, PropertyRepository propertyRepository,
 			PropertyService propertyService,
 			UserPropertyRelationRepository propertyRelationRepository, CommService commService,
-			NotificationService notificationService, ModelMapper mapper,
-			PasswordEncoder passwordEncoder, JwtUtil jwtUtil, PlanService planService) {
+			NotificationService notificationService, ApplicationEventPublisher eventPublisher,
+			ModelMapper mapper, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, PlanService planService) {
 		this.userRepository = userRepository;
 		this.propertyRepository = propertyRepository;
 		this.propertyService = propertyService;
 		this.propertyRelationRepository = propertyRelationRepository;
 		this.commService = commService;
 		this.notificationService = notificationService;
+		this.eventPublisher = eventPublisher;
 		this.mapper = mapper;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtUtil = jwtUtil;
@@ -119,19 +125,9 @@ public class UserService {
 		user.setOtpGeneratedAt(LocalDateTime.now());
 		userRepository.save(user);
 
-		try {
-			if (user.getMobile() != null) {
-				log.debug("signup - Sending OTP via SMS to {}", user.getMobile());
-				commService.sendSMSMessage(user.getMobile(), "One Time Password is: " + otp + "\nValid for 10 minutes");
-			}
-			if (user.getEmail() != null) {
-				log.debug("signup - Sending OTP via email to {}", user.getEmail());
-				commService.sendEmail(user.getEmail(), "One Time Password is: " + otp + "\nValid for 10 minutes",
-						"OTP for User SignUp");
-			}
-		} catch (Exception e) {
-			log.error("signup - Failed to send OTP for identifier={}: {}", identifier, e.getMessage(), e);
-		}
+		// Publish event — NotificationEventListener sends HTML OTP email + SMS asynchronously
+		eventPublisher.publishEvent(new OtpGeneratedEvent(
+				user.getName(), user.getEmail(), user.getMobile(), otp, "SIGNUP"));
 		log.info("signup - User registered successfully with id={}", user.getId());
 		return withPlanInfo(mapper.map(user, UserDto.class), user);
 	}
@@ -161,7 +157,9 @@ public class UserService {
 		user.setUserStatus(MasterEnums.UserStatusEnum.ACTIVE);
 		user.setIsVerified(true);
 		userRepository.save(user);
-		notificationService.notifyWelcome(user);
+		// Publish event — sends HTML welcome email + SMS asynchronously with tracking
+		eventPublisher.publishEvent(new UserRegisteredEvent(
+				user.getId(), user.getName(), user.getEmail(), user.getMobile()));
 		log.info("verifyOtp - User verified successfully, id={}", user.getId());
 		return ResponseEntity.ok("OTP verified! User activated.");
 	}
@@ -187,18 +185,9 @@ public class UserService {
 		user.setOtpGeneratedAt(LocalDateTime.now());
 		userRepository.save(user);
 
-		try {
-			if (identifier.contains("@")) {
-				log.debug("resendOtp - Sending new OTP via SMS to {}", user.getMobile());
-				commService.sendSMSMessage(user.getMobile(), "Your OTP is: " + newOtp + "\nValid for 10 minutes");
-			} else {
-				log.debug("resendOtp - Sending new OTP via email to {}", user.getEmail());
-				commService.sendEmail(user.getEmail(), "Your OTP is: " + newOtp + "\nValid for 10 minutes",
-						"OTP for User SignUp");
-			}
-		} catch (Exception e) {
-			log.error("resendOtp - Failed to send OTP for identifier={}: {}", identifier, e.getMessage(), e);
-		}
+		// Publish event — NotificationEventListener sends HTML OTP email + SMS asynchronously
+		eventPublisher.publishEvent(new OtpGeneratedEvent(
+				user.getName(), user.getEmail(), user.getMobile(), newOtp, "RESEND"));
 		log.info("resendOtp - New OTP dispatched for identifier={}", identifier);
 		return ResponseEntity.ok("New OTP has been sent");
 	}
@@ -308,6 +297,9 @@ public class UserService {
 		});
 		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 		userRepository.save(user);
+		// Notify user of successful password reset
+		eventPublisher.publishEvent(new PasswordResetEvent(
+				user.getName(), user.getEmail(), user.getMobile()));
 		log.info("resetPassword - Password reset successfully for userId={}", user.getId());
 		return ResponseEntity.ok("Password reset successfully!");
 	}

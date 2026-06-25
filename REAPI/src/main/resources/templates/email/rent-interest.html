@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rent Inquiry Confirmed</title>
+  <style>
+    body{margin:0;padding:0;background:#f4f6f8;font-family:'Segoe UI',Arial,sans-serif;color:#222;}
+    .wrapper{max-width:560px;margin:40px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+    .header{background:#00695c;padding:28px 32px;}
+    .header h1{margin:0;font-size:22px;color:#fff;}
+    .header p{margin:4px 0 0;font-size:13px;color:#b2dfdb;}
+    .body{padding:36px 32px;}
+    .confirm-icon{text-align:center;font-size:52px;margin-bottom:16px;}
+    .info{font-size:15px;color:#444;line-height:1.8;}
+    .detail-box{background:#e0f2f1;border-radius:8px;padding:18px 22px;margin:20px 0;font-size:14px;color:#004d40;}
+    .detail-box strong{display:block;font-size:16px;margin-bottom:4px;}
+    .steps{margin:20px 0;padding:0;list-style:none;}
+    .steps li{padding:9px 0;font-size:14px;color:#555;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;}
+    .steps li:last-child{border-bottom:none;}
+    .footer{background:#f4f6f8;padding:18px 32px;text-align:center;font-size:12px;color:#888;border-top:1px solid #e8eaed;}
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1 th:text="${app}">KeyBricks</h1>
+    <p>Your rent inquiry is confirmed</p>
+  </div>
+  <div class="body">
+    <div class="confirm-icon">🔑</div>
+    <p>Hi <strong th:text="${name}">User</strong>,</p>
+    <p class="info">Your rental inquiry has been successfully submitted. We'll connect you with the owner or broker shortly.</p>
+
+    <div class="detail-box">
+      <strong th:text="${propertyTitle}">2BHK Apartment</strong>
+      <span th:text="${propertyCity}">Pune</span> &mdash; Lead #<span th:text="${leadId}">1</span>
+    </div>
+
+    <p style="font-size:14px;color:#555;margin-bottom:8px;"><strong>What happens next?</strong></p>
+    <ul class="steps">
+      <li>📞 Owner/broker will contact you within 24 hours</li>
+      <li>🏠 Property visit will be arranged</li>
+      <li>📄 Rental agreement and documentation assistance available</li>
+    </ul>
+  </div>
+  <div class="footer">
+    &copy; <span th:text="${app}">KeyBricks</span> &mdash; You're receiving this because you submitted a rent inquiry.
+  </div>
+</div>
+</body>
+</html>

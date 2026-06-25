@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New Property Inquiry</title>
+  <style>
+    body{margin:0;padding:0;background:#f4f6f8;font-family:'Segoe UI',Arial,sans-serif;color:#222;}
+    .wrapper{max-width:580px;margin:40px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+    .header{background:#0277bd;padding:28px 32px;}
+    .header h1{margin:0;font-size:20px;color:#fff;}
+    .header p{margin:4px 0 0;font-size:13px;color:#b3e0ff;}
+    .badge{display:inline-block;background:#fff;color:#0277bd;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px;}
+    .body{padding:32px;}
+    .card{background:#f0f7ff;border-radius:8px;padding:20px;margin:20px 0;}
+    .card h3{margin:0 0 12px;font-size:16px;color:#0277bd;}
+    .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #dce8f5;font-size:14px;}
+    .row:last-child{border-bottom:none;}
+    .label{color:#666;font-weight:500;}
+    .value{color:#222;font-weight:600;text-align:right;max-width:60%;}
+    .cta{text-align:center;margin:24px 0;}
+    .cta a{background:#0277bd;color:#fff;text-decoration:none;padding:13px 32px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;}
+    .footer{background:#f4f6f8;padding:18px 32px;text-align:center;font-size:12px;color:#888;border-top:1px solid #e8eaed;}
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1 th:text="${app}">KeyBricks</h1>
+    <p>New inquiry received</p>
+    <span class="badge" th:text="${inquiryType} + ' Inquiry'">Buy Inquiry</span>
+  </div>
+  <div class="body">
+    <p>Hi <strong th:text="${name}">Agent</strong>,</p>
+    <p style="font-size:14px;color:#555;">You have a new <strong th:text="${inquiryType}">Buy</strong> inquiry from a potential customer. Follow up within 24 hours for best conversion.</p>
+
+    <div class="card">
+      <h3>Customer Details</h3>
+      <div class="row">
+        <span class="label">Name</span>
+        <span class="value" th:text="${customerName}">John Doe</span>
+      </div>
+      <div class="row">
+        <span class="label">Mobile</span>
+        <span class="value" th:text="${customerMobile}">9876543210</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Property Details</h3>
+      <div class="row">
+        <span class="label">Property</span>
+        <span class="value" th:text="${propertyTitle}">Luxury Apartment</span>
+      </div>
+      <div class="row">
+        <span class="label">City</span>
+        <span class="value" th:text="${propertyCity}">Mumbai</span>
+      </div>
+      <div class="row">
+        <span class="label">Lead #</span>
+        <span class="value" th:text="${leadId}">1</span>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a href="#">Log In to Respond</a>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; <span th:text="${app}">KeyBricks</span> &mdash; Lead notification. Respond promptly to close the deal.
+  </div>
+</div>
+</body>
+</html>
