@@ -55,7 +55,7 @@ public class Property extends BaseEntity {
 	@NotBlank(message = "Title is required")
 	private String title;
 
-	@NotBlank(message = "Address is required")	private String address;
+	private String address;
 
 	@NotBlank(message = "City is required")
 	private String city;
