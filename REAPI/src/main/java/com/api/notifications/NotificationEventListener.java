@@ -131,6 +131,9 @@ public class NotificationEventListener {
         String templateName = "RENT".equalsIgnoreCase(event.getInquiryType()) ? "rent-interest" : "buy-interest";
         String inquiryLabel = "RENT".equalsIgnoreCase(event.getInquiryType()) ? "Rent" : "Buy";
 
+        // leadId is null for interest-toggle events (no ClientLead record created)
+        String leadIdStr = event.getLeadId() != null ? event.getLeadId().toString() : "";
+
         // Customer confirmation — email + SMS + WhatsApp
         if (hasValue(event.getCustomerEmail())) {
             String subject = "Your " + inquiryLabel + " Inquiry Confirmed | " + APP;
@@ -140,7 +143,7 @@ public class NotificationEventListener {
                         "name",          event.getCustomerName() != null ? event.getCustomerName() : "User",
                         "propertyTitle", event.getPropertyTitle() != null ? event.getPropertyTitle() : "",
                         "propertyCity",  event.getPropertyCity() != null ? event.getPropertyCity() : "",
-                        "leadId",        String.valueOf(event.getLeadId()),
+                        "leadId",        leadIdStr,
                         "inquiryType",   inquiryLabel,
                         "app",           APP
                     ));
@@ -155,7 +158,7 @@ public class NotificationEventListener {
                             event.getPropertyTitle(), event.getPropertyCity(), event.getInquiryType()));
         }
 
-        // Agent/broker notification — email + WhatsApp
+        // Agent/broker notification — email + SMS + WhatsApp
         if (hasValue(event.getAgentEmail())) {
             String agentSubject = "[" + APP + "] New " + inquiryLabel + " Inquiry – " + event.getCustomerName();
             dispatcher.sendHtmlEmail("PROPERTY_INQUIRY_AGENT", "Agent",
@@ -166,21 +169,28 @@ public class NotificationEventListener {
                         "customerMobile", event.getCustomerMobile() != null ? event.getCustomerMobile() : "",
                         "propertyTitle", event.getPropertyTitle() != null ? event.getPropertyTitle() : "",
                         "propertyCity",  event.getPropertyCity() != null ? event.getPropertyCity() : "",
-                        "leadId",        String.valueOf(event.getLeadId()),
+                        "leadId",        leadIdStr,
                         "inquiryType",   inquiryLabel,
                         "app",           APP
                     ));
         }
 
         if (hasValue(event.getAgentMobile())) {
+            String agentSms = "[" + APP + "] New " + inquiryLabel + " inquiry from "
+                    + event.getCustomerName() + " for '" + event.getPropertyTitle() + "'. Log in to follow up.";
+            dispatcher.sendSms("PROPERTY_INQUIRY_AGENT", "Agent", event.getAgentMobile(), agentSms);
             dispatcher.sendWhatsApp("PROPERTY_INQUIRY_AGENT", "Agent", event.getAgentMobile(),
                     WhatsAppTemplates.propertyInquiryAgent(event.getCustomerName(),
                             event.getCustomerMobile(), event.getPropertyTitle(),
                             event.getPropertyCity(), event.getInquiryType()));
         }
 
-        // Owner — WhatsApp alert when different from agent
-        if (hasValue(event.getOwnerMobile())) {
+        // Owner — SMS + WhatsApp alert (skip when owner is the same person as the agent)
+        boolean ownerDiffFromAgent = !event.getOwnerMobile().equals(event.getAgentMobile());
+        if (hasValue(event.getOwnerMobile()) && ownerDiffFromAgent) {
+            String ownerSms = "[" + APP + "] New " + inquiryLabel + " inquiry from "
+                    + event.getCustomerName() + " for '" + event.getPropertyTitle() + "'. Log in to follow up.";
+            dispatcher.sendSms("PROPERTY_INQUIRY_OWNER", "Owner", event.getOwnerMobile(), ownerSms);
             dispatcher.sendWhatsApp("PROPERTY_INQUIRY_OWNER", "Owner", event.getOwnerMobile(),
                     WhatsAppTemplates.propertyInquiryAgent(event.getCustomerName(),
                             event.getCustomerMobile(), event.getPropertyTitle(),
@@ -216,10 +226,11 @@ public class NotificationEventListener {
 
         if (hasValue(event.getRecipientMobile())) {
             String bedroomPart = event.getBedrooms() != null ? event.getBedrooms() + "BHK " : "";
+            String priceStr = event.getPrice() != null ? String.format("₹%,.0f", event.getPrice()) : "N/A";
             String smsBody = event.getSenderName() + " shared: " + event.getPropertyTitle()
                     + " | " + bedroomPart + event.getType()
                     + " | " + event.getPropertyCity()
-                    + " | " + String.format("₹%,.0f", event.getPrice())
+                    + " | " + priceStr
                     + " (" + event.getRentOrSale() + ") - " + APP;
             dispatcher.sendSms("PROPERTY_SHARE", null, event.getRecipientMobile(), smsBody);
 

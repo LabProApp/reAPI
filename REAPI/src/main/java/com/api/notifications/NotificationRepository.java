@@ -13,9 +13,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByStatusAndRetryCountLessThan(NotificationStatus status, int maxRetries);
 
-    @Query("SELECT n FROM Notification n WHERE n.status = :status AND n.retryCount < :maxRetries AND n.updatedAt < :before")
+    // Picks up FAILED records that have cooled down AND RETRYING records stuck
+    // longer than one interval (app crashed mid-retry or unexpected exception).
+    @Query("SELECT n FROM Notification n WHERE n.status IN ('FAILED', 'RETRYING') AND n.retryCount < :maxRetries AND n.updatedAt < :before")
     List<Notification> findRetryable(
-        @Param("status") NotificationStatus status,
         @Param("maxRetries") int maxRetries,
         @Param("before") LocalDateTime before
     );

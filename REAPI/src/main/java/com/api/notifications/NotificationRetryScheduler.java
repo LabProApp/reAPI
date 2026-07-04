@@ -38,23 +38,20 @@ public class NotificationRetryScheduler {
     @Scheduled(fixedDelayString = "${notification.retry.interval-ms:900000}")
     public void retryFailedNotifications() {
         LocalDateTime cooldown = LocalDateTime.now().minusSeconds(retryIntervalMs / 1000);
-        List<Notification> candidates = repo.findRetryable(
-                NotificationStatus.FAILED, maxAttempts, cooldown);
+        // Picks up FAILED records (normal retry) and RETRYING records stuck longer
+        // than one interval (app crash or unexpected exception during previous retry).
+        List<Notification> candidates = repo.findRetryable(maxAttempts, cooldown);
 
         if (candidates.isEmpty()) return;
 
-        log.info("NotificationRetryScheduler - retrying {} failed notifications", candidates.size());
+        log.info("NotificationRetryScheduler - retrying {} notifications", candidates.size());
         for (Notification n : candidates) {
             log.info("NotificationRetryScheduler - retry notificationId={}, type={}, channel={}, attempt={}",
                     n.getId(), n.getNotificationType(), n.getChannel(), n.getRetryCount() + 1);
-            try {
-                dispatcher.retry(n);
-            } catch (Exception e) {
-                log.error("NotificationRetryScheduler - unexpected error for notificationId={}: {}",
-                        n.getId(), e.getMessage());
-            }
+            // retry() is synchronous — status/retryCount are updated on this thread before we check them
+            dispatcher.retry(n);
 
-            // Cancel exhausted records
+            // Cancel exhausted records after retry incremented retryCount
             if (n.getStatus() == NotificationStatus.FAILED && n.getRetryCount() >= maxAttempts) {
                 n.markCancelled();
                 repo.save(n);

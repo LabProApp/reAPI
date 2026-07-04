@@ -52,7 +52,8 @@ public class CommService {
 
     public boolean smsConfigured() {
         return ACCOUNT_SID != null && !ACCOUNT_SID.isBlank()
-                && AUTH_TOKEN != null && !AUTH_TOKEN.isBlank();
+                && AUTH_TOKEN != null && !AUTH_TOKEN.isBlank()
+                && SMS_FROM != null && !SMS_FROM.isBlank();
     }
 
     // ─── OTP ─────────────────────────────────────────────────────────────────
@@ -62,6 +63,18 @@ public class CommService {
     private static String mask(String mobile) {
         if (mobile == null || mobile.length() < 4) return "***";
         return mobile.substring(0, 2) + "****" + mobile.substring(mobile.length() - 2);
+    }
+
+    /**
+     * Normalizes a mobile number to E.164 format for India (+91).
+     * Numbers already starting with '+' are returned as-is (international format preserved).
+     * A leading '0' (domestic trunk prefix) is stripped before adding the country code.
+     */
+    static String toE164India(String mobile) {
+        if (mobile == null || mobile.isBlank()) return mobile;
+        if (mobile.startsWith("+")) return mobile;
+        if (mobile.startsWith("0")) mobile = mobile.substring(1);
+        return "+91" + mobile;
     }
 
     public String generateOtp() {
@@ -79,7 +92,7 @@ public class CommService {
         log.info("sendOtpOnSms - mobile={}", mask(mobile));
         try {
             Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-            Message msg = Message.creator(new PhoneNumber("+91" + mobile),
+            Message msg = Message.creator(new PhoneNumber(toE164India(mobile)),
                     new PhoneNumber(SMS_FROM),
                     "Your OTP is: " + otp + " (Valid for 10 minutes)").create();
             log.info("sendOtpOnSms - sent mobile={}, sid={}", mask(mobile), msg.getSid());
@@ -105,9 +118,13 @@ public class CommService {
             log.warn("sendSmsNow - SMS not configured; skipping send to {}", mask(mobile));
             return;
         }
+        if (mobile == null || mobile.isBlank()) {
+            log.warn("sendSmsNow - recipientMobile is blank; skipping send");
+            return;
+        }
         log.info("sendSmsNow - mobile={}", mask(mobile));
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        Message msg = Message.creator(new PhoneNumber("+91" + mobile),
+        Message msg = Message.creator(new PhoneNumber(toE164India(mobile)),
                 new PhoneNumber(SMS_FROM),
                 txtMessage).create();
         log.info("sendSmsNow - sent mobile={}, sid={}", mask(mobile), msg.getSid());

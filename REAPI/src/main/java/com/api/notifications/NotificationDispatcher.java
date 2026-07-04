@@ -94,6 +94,10 @@ public class NotificationDispatcher {
 
     @Async
     public void sendWhatsApp(String type, String recipientName, String recipientMobile, String body) {
+        if (recipientMobile == null || recipientMobile.isBlank()) {
+            log.warn("NotificationDispatcher - sendWhatsApp skipped: recipientMobile is blank type={}", type);
+            return;
+        }
         String e164 = recipientMobile.startsWith("+") ? recipientMobile : "+91" + recipientMobile;
         Notification n = repo.save(Notification.pending(type, "WHATSAPP",
                 recipientName, null, recipientMobile, null, body));
@@ -103,7 +107,9 @@ public class NotificationDispatcher {
                 n.markSent();
                 log.info("NotificationDispatcher - WhatsApp sent type={}, mobile={}", type, recipientMobile);
             } else {
-                n.markFailed("Provider returned null SID (not configured or send failed)");
+                // Provider not configured or send returned no SID — mark FAILED so retry picks it up
+                n.markFailed("WhatsApp provider returned null SID — not configured or send failed");
+                log.warn("NotificationDispatcher - WhatsApp null SID type={}, mobile={}", type, recipientMobile);
             }
         } catch (Exception ex) {
             n.markFailed(ex.getMessage());
@@ -131,9 +137,10 @@ public class NotificationDispatcher {
                 }
                 case "SMS" -> comm.sendSmsNow(n.getRecipientMobile(), n.getPayload());
                 case "WHATSAPP" -> {
-                    String e164 = n.getRecipientMobile().startsWith("+")
-                            ? n.getRecipientMobile() : "+91" + n.getRecipientMobile();
-                    whatsApp.send(e164, n.getPayload());
+                    String e164 = CommService.toE164India(n.getRecipientMobile());
+                    String sid = whatsApp.send(e164, n.getPayload());
+                    if (sid == null) throw new RuntimeException(
+                            "WhatsApp provider returned null SID — not configured or send failed");
                 }
                 default -> log.warn("retry - unknown channel={} for notificationId={}", n.getChannel(), n.getId());
             }
